@@ -5,6 +5,7 @@ import {
   isNumericString,
   toValidator,
   coerceNumericStringToNumber,
+  coerceBigIntStringToNumber,
 } from '../utils';
 
 function isValidStringValue(value: unknown): value is string {
@@ -42,5 +43,21 @@ export function boolean(): Schema<boolean, boolean> {
     type: 'boolean',
     validate: toValidator(isValidBooleanValue),
     map: value => (typeof value === 'boolean' ? value : value === 'true'),
+  });
+}
+
+function isValidBigIntValue(value: unknown): value is bigint {
+  return (
+    typeof value === 'bigint' ||
+    (typeof value === 'string' && /^\d+$/.test(value))
+  );
+}
+
+/** Create a bigint schema */
+export function bigint(): Schema<bigint, bigint> {
+  return createSymmetricSchema({
+    type: 'bigint',
+    validate: toValidator(isValidBigIntValue),
+    map: coerceBigIntStringToNumber,
   });
 }
