@@ -102,6 +102,10 @@ export function coerceNumericStringToNumber(value: number | string): number {
   return typeof value === 'number' ? value : +value;
 }
 
+export function coerceBigIntStringToNumber(value: bigint | string): bigint {
+  return typeof value === 'bigint' ? value : BigInt(value);
+}
+
 export function once<Args extends any[], R>(
   func: (...args: Args) => R
 ): (...args: Args) => R {
