@@ -5,7 +5,7 @@ import {
   isNumericString,
   toValidator,
   coerceNumericStringToNumber,
-  coerceBigIntStringToNumber,
+  coerceStringOrNumberToBigInt,
 } from '../utils';
 
 function isValidStringValue(value: unknown): value is string {
@@ -49,6 +49,7 @@ export function boolean(): Schema<boolean, boolean> {
 function isValidBigIntValue(value: unknown): value is bigint {
   return (
     typeof value === 'bigint' ||
+    typeof value === 'number' ||
     (typeof value === 'string' && /^-?\d+$/.test(value))
   );
 }
@@ -58,6 +59,6 @@ export function bigint(): Schema<bigint, bigint> {
   return createSymmetricSchema({
     type: 'bigint',
     validate: toValidator(isValidBigIntValue),
-    map: coerceBigIntStringToNumber,
+    map: coerceStringOrNumberToBigInt,
   });
 }
