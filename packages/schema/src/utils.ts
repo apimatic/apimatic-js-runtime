@@ -102,7 +102,9 @@ export function coerceNumericStringToNumber(value: number | string): number {
   return typeof value === 'number' ? value : +value;
 }
 
-export function coerceBigIntStringToNumber(value: bigint | string): bigint {
+export function coerceStringOrNumberToBigInt(
+  value: bigint | string | number
+): bigint {
   return typeof value === 'bigint' ? value : BigInt(value);
 }
 
