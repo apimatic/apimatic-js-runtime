@@ -49,7 +49,7 @@ export function boolean(): Schema<boolean, boolean> {
 function isValidBigIntValue(value: unknown): value is bigint {
   return (
     typeof value === 'bigint' ||
-    (typeof value === 'string' && /^\d+$/.test(value))
+    (typeof value === 'string' && /^-?\d+$/.test(value))
   );
 }
 
