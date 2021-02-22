@@ -33,6 +33,22 @@ describe('bigint', () => {
       expect((output as any).result).toBe(BigInt(input));
     });
 
+    it('should accept number', () => {
+      const input = 9532532599932;
+      const schema = bigint();
+      const output = validateAndMap(input as any, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBe(BigInt(input));
+    });
+
+    it('should accept negative number', () => {
+      const input = -9532532599932;
+      const schema = bigint();
+      const output = validateAndMap(input as any, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBe(BigInt(input));
+    });
+
     it('should fail on other types', () => {
       const input = true;
       const schema = bigint();
@@ -86,6 +102,22 @@ describe('bigint', () => {
 
     it('should accept negative bigint string', () => {
       const input = '-9532532599932';
+      const schema = bigint();
+      const output = validateAndUnmap(input as any, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBe(BigInt(input));
+    });
+
+    it('should accept number', () => {
+      const input = 9532532599932;
+      const schema = bigint();
+      const output = validateAndUnmap(input as any, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBe(BigInt(input));
+    });
+
+    it('should accept negative number', () => {
+      const input = -9532532599932;
       const schema = bigint();
       const output = validateAndUnmap(input as any, schema);
       expect(output.errors).toBeFalsy();
