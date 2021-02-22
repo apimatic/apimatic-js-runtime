@@ -230,13 +230,16 @@ function createSchemaContextCreator(
 }
 
 function createErrorMessage(ctxt: SchemaContext, message?: string): string {
+  const giveValue = JSON.stringify(ctxt.value, (_, value) =>
+    typeof value === 'bigint' ? value.toString() : value
+  );
   message =
     (message ??
       `Expected value to be of type '${
         ctxt.type
       }' but found '${typeof ctxt.value}'.`) +
     '\n' +
-    `\nGiven value: ${JSON.stringify(ctxt.value)}` +
+    `\nGiven value: ${giveValue}` +
     `\nType: '${typeof ctxt.value}'` +
     `\nExpected type: '${ctxt.type}'`;
 
