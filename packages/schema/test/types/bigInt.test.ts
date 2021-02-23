@@ -50,7 +50,7 @@ describe('bigint', () => {
     });
 
     it('should fail on other types', () => {
-      const input = true;
+      const input = { a: true, b: BigInt('9532532599932') };
       const schema = bigint();
       const output = validateAndMap(input as any, schema);
       expect((output as any).result).toBeUndefined();
@@ -59,16 +59,22 @@ describe('bigint', () => {
         Array [
           Object {
             "branch": Array [
-              true,
+              Object {
+                "a": true,
+                "b": 9532532599932n,
+              },
             ],
-            "message": "Expected value to be of type 'bigint' but found 'boolean'.
+            "message": "Expected value to be of type 'bigint' but found 'object'.
 
-        Given value: true
-        Type: 'boolean'
+        Given value: {\\"a\\":true,\\"b\\":\\"9532532599932\\"}
+        Type: 'object'
         Expected type: 'bigint'",
             "path": Array [],
             "type": "bigint",
-            "value": true,
+            "value": Object {
+              "a": true,
+              "b": 9532532599932n,
+            },
           },
         ]
       `);
