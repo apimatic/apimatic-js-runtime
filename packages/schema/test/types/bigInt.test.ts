@@ -18,7 +18,7 @@ describe('bigint', () => {
     });
 
     it('should accept bigint string', () => {
-      const input = '9532532599932';
+      const input = '9532532599932222222';
       const schema = bigint();
       const output = validateAndMap(input as any, schema);
       expect(output.errors).toBeFalsy();
@@ -26,7 +26,7 @@ describe('bigint', () => {
     });
 
     it('should accept negative bigint string', () => {
-      const input = '-9532532599932';
+      const input = '-9532532599932222222';
       const schema = bigint();
       const output = validateAndMap(input as any, schema);
       expect(output.errors).toBeFalsy();
@@ -93,7 +93,7 @@ describe('bigint', () => {
     });
 
     it('should accept bigint string', () => {
-      const input = '9532532599932';
+      const input = '9532532599932222222';
       const schema = bigint();
       const output = validateAndUnmap(input as any, schema);
       expect(output.errors).toBeFalsy();
@@ -101,7 +101,7 @@ describe('bigint', () => {
     });
 
     it('should accept negative bigint string', () => {
-      const input = '-9532532599932';
+      const input = '-9532532599932222222';
       const schema = bigint();
       const output = validateAndUnmap(input as any, schema);
       expect(output.errors).toBeFalsy();
