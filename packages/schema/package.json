@@ -9,7 +9,7 @@
     "src"
   ],
   "engines": {
-    "node": ">=10"
+    "node": ">=10.4.0"
   },
   "scripts": {
     "start": "tsdx watch --tsconfig ./tsconfig.build.json",
