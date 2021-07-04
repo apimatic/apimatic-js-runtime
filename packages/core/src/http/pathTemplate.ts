@@ -16,7 +16,8 @@ export type PathTemplatePrimitiveTypes =
   | string[]
   | number
   | number[]
-  | bigint;
+  | bigint
+  | Array<bigint>;
 
 /** Path template argument type */
 export type PathTemplateTypes =
@@ -55,7 +56,9 @@ function encodePathTemplateSegment(value: PathTemplateTypes) {
     skipEncode = true;
   }
   return Array.isArray(value)
-    ? (value as Array<string | number>).map<string | number>(encode).join('/')
+    ? (value as Array<string | number | bigint>)
+        .map<string | number | bigint>(encode)
+        .join('/')
     : [encode(value)];
 }
 
