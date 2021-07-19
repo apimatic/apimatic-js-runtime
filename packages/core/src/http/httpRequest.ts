@@ -21,6 +21,8 @@ export interface HttpRequest {
   /** HTTP request body */
   body?: HttpRequestBody;
   responseType?: 'text' | 'stream';
+  /** HTTP Query Auth Parameters */
+  query?: Record<string, string>;
 }
 
 export type HttpRequestBody =
