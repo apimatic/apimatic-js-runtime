@@ -177,6 +177,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     schema: Schema<T, any>,
     requestOptions?: RequestOptions
   ): Promise<ApiResponse<T>>;
+  setNullify404(): void;
 }
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
@@ -196,6 +197,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   >;
   protected _authParams?: AuthParams;
   public prepareArgs: typeof prepareArgs;
+  protected _isNullify404 = false;
 
   constructor(
     protected _httpClient: HttpClientInterface,
@@ -373,6 +375,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   public validateResponse(validate: boolean): void {
     this._validateResponse = validate;
   }
+  public setNullify404() {
+    this._isNullify404 = true;
+  }
   public throwOn<ErrorCtorArgs extends any[]>(
     statusCode: number | [number, number],
     errorConstructor: new (
@@ -470,6 +475,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     const mappingResult = validateAndMap(parsed, schema);
     if (mappingResult.errors) {
+      if (result.statusCode === 404 && this._isNullify404) {
+        return { ...result, result: null as any };
+      }
+
       throw new ResponseValidationError(result, mappingResult.errors);
     }
     return { ...result, result: mappingResult.result };
@@ -506,6 +515,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     const mappingResult = validateAndMapXml(xmlObject, schema);
     if (mappingResult.errors) {
+      if (result.statusCode === 404 && this._isNullify404) {
+        return { ...result, result: null as any };
+      }
       throw new ResponseValidationError(result, mappingResult.errors);
     }
     return { ...result, result: mappingResult.result };
@@ -522,6 +534,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         this._validateResponse &&
         (response.statusCode < 200 || response.statusCode >= 300)
       ) {
+        if (response.statusCode === 404 && this._isNullify404) {
+          return context;
+        }
         throw new this._apiErrorFactory(
           context,
           `Response status code was not ok: ${response.statusCode}.`
