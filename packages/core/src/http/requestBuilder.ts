@@ -67,7 +67,6 @@ type QueryValue =
   | number[]
   | bigint
   | Array<bigint>
-  | Array<bigint>
   | boolean
   | null
   | undefined;
