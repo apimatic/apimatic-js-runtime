@@ -177,7 +177,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     schema: Schema<T, any>,
     requestOptions?: RequestOptions
   ): Promise<ApiResponse<T>>;
-  setNullify404(): void;
+  nullify404(shouldNullify: boolean): void;
 }
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
@@ -375,8 +375,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   public validateResponse(validate: boolean): void {
     this._validateResponse = validate;
   }
-  public setNullify404() {
-    this._isNullify404 = true;
+  public nullify404(shouldNullify: boolean = true) {
+    this._isNullify404 = shouldNullify;
   }
   public throwOn<ErrorCtorArgs extends any[]>(
     statusCode: number | [number, number],
@@ -475,10 +475,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     const mappingResult = validateAndMap(parsed, schema);
     if (mappingResult.errors) {
-      if (result.statusCode === 404 && this._isNullify404) {
-        return { ...result, result: null as any };
-      }
-
       throw new ResponseValidationError(result, mappingResult.errors);
     }
     return { ...result, result: mappingResult.result };
@@ -515,9 +511,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     const mappingResult = validateAndMapXml(xmlObject, schema);
     if (mappingResult.errors) {
-      if (result.statusCode === 404 && this._isNullify404) {
-        return { ...result, result: null as any };
-      }
       throw new ResponseValidationError(result, mappingResult.errors);
     }
     return { ...result, result: mappingResult.result };
