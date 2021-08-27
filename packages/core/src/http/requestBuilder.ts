@@ -159,14 +159,17 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   callAsJson<T>(
     schema: Schema<T, any>,
     requestOptions?: RequestOptions
-  ): Promise<ApiResponse<T>>;
+  ): Promise<ApiResponse<T | null>>;
   callAsStream(
     requestOptions?: RequestOptions
-  ): Promise<ApiResponse<NodeJS.ReadableStream | Blob>>;
+  ): Promise<ApiResponse<NodeJS.ReadableStream | Blob | null>>;
   callAsText(requestOptions?: RequestOptions): Promise<ApiResponse<string>>;
   callAsOptionalText(
     requestOptions?: RequestOptions
   ): Promise<ApiResponse<string | undefined>>;
+  callAsNullableText(
+    requestOptions?: RequestOptions
+  ): Promise<ApiResponse<string | null>>;
   callAsXml<T>(
     rootName: string,
     schema: Schema<T, any>,
@@ -440,17 +443,32 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     return { ...result, result: result.body };
   }
+  public async callAsNullableText(
+    requestOptions?: RequestOptions
+  ): Promise<ApiResponse<string | null>> {
+    const result = await this.call(requestOptions);
+    if (typeof result.body !== 'string') {
+      throw new Error('Could not parse body as string.'); // TODO: Replace with SDK error
+    }
+    if (result.statusCode === 404) {
+      return { ...result, result: null };
+    }
+    return { ...result, result: result.body };
+  }
   public async callAsStream(
     requestOptions?: RequestOptions
-  ): Promise<ApiResponse<NodeJS.ReadableStream | Blob>> {
+  ): Promise<ApiResponse<NodeJS.ReadableStream | Blob | null>> {
     this.interceptRequest((req) => ({ ...req, responseType: 'stream' }));
     const result = await this.call(requestOptions);
+    if (result.statusCode === 404 && this._isNullify404) {
+      return { ...result, result: null };
+    }
     return { ...result, result: convertToStream(result.body) };
   }
   public async callAsJson<T>(
     schema: Schema<T>,
     requestOptions?: RequestOptions
-  ): Promise<ApiResponse<T>> {
+  ): Promise<ApiResponse<T | null>> {
     this.interceptRequest((request) => {
       const headers = { ...request.headers };
       setHeaderIfNotSet(headers, ACCEPT_HEADER, JSON_CONTENT_TYPE);
@@ -466,6 +484,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       throw new Error(
         'Could not parse body as JSON. The response body is not a string.'
       );
+    }
+    if (result.statusCode === 404 && this._isNullify404) {
+      return { ...result, result: null };
     }
     let parsed: unknown;
     try {
@@ -483,7 +504,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     rootName: string,
     schema: Schema<T, any>,
     requestOptions?: RequestOptions
-  ): Promise<ApiResponse<T>> {
+  ): Promise<ApiResponse<T | null>> {
     this.interceptRequest((request) => {
       const headers = { ...request.headers };
       setHeaderIfNotSet(headers, ACCEPT_HEADER, XML_CONTENT_TYPE);
@@ -499,6 +520,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       throw new Error(
         'Could not parse body as XML. The response body is not a string.'
       );
+    }
+    if (result.statusCode === 404 && this._isNullify404) {
+      return { ...result, result: null };
     }
     let xmlObject: unknown;
     try {
