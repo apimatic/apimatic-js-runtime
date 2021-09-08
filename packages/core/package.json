@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/core",
   "author": "Wajahat Iqbal",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "license": "SEE LICENSE IN LICENSE.md",
   "sideEffects": false,
   "main": "lib/index.js",
@@ -43,8 +43,8 @@
     "@babel/cli": "^7.10.5",
     "@babel/core": "^7.10.5",
     "@size-limit/preset-small-lib": "^4.6.0",
+    "@types/apimatic__json-bigint": "^1.0.0",
     "@types/detect-node": "^2.0.0",
-    "@types/json-bigint": "^1.0.0",
     "@types/lodash.flatmap": "^4.5.6",
     "abort-controller": "^3.0.0",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
@@ -59,11 +59,11 @@
     "typescript": "^4.1.2"
   },
   "dependencies": {
+    "@apimatic/json-bigint": "^1.0.1",
     "@apimatic/schema": "^0.6.0",
     "axios": "^0.21.1",
     "detect-node": "^2.0.4",
     "form-data": "^3.0.0",
-    "json-bigint": "^1.0.0",
     "lodash.flatmap": "^4.5.0",
     "tiny-warning": "^1.0.3",
     "tslib": "^2.1.0"

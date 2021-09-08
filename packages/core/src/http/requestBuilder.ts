@@ -5,7 +5,7 @@
  */
 
 import isNode from 'detect-node';
-import JSONBig from 'json-bigint';
+import JSONBig from '@apimatic/json-bigint';
 import { FileWrapper } from '../fileWrapper';
 import { deprecated, sanitizeUrl } from '../apiHelper';
 import { ApiResponse } from '../apiResponse';
@@ -58,7 +58,7 @@ export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   path?: string
 ) => RequestBuilder<BaseUrlParamType, AuthParams>;
 
-const JSON = JSONBig({ useNativeBigInt: true });
+const JSON = JSONBig();
 
 type QueryValue =
   | string
