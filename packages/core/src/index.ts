@@ -13,5 +13,6 @@ export * from './http/httpContext';
 export * from './http/httpHeaders';
 export * from './http/httpInterceptor';
 export * from './http/httpRequest';
-export * from './http/requestBuilder';
 export * from './http/pathTemplate';
+export * from './http/queryString';
+export * from './http/requestBuilder';
