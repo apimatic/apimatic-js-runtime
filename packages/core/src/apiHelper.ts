@@ -77,10 +77,15 @@ export function deprecated(methodName: string, notice?: string): void {
  * Replace the templated placeholders in user-agent with the platform
  * related information.
  * @param userAgent User-agent value to be updated
- * @returns 
+ * @returns Updated user-agent value
  */
-export function updateUserAgent(userAgent: string, apiVersion?: string, detail?: string): string {
-  let updatedAgent = userAgent.replace('{engine}', process.release.name)
+export function updateUserAgent(
+  userAgent: string,
+  apiVersion?: string,
+  detail?: string
+): string {
+  let updatedAgent = userAgent
+    .replace('{engine}', process.release.name)
     .replace('{engine-version}', process.version)
     .replace('{os-info}', `${os.platform()}-${os.release}`);
   if (typeof apiVersion !== 'undefined') {
