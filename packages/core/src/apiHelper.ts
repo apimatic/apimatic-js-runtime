@@ -89,7 +89,7 @@ export function updateUserAgent(
     .replace('{engine-version}', process.version)
     .replace('{os-info}', `${os.platform()}-${os.release}`);
   if (typeof apiVersion !== 'undefined') {
-    updatedAgent = updatedAgent.replace('{apiVersion}', apiVersion);
+    updatedAgent = updatedAgent.replace('{api-version}', apiVersion);
   }
   if (typeof detail !== 'undefined') {
     assertUserAgentDetail(detail);
