@@ -539,7 +539,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return handler(...args);
     });
   }
-
   private _addRetryInterceptor() {
     this.intercept(async (request, options, next) => {
       let context: HttpContext | undefined;
@@ -567,7 +566,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
           context?.response?.headers,
           timeoutError
         );
-
         retryCount++;
       } while (waitTime > 0);
       if (timeoutError) {

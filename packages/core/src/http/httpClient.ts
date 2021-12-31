@@ -188,8 +188,12 @@ export class HttpClient {
   }
 }
 
+/** Stable configurable http client options. */
 export interface HttpClientOptions {
+  /** Timeout in milliseconds. */
   timeout: number;
+  /** Custom http agent to be used when performing http requests. */
   httpAgent?: any;
+  /** Custom https agent to be used when performing https requests. */
   httpsAgent?: any;
 }

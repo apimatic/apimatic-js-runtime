@@ -1,25 +1,49 @@
 import { getHeader } from './httpHeaders';
 import { HttpMethod } from './httpRequest';
 
+/**
+ * An interface for all configuration parameters needed for retrying in case of transient failures.
+ */
 export interface RetryConfiguration {
+  /** Maximum number of retries. */
   maxNumberOfRetries: number;
+  /** Whether to retry on request timeout. */
   retryOnTimeout: boolean;
+  /**
+   * Interval before next retry.
+   * Used in calculation of wait time for next request in case of failure.
+   */
   retryInterval: number;
+  /** Overall wait time for the requests getting retried. */
   maximumRetryWaitTime: number;
+  /** Used in calculation of wait time for next request in case of failure. */
   backoffFactor: number;
+  /** Http status codes to retry against. */
   httpStatusCodesToRetry: number[];
-  httpMethodsToRetry: string[];
+  /** Http status codes to retry against. */
+  httpMethodsToRetry: HttpMethod[];
 }
 
+/**
+ * Returns wait time for the request
+ * @param retryConfig Configuration for retry
+ * @param method HttpMethod of the request
+ * @param allowedWaitTime Remaining allowed wait time
+ * @param retryCount Retry attempt number
+ * @param httpCode Status code received
+ * @param headers Response headers
+ * @param timeoutError Error from the server
+ * @returns Wait time before the retry
+ */
 export function getRetryWaitTime(
   retryConfig: RetryConfiguration,
   method: HttpMethod,
-  allowed_wait_time: number,
+  allowedWaitTime: number,
   retryCount: number,
   httpCode?: number,
   headers?: Record<string, string>,
   timeoutError?: Error
-) {
+): number {
   let retryWaitTime = 0.0;
   let retry = false;
   let retryAfter = 0;
@@ -35,7 +59,7 @@ export function getRetryWaitTime(
     ) {
       const retryAfterValue = getHeader(headers, 'retry-after');
       if (retryAfterValue !== null) {
-        retryAfter = getRetryAfter(retryAfterValue);
+        retryAfter = getRetryAfterInterval(retryAfterValue);
       }
       retry =
         retryAfterValue != null ||
@@ -49,7 +73,7 @@ export function getRetryWaitTime(
           Math.pow(retryConfig.backoffFactor, retryCount) +
         noise;
       waitTime = Math.max(waitTime, retryAfter!);
-      if (waitTime <= allowed_wait_time) {
+      if (waitTime <= allowedWaitTime) {
         retryWaitTime = waitTime;
       }
     }
@@ -57,7 +81,7 @@ export function getRetryWaitTime(
   return retryWaitTime;
 }
 
-function getRetryAfter(retryAfter: string) {
+function getRetryAfterInterval(retryAfter: string): number {
   return isNaN(+retryAfter)
     ? (new Date(retryAfter).getTime() - Date.now()) / 1000
     : +retryAfter;
