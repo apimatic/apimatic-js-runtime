@@ -15,3 +15,4 @@ export * from './http/httpInterceptor';
 export * from './http/httpRequest';
 export * from './http/requestBuilder';
 export * from './http/pathTemplate';
+export { RetryConfiguration } from './http/retryConfiguration';

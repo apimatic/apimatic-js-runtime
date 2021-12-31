@@ -39,11 +39,19 @@ export class HttpClient {
   constructor({
     clientConfigOverrides,
     timeout = DEFAULT_TIMEOUT,
-  }: { clientConfigOverrides?: AxiosRequestConfig; timeout?: number } = {}) {
+    httpAgent,
+    httpsAgent,
+  }: {
+    clientConfigOverrides?: AxiosRequestConfig;
+    timeout?: number;
+    httpAgent?: any;
+    httpsAgent?: any;
+  } = {}) {
     this._timeout = timeout;
     this._axiosInstance = axios.create({
       ...DEFAULT_AXIOS_CONFIG_OVERRIDES,
       ...clientConfigOverrides,
+      ...{ httpAgent, httpsAgent },
     });
   }
 
@@ -178,4 +186,10 @@ export class HttpClient {
   private abortError() {
     return new AbortError('The HTTP call was aborted.');
   }
+}
+
+export interface HttpClientOptions {
+  timeout: number;
+  httpAgent?: any;
+  httpsAgent?: any;
 }

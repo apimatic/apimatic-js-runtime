@@ -52,6 +52,7 @@ import {
   urlEncodeObject,
 } from './queryString';
 import { prepareArgs } from './validate';
+import { RetryConfiguration, getRetryWaitTime } from './retryConfiguration';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -204,6 +205,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _authenticationProvider: AuthenticatorInterface<AuthParams>,
     protected _httpMethod: HttpMethod,
     protected _xmlSerializer: XmlSerializerInterface,
+    protected _retryConfig: RetryConfiguration,
     protected _path?: string
   ) {
     this._headers = {};
@@ -212,6 +214,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._validateResponse = true;
     this._addResponseValidator();
     this._addAuthentication();
+    this._addRetryInterceptor();
     this.prepareArgs = prepareArgs.bind(this);
   }
   public authenticate(params: AuthParams): void {
@@ -536,6 +539,46 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return handler(...args);
     });
   }
+
+  private _addRetryInterceptor() {
+    this.intercept(async (request, options, next) => {
+      let context: HttpContext | undefined;
+      let allowedWaitTime = this._retryConfig.maximumRetryWaitTime;
+      let retryCount = 0;
+      let waitTime = 0;
+      let timeoutError: Error | undefined;
+      do {
+        timeoutError = undefined;
+        if (retryCount > 0) {
+          await new Promise((res) => setTimeout(res, waitTime * 1000));
+          allowedWaitTime -= waitTime;
+        }
+        try {
+          context = await next(request, options);
+        } catch (error) {
+          timeoutError = error;
+        }
+        waitTime = getRetryWaitTime(
+          this._retryConfig,
+          this._httpMethod,
+          allowedWaitTime,
+          retryCount,
+          context?.response.statusCode,
+          context?.response?.headers,
+          timeoutError
+        );
+
+        retryCount++;
+      } while (waitTime > 0);
+      if (timeoutError) {
+        throw timeoutError;
+      }
+      if (typeof context?.response === 'undefined') {
+        throw new Error('Response is undefined.');
+      }
+      return { request, response: context.response };
+    });
+  }
 }
 
 export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
@@ -543,7 +586,8 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   baseUrlProvider: (arg?: BaseUrlParamType) => string,
   apiErrorFactory: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
-  xmlSerializer: XmlSerializerInterface
+  xmlSerializer: XmlSerializerInterface,
+  retryConfig: RetryConfiguration
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
     return new DefaultRequestBuilder(
@@ -553,6 +597,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       authenticationProvider,
       httpMethod,
       xmlSerializer,
+      retryConfig,
       path
     );
   };
