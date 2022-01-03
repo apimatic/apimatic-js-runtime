@@ -57,12 +57,9 @@ export function getRetryWaitTime(
       typeof headers !== 'undefined' &&
       typeof httpCode !== 'undefined'
     ) {
-      const retryAfterValue = getHeader(headers, 'retry-after');
-      if (retryAfterValue !== null) {
-        retryAfter = getRetryAfterInterval(retryAfterValue);
-      }
+      retryAfter = getRetryAfterSeconds(getHeader(headers, 'retry-after'));
       retry =
-        retryAfterValue != null ||
+        retryAfter > 0 ||
         retryConfig.httpStatusCodesToRetry.includes(httpCode);
     }
 
@@ -81,8 +78,13 @@ export function getRetryWaitTime(
   return retryWaitTime;
 }
 
-function getRetryAfterInterval(retryAfter: string): number {
-  return isNaN(+retryAfter)
-    ? (new Date(retryAfter).getTime() - Date.now()) / 1000
-    : +retryAfter;
+function getRetryAfterSeconds(retryAfter: string | null): number {
+  if (retryAfter == null) {
+    return 0;
+  }
+  if (isNaN(+retryAfter)) {
+    const unixTimeStamp = (new Date(retryAfter).getTime() - Date.now()) / 1000;
+    return isNaN(unixTimeStamp) ? 0 : unixTimeStamp
+  }
+  return +retryAfter;
 }
