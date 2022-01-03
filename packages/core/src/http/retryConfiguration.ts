@@ -83,8 +83,8 @@ function getRetryAfterSeconds(retryAfter: string | null): number {
     return 0;
   }
   if (isNaN(+retryAfter)) {
-    const unixTimeStamp = (new Date(retryAfter).getTime() - Date.now()) / 1000;
-    return isNaN(unixTimeStamp) ? 0 : unixTimeStamp
+    const timeDifference = (new Date(retryAfter).getTime() - Date.now()) / 1000;
+    return isNaN(timeDifference) ? 0 : timeDifference
   }
   return +retryAfter;
 }
