@@ -59,8 +59,7 @@ export function getRetryWaitTime(
     ) {
       retryAfter = getRetryAfterSeconds(getHeader(headers, 'retry-after'));
       retry =
-        retryAfter > 0 ||
-        retryConfig.httpStatusCodesToRetry.includes(httpCode);
+        retryAfter > 0 || retryConfig.httpStatusCodesToRetry.includes(httpCode);
     }
 
     if (retry) {
@@ -69,7 +68,7 @@ export function getRetryWaitTime(
         retryConfig.retryInterval *
           Math.pow(retryConfig.backoffFactor, retryCount) +
         noise;
-      waitTime = Math.max(waitTime, retryAfter!);
+      waitTime = Math.max(waitTime, retryAfter);
       if (waitTime <= allowedWaitTime) {
         retryWaitTime = waitTime;
       }
@@ -84,7 +83,7 @@ function getRetryAfterSeconds(retryAfter: string | null): number {
   }
   if (isNaN(+retryAfter)) {
     const timeDifference = (new Date(retryAfter).getTime() - Date.now()) / 1000;
-    return isNaN(timeDifference) ? 0 : timeDifference
+    return isNaN(timeDifference) ? 0 : timeDifference;
   }
   return +retryAfter;
 }
