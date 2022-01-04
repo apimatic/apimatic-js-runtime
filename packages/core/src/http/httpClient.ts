@@ -20,6 +20,7 @@ import {
 import { HttpRequest } from './httpRequest';
 import { HttpResponse } from './httpResponse';
 import { urlEncodeKeyValuePairs } from './queryString';
+import { RetryConfiguration } from './retryConfiguration';
 
 export const DEFAULT_AXIOS_CONFIG_OVERRIDES: AxiosRequestConfig = {
   transformResponse: [],
@@ -196,4 +197,6 @@ export interface HttpClientOptions {
   httpAgent?: any;
   /** Custom https agent to be used when performing https requests. */
   httpsAgent?: any;
+  /** Configurations to retry requests */
+  retryConfig: Partial<RetryConfiguration>;
 }
