@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-"@apimatic/json-bigint@^1.1.0":
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/@apimatic/json-bigint/-/json-bigint-1.1.0.tgz#9f65d90ca25f51cf03bff8dae60f10dfa51f3c3a"
-  integrity sha512-eQ4WC53kBm0JzaO1CWBgmpmc0QzOWLn940L3gPdGDrGbzyuDztzvVhiSUYQZ+FdswxITaBTz+VG05EU5QwRHpg==
+"@apimatic/json-bigint@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@apimatic/json-bigint/-/json-bigint-1.2.0.tgz#05223455ec135976fe7a55456c2d21a3bbde56d8"
+  integrity sha512-+bmVzYMdZu0Ya5L+my4FXFUih54OvQA/qlZsFOYdOoostyUuB27UDrVWQs/WVCmS0ADdo5vTU0eeTrrBkHoySw==
 
 "@babel/cli@^7.10.5":
   version "7.13.16"
