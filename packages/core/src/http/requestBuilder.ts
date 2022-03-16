@@ -52,7 +52,12 @@ import {
   urlEncodeObject,
 } from './queryString';
 import { prepareArgs } from './validate';
-import { RetryConfiguration, getRetryWaitTime, shouldRetryRequest, RequestRetryOption } from './retryConfiguration';
+import {
+  RetryConfiguration,
+  getRetryWaitTime,
+  shouldRetryRequest,
+  RequestRetryOption,
+} from './retryConfiguration';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -552,7 +557,11 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       let retryCount = 0;
       let waitTime = 0;
       let timeoutError: Error | undefined;
-      const shouldRetry = shouldRetryRequest(this._retryConfig, this._retryOption, this._httpMethod);
+      const shouldRetry = shouldRetryRequest(
+        this._retryConfig,
+        this._retryOption,
+        this._httpMethod
+      );
       do {
         timeoutError = undefined;
         if (retryCount > 0) {

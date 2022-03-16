@@ -97,8 +97,8 @@ export function shouldRetryRequest(
   retryConfig: RetryConfiguration,
   retryOption: RequestRetryOption,
   httpMethod: HttpMethod
-  ): boolean {
-  switch(retryOption){
+): boolean {
+  switch (retryOption) {
     case RequestRetryOption.Default:
       return retryConfig.httpMethodsToRetry.includes(httpMethod);
     case RequestRetryOption.Enable:
