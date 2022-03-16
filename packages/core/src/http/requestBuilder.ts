@@ -52,7 +52,7 @@ import {
   urlEncodeObject,
 } from './queryString';
 import { prepareArgs } from './validate';
-import { RetryConfiguration, getRetryWaitTime } from './retryConfiguration';
+import { RetryConfiguration, getRetryWaitTime, shouldRetryRequest, RequestRetryOption } from './retryConfiguration';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -133,6 +133,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   formData(parameters: Record<string, unknown>): void;
   text(body: string): void;
   json(data: unknown): void;
+  requestRetryOption(option: RequestRetryOption): void;
   xml<T>(
     argName: string,
     data: T,
@@ -196,6 +197,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     HttpInterceptorInterface<RequestOptions | undefined>
   >;
   protected _authParams?: AuthParams;
+  protected _retryOption: RequestRetryOption;
   public prepareArgs: typeof prepareArgs;
 
   constructor(
@@ -215,10 +217,14 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._addResponseValidator();
     this._addAuthentication();
     this._addRetryInterceptor();
+    this._retryOption = RequestRetryOption.Default;
     this.prepareArgs = prepareArgs.bind(this);
   }
   public authenticate(params: AuthParams): void {
     this._authParams = params;
+  }
+  public requestRetryOption(option: RequestRetryOption): void {
+    this._retryOption = option;
   }
   public deprecated(methodName: string, message?: string): void {
     deprecated(methodName, message);
@@ -546,6 +552,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       let retryCount = 0;
       let waitTime = 0;
       let timeoutError: Error | undefined;
+      const shouldRetry = shouldRetryRequest(this._retryConfig, this._retryOption, this._httpMethod);
       do {
         timeoutError = undefined;
         if (retryCount > 0) {
@@ -557,16 +564,18 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         } catch (error) {
           timeoutError = error;
         }
-        waitTime = getRetryWaitTime(
-          this._retryConfig,
-          this._httpMethod,
-          allowedWaitTime,
-          retryCount,
-          context?.response.statusCode,
-          context?.response?.headers,
-          timeoutError
-        );
-        retryCount++;
+        if (shouldRetry) {
+          waitTime = getRetryWaitTime(
+            this._retryConfig,
+            allowedWaitTime,
+            retryCount,
+            context?.response.statusCode,
+            context?.response?.headers,
+            timeoutError
+          );
+
+          retryCount++;
+        }
       } while (waitTime > 0);
       if (timeoutError) {
         throw timeoutError;

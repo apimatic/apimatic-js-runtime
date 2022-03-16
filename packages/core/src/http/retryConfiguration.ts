@@ -20,8 +20,17 @@ export interface RetryConfiguration {
   backoffFactor: number;
   /** Http status codes to retry against. */
   httpStatusCodesToRetry: number[];
-  /** Http status codes to retry against. */
+  /** Http methods to retry against. */
   httpMethodsToRetry: HttpMethod[];
+}
+
+/**
+ * An enum to override retries for any endpoint.
+ */
+export enum RequestRetryOption {
+  Enable,
+  Disable,
+  Default,
 }
 
 /**
@@ -37,7 +46,6 @@ export interface RetryConfiguration {
  */
 export function getRetryWaitTime(
   retryConfig: RetryConfiguration,
-  method: HttpMethod,
   allowedWaitTime: number,
   retryCount: number,
   httpCode?: number,
@@ -47,10 +55,7 @@ export function getRetryWaitTime(
   let retryWaitTime = 0.0;
   let retry = false;
   let retryAfter = 0;
-  if (
-    retryConfig.httpMethodsToRetry.includes(method) &&
-    retryCount < retryConfig.maxNumberOfRetries
-  ) {
+  if (retryCount < retryConfig.maxNumberOfRetries) {
     if (timeoutError) {
       retry = retryConfig.retryOnTimeout;
     } else if (
@@ -86,4 +91,19 @@ function getRetryAfterSeconds(retryAfter: string | null): number {
     return isNaN(timeDifference) ? 0 : timeDifference;
   }
   return +retryAfter;
+}
+
+export function shouldRetryRequest(
+  retryConfig: RetryConfiguration,
+  retryOption: RequestRetryOption,
+  httpMethod: HttpMethod
+  ): boolean {
+  switch(retryOption){
+    case RequestRetryOption.Default:
+      return retryConfig.httpMethodsToRetry.includes(httpMethod);
+    case RequestRetryOption.Enable:
+      return true;
+    case RequestRetryOption.Disable:
+      return false;
+  }
 }
