@@ -57,7 +57,7 @@ import {
   shouldRetryRequest,
   RequestRetryOption,
 } from './retryConfiguration';
-import { convertToStream } from '@apimatic/convert-to-stream'
+import { convertToStream } from '@apimatic/convert-to-stream';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
