@@ -74,6 +74,7 @@ type QueryValue =
   | bigint
   | Array<bigint>
   | boolean
+  | boolean[]
   | null
   | undefined;
 
