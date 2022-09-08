@@ -279,7 +279,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   public query(
     nameOrParameters: string | Record<string, QueryValue> | null | undefined,
     value?: unknown,
-    prefixFormat: ArrayPrefixFunction = indexedPrefix
+    prefixFormat?: ArrayPrefixFunction
   ): void {
     if (nameOrParameters === null || nameOrParameters === undefined) {
       return;
@@ -321,12 +321,12 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   public stream(file?: FileWrapper): void {
     this._stream = file;
   }
-  public form(parameters: Record<string, unknown>, prefixFormat: ArrayPrefixFunction): void {
+  public form(parameters: Record<string, unknown>, prefixFormat?: ArrayPrefixFunction): void {
     this._form = filterFileWrapperFromKeyValuePairs(
       formDataEncodeObject(parameters, prefixFormat)
     );
   }
-  public formData(parameters: Record<string, unknown>, prefixFormat: ArrayPrefixFunction): void {
+  public formData(parameters: Record<string, unknown>, prefixFormat?: ArrayPrefixFunction): void {
     this._formData = formDataEncodeObject(parameters, prefixFormat);
   }
   public toRequest(): HttpRequest {
