@@ -49,6 +49,8 @@ import {
   filterFileWrapperFromKeyValuePairs,
   formDataEncodeObject,
   urlEncodeObject,
+  ArrayPrefixFunction,
+  indexedPrefix
 } from './queryString';
 import { prepareArgs } from './validate';
 import {
@@ -133,10 +135,10 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   contentType(contentTypeHeaderValue: string): void;
   header(name: string, value?: string | boolean | number | bigint): void;
   headers(headersToMerge: Record<string, string>): void;
-  query(name: string, value: QueryValue): void;
-  query(parameters?: Record<string, QueryValue> | null): void;
-  form(parameters: Record<string, unknown>): void;
-  formData(parameters: Record<string, unknown>): void;
+  query(name: string, value: QueryValue, prefixFormat?: ArrayPrefixFunction): void;
+  query(parameters?: Record<string, QueryValue> | null, prefixFormat?: ArrayPrefixFunction): void;
+  form(parameters: Record<string, unknown>, prefixFormat?: ArrayPrefixFunction): void;
+  formData(parameters: Record<string, unknown>, prefixFormat?: ArrayPrefixFunction): void;
   text(body: string): void;
   json(data: unknown): void;
   requestRetryOption(option: RequestRetryOption): void;
@@ -272,11 +274,12 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   public headers(headersToMerge: Record<string, string>): void {
     mergeHeaders(this._headers, headersToMerge);
   }
-  public query(name: string, value: QueryValue): void;
-  public query(parameters?: Record<string, QueryValue> | null): void;
+  public query(name: string, value: QueryValue, prefixFormat?: ArrayPrefixFunction): void;
+  public query(parameters?: Record<string, QueryValue> | null, prefixFormat?: ArrayPrefixFunction): void;
   public query(
     nameOrParameters: string | Record<string, QueryValue> | null | undefined,
-    value?: unknown
+    value?: unknown,
+    prefixFormat: ArrayPrefixFunction = indexedPrefix
   ): void {
     if (nameOrParameters === null || nameOrParameters === undefined) {
       return;
@@ -284,9 +287,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     const queryString =
       typeof nameOrParameters === 'string'
         ? urlEncodeObject({
-            [nameOrParameters]: value,
-          })
-        : urlEncodeObject(nameOrParameters);
+            [nameOrParameters]: value
+          }, prefixFormat)
+        : urlEncodeObject(nameOrParameters, prefixFormat);
     if (queryString) {
       this._query.push(queryString);
     }
@@ -318,13 +321,13 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   public stream(file?: FileWrapper): void {
     this._stream = file;
   }
-  public form(parameters: Record<string, unknown>): void {
+  public form(parameters: Record<string, unknown>, prefixFormat: ArrayPrefixFunction): void {
     this._form = filterFileWrapperFromKeyValuePairs(
-      formDataEncodeObject(parameters)
+      formDataEncodeObject(parameters, prefixFormat)
     );
   }
-  public formData(parameters: Record<string, unknown>): void {
-    this._formData = formDataEncodeObject(parameters);
+  public formData(parameters: Record<string, unknown>, prefixFormat: ArrayPrefixFunction): void {
+    this._formData = formDataEncodeObject(parameters, prefixFormat);
   }
   public toRequest(): HttpRequest {
     const request: HttpRequest = {
