@@ -19,3 +19,11 @@ export {
   RetryConfiguration,
   RequestRetryOption,
 } from './http/retryConfiguration';
+export {
+  indexedPrefix,
+  unindexedPrefix,
+  plainPrefix,
+  commaPrefix,
+  tabPrefix,
+  pipePrefix,
+} from './http/queryString';
