@@ -26,7 +26,8 @@
     key: string, // key of PrefixFunctionarray
     value: any[],// index
     result: FormKeyValuePairList
-  ) => FormKeyValuePairList;
+  ) => void;
+  
   /**
    * Array prefix format: item[1]=1&item[2]=2
    */
@@ -36,7 +37,6 @@
         ...formDataEncodeObject({ [`${key}[${iter}]`]: value[iter] }, indexedPrefix)
       );
     }
-    return result;
   }
 
   /**
@@ -49,7 +49,6 @@
         ...formDataEncodeObject({ [key + '[]']: value[iter] }, unindexedPrefix)
       );
     }
-    return result;
   }
 
   /**
@@ -61,34 +60,30 @@
         ...formDataEncodeObject({ [key]: value[iter] }, plainPrefix)
       );
     }
-    return result;
   }
 
   /**
    * Array prefix format: item=1\t2
    */
   export const tabPrefix: ArrayPrefixFunction = (key, value, result) => {
-    var prefixedArray = value.map(element => encodeURIComponent(element.toString())).join('\t');
+    let prefixedArray = value.map(element => encodeURIComponent(element.toString())).join('\t');
     result.push(...[{ key, value: prefixedArray }]);
-    return result;
   }
 
   /**
    * Array prefix format: item=1,2
    */
   export const commaPrefix: ArrayPrefixFunction = (key, value, result) => {
-    var prefixedArray = value.map(element => encodeURIComponent(element.toString())).join(',');
+    let prefixedArray = value.map(element => encodeURIComponent(element.toString())).join(',');
     result.push(...[{ key, value: prefixedArray }]);
-    return result;
   }
 
   /**
    * Array prefix format: item=1|2
    */
   export const pipePrefix: ArrayPrefixFunction = (key, value, result) => {
-    var prefixedArray = value.map(element => encodeURIComponent(element.toString())).join('|');
+    let prefixedArray = value.map(element => encodeURIComponent(element.toString())).join('|');
     result.push(...[{ key, value: prefixedArray }]);
-    return result;
   }
 
   /**
