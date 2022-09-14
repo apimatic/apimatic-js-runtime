@@ -58,7 +58,7 @@ export const unindexedPrefix: ArrayPrefixFunction = (key, value, result) => {
  */
 export const plainPrefix: ArrayPrefixFunction = (key, value, result) => {
   for (const val of value) {
-    result.push(...formDataEncodeObject({ [key]: value[iter] }, plainPrefix));
+    result.push(...formDataEncodeObject({ [key]: val }, plainPrefix));
   }
 };
 
