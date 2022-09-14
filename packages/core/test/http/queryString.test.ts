@@ -31,7 +31,10 @@ describe('test query encoding', () => {
     ],
     [
       'test plane prefix format',
-      { dependendIds: [1, 2, 3], dependentNames: ['ab', 'bc', 'cd', 'ef'] },
+      {
+        dependendIds: [1, 2, 3],
+        dependentNames: ['ab', 'bc\\tbc', 'cd', 'ef'],
+      },
       plainPrefix,
       `dependendIds=1&dependendIds=2&dependendIds=3&dependentNames=ab&dependentNames=bc\\tbc&dependentNames=cd&dependentNames=ef`,
     ],
@@ -45,7 +48,7 @@ describe('test query encoding', () => {
       'test tab prefix format',
       { dependendIds: [1, 2, 3], dependentNames: ['ab', 'bc', 'cd', 'ef'] },
       tabPrefix,
-      `dependendIds=1\t2\t3&dependentNames=ab\tbc\tcd\tf`,
+      `dependendIds=1\t2\t3&dependentNames=ab\tbc\tcd\tef`,
     ],
     [
       'test pipe prefix format',
