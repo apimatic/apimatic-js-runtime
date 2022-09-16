@@ -2,6 +2,11 @@
 # yarn lockfile v1
 
 
+"@apimatic/convert-to-stream@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@apimatic/convert-to-stream/-/convert-to-stream-0.0.1.tgz#d6288f6b70c79d9da6bf3f11f542a2429baa86e7"
+  integrity sha512-MT0t9Tcn23VlKLugzhe/q9QDcVbSXPaoH9i2qvNPZZ/JOVGNj8PZ/7z18FHMx+rW0XYegzPVjJVjwzNE8T+zSA==
+
 "@apimatic/json-bigint@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@apimatic/json-bigint/-/json-bigint-1.2.0.tgz#05223455ec135976fe7a55456c2d21a3bbde56d8"
