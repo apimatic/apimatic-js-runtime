@@ -5,6 +5,9 @@
   "main": "lib/index.js",
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
+  "engines": {
+    "node": ">=10.4.0"
+  },
   "scripts": {
     "clean": "rm -rf lib es umd tsconfig.tsbuildinfo",
     "test": "jest",
