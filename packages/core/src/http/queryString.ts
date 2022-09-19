@@ -28,17 +28,32 @@ export type ArrayPrefixFunction = (
   result: FormKeyValuePairList
 ) => void;
 
+export function objectEncoding(
+  key: string,
+  iter: number,
+  value: any,
+  prefixFormat: ArrayPrefixFunction
+): FormKeyValuePairList {
+  return formDataEncodeObject({ [`${key}[${iter}]`]: value }, prefixFormat);
+}
+
+export function objectArrayEncoding(
+  key: string,
+  value: any[],
+  prefixFormat: ArrayPrefixFunction,
+  result: FormKeyValuePairList
+) {
+  for (let iter = 0; iter < value.length; iter += 1) {
+    result.push(...objectEncoding(key, iter, value[iter], prefixFormat));
+  }
+}
+
 /**
  * Array prefix format: item[1]=1&item[2]=2
  */
 export const indexedPrefix: ArrayPrefixFunction = (key, value, result) => {
   for (let iter = 0; iter < value.length; iter += 1) {
-    result.push(
-      ...formDataEncodeObject(
-        { [`${key}[${iter}]`]: value[iter] },
-        indexedPrefix
-      )
-    );
+    result.push(...objectEncoding(key, iter, value[iter], indexedPrefix));
   }
 };
 
@@ -46,10 +61,14 @@ export const indexedPrefix: ArrayPrefixFunction = (key, value, result) => {
  * Array prefix format: item[]=1&item[]=2
  */
 export const unindexedPrefix: ArrayPrefixFunction = (key, value, result) => {
-  for (const val of value) {
-    result.push(
-      ...formDataEncodeObject({ [key + '[]']: val }, unindexedPrefix)
-    );
+  if (value.some((val) => typeof val === 'object')) {
+    objectArrayEncoding(key, value, unindexedPrefix, result);
+  } else {
+    for (const val of value) {
+      result.push(
+        ...formDataEncodeObject({ [key + '[]']: val }, unindexedPrefix)
+      );
+    }
   }
 };
 
@@ -57,8 +76,12 @@ export const unindexedPrefix: ArrayPrefixFunction = (key, value, result) => {
  * Array prefix format: item=1&item=2
  */
 export const plainPrefix: ArrayPrefixFunction = (key, value, result) => {
-  for (const val of value) {
-    result.push(...formDataEncodeObject({ [key]: val }, plainPrefix));
+  if (value.some((val) => typeof val === 'object')) {
+    objectArrayEncoding(key, value, plainPrefix, result);
+  } else {
+    for (const val of value) {
+      result.push(...formDataEncodeObject({ [key]: val }, plainPrefix));
+    }
   }
 };
 
@@ -66,30 +89,36 @@ export const plainPrefix: ArrayPrefixFunction = (key, value, result) => {
  * Array prefix format: item=1\t2
  */
 export const tabPrefix: ArrayPrefixFunction = (key, value, result) => {
-  const prefixedArray = value
-    .map((element) => encodeURIComponent(element.toString()))
-    .join('\t');
-  result.push(...[{ key, value: prefixedArray }]);
+  if (value.some((val) => typeof val === 'object')) {
+    objectArrayEncoding(key, value, tabPrefix, result);
+  } else {
+    const prefixedArray = value.map((element) => element.toString()).join('\t');
+    result.push(...[{ key, value: prefixedArray }]);
+  }
 };
 
 /**
  * Array prefix format: item=1,2
  */
 export const commaPrefix: ArrayPrefixFunction = (key, value, result) => {
-  const prefixedArray = value
-    .map((element) => encodeURIComponent(element.toString()))
-    .join(',');
-  result.push(...[{ key, value: prefixedArray }]);
+  if (value.some((val) => typeof val === 'object')) {
+    objectArrayEncoding(key, value, commaPrefix, result);
+  } else {
+    const prefixedArray = value.map((element) => element.toString()).join(',');
+    result.push(...[{ key, value: prefixedArray }]);
+  }
 };
 
 /**
  * Array prefix format: item=1|2
  */
 export const pipePrefix: ArrayPrefixFunction = (key, value, result) => {
-  const prefixedArray = value
-    .map((element) => encodeURIComponent(element.toString()))
-    .join('|');
-  result.push(...[{ key, value: prefixedArray }]);
+  if (value.some((val) => typeof val === 'object')) {
+    objectArrayEncoding(key, value, pipePrefix, result);
+  } else {
+    const prefixedArray = value.map((element) => element.toString()).join('|');
+    result.push(...[{ key, value: prefixedArray }]);
+  }
 };
 
 /**
@@ -125,9 +154,12 @@ export function formDataEncodeObject(
         if (Object.prototype.hasOwnProperty.call(value, objectKey)) {
           const element = value[objectKey as keyof typeof value];
           result.push(
-            ...formDataEncodeObject({
-              [`${key}[${objectKey}]`]: element,
-            })
+            ...formDataEncodeObject(
+              {
+                [`${key}[${objectKey}]`]: element,
+              },
+              prefixFormat
+            )
           );
         }
       }
