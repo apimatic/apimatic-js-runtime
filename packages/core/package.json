@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/core",
   "author": "Wajahat Iqbal",
-  "version": "0.7.7",
+  "version": "0.8.0",
   "license": "SEE LICENSE IN LICENSE.md",
   "sideEffects": false,
   "main": "lib/index.js",
