@@ -1,3 +1,5 @@
+import { FileWrapper, isFileWrapper } from '../../src/fileWrapper';
+import fs from 'fs';
 import {
   urlEncodeObject,
   ArrayPrefixFunction,
@@ -7,6 +9,9 @@ import {
   plainPrefix,
   pipePrefix,
   commaPrefix,
+  filterFileWrapperFromKeyValuePairs,
+  FormKeyValuePairList,
+  formDataEncodeObject,
 } from '../../src/http/queryString';
 
 describe('test query encoding', () => {
@@ -647,6 +652,12 @@ describe('test query encoding', () => {
       pipePrefix,
       `complexType[key1][numberListType]=555|666|777&complexType[key1][numberMapType][num1]=1&complexType[key1][numberMapType][num3]=2&complexType[key1][numberMapType][num2]=3&complexType[key1][innerComplexType][stringType]=MyString1&complexType[key1][innerComplexType][booleanType]=true&complexType[key1][innerComplexType][dateTimeType]=1994-11-06T08:49:37Z&complexType[key1][innerComplexType][dateType]=1994-02-13&complexType[key1][innerComplexType][uuidType]=a5e48529-745b-4dfb-aac0-a7d844debd8b&complexType[key1][innerComplexType][longType]=500000000&complexType[key1][innerComplexType][precisionType]=5.43&complexType[key1][innerComplexType][objectType][long2]=1000000000&complexType[key1][innerComplexType][objectType][long1]=500000000&complexType[key1][innerComplexType][stringListType]=Item1|Item2&complexType[key1][innerComplexListType][0][stringType]=MyString1&complexType[key1][innerComplexListType][0][booleanType]=true&complexType[key1][innerComplexListType][0][dateTimeType]=1994-11-06T08:49:37Z&complexType[key1][innerComplexListType][0][dateType]=1994-02-13&complexType[key1][innerComplexListType][0][uuidType]=a5e48529-745b-4dfb-aac0-a7d844debd8b&complexType[key1][innerComplexListType][0][longType]=500000000&complexType[key1][innerComplexListType][0][precisionType]=5.43&complexType[key1][innerComplexListType][0][objectType][long2]=1000000000&complexType[key1][innerComplexListType][0][objectType][long1]=500000000&complexType[key1][innerComplexListType][0][stringListType]=Item1|Item2&complexType[key1][innerComplexListType][1][stringType]=MyString2&complexType[key1][innerComplexListType][1][booleanType]=false&complexType[key1][innerComplexListType][1][dateTimeType]=1994-11-06T08:49:37Z&complexType[key1][innerComplexListType][1][dateType]=1994-02-12&complexType[key1][innerComplexListType][1][uuidType]=b46ba2d3-b4ac-4b40-ae62-6326e88c89a6&complexType[key1][innerComplexListType][1][longType]=1000000000&complexType[key1][innerComplexListType][1][precisionType]=5.43&complexType[key1][innerComplexListType][1][objectType][bool1]=true&complexType[key1][innerComplexListType][1][objectType][bool2]=false&complexType[key1][innerComplexListType][1][stringListType]=Item1|Item2&complexType[key2][numberListType]=555|666|777&complexType[key2][numberMapType][num1]=1&complexType[key2][numberMapType][num3]=2&complexType[key2][numberMapType][num2]=3&complexType[key2][innerComplexType][stringType]=MyString1&complexType[key2][innerComplexType][booleanType]=true&complexType[key2][innerComplexType][dateTimeType]=1994-11-06T08:49:37Z&complexType[key2][innerComplexType][dateType]=1994-02-13&complexType[key2][innerComplexType][uuidType]=a5e48529-745b-4dfb-aac0-a7d844debd8b&complexType[key2][innerComplexType][longType]=500000000&complexType[key2][innerComplexType][precisionType]=5.43&complexType[key2][innerComplexType][objectType][long2]=1000000000&complexType[key2][innerComplexType][objectType][long1]=500000000&complexType[key2][innerComplexType][stringListType]=Item1|Item2&complexType[key2][innerComplexListType][0][stringType]=MyString1&complexType[key2][innerComplexListType][0][booleanType]=true&complexType[key2][innerComplexListType][0][dateTimeType]=1994-11-06T08:49:37Z&complexType[key2][innerComplexListType][0][dateType]=1994-02-13&complexType[key2][innerComplexListType][0][uuidType]=a5e48529-745b-4dfb-aac0-a7d844debd8b&complexType[key2][innerComplexListType][0][longType]=500000000&complexType[key2][innerComplexListType][0][precisionType]=5.43&complexType[key2][innerComplexListType][0][objectType][long2]=1000000000&complexType[key2][innerComplexListType][0][objectType][long1]=500000000&complexType[key2][innerComplexListType][0][stringListType]=Item1|Item2&complexType[key2][innerComplexListType][1][stringType]=MyString2&complexType[key2][innerComplexListType][1][booleanType]=false&complexType[key2][innerComplexListType][1][dateTimeType]=1994-11-06T08:49:37Z&complexType[key2][innerComplexListType][1][dateType]=1994-02-12&complexType[key2][innerComplexListType][1][uuidType]=b46ba2d3-b4ac-4b40-ae62-6326e88c89a6&complexType[key2][innerComplexListType][1][longType]=1000000000&complexType[key2][innerComplexListType][1][precisionType]=5.43&complexType[key2][innerComplexListType][1][objectType][bool1]=true&complexType[key2][innerComplexListType][1][objectType][bool2]=false&complexType[key2][innerComplexListType][1][stringListType]=Item1|Item2`,
     ],
+    [
+      'test null object with default array prefix',
+      { params: null },
+      indexedPrefix,
+      ``,
+    ],
   ])(
     '%s',
     (
@@ -659,4 +670,42 @@ describe('test query encoding', () => {
       expect(result).toStrictEqual(expectedResult);
     }
   );
+});
+
+describe('test file wrapper filter', () => {
+  test.each([
+    [
+      'test simple array indexed prefix format',
+      [
+        {
+          key: 'file-param',
+          value: new FileWrapper(fs.createReadStream('dummy_file')),
+        },
+        { key: 'string-param', value: 'string' },
+      ],
+      [{ key: 'string-param', value: 'string' }],
+    ],
+  ])(
+    '%s',
+    (
+      _: string,
+      params: FormKeyValuePairList,
+      expectedResult: Array<{ key: string; value: string }>
+    ) => {
+      const result = filterFileWrapperFromKeyValuePairs(params);
+      expect(result).toStrictEqual(expectedResult);
+    }
+  );
+});
+
+describe('test file wrapper form encoding', () => {
+  test.each([
+    [
+      'test file wrapper indexed prefix format',
+      { param: new FileWrapper(fs.createReadStream('dummy_file')) },
+    ],
+  ])('%s', (_: string, params: Record<string, unknown>) => {
+    const result = formDataEncodeObject(params);
+    isFileWrapper(result);
+  });
 });
