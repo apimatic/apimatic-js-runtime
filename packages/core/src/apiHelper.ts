@@ -37,7 +37,7 @@ export function sanitizeUrl(url: string): string {
  * @returns True if the value is a Blob instance
  */
 export function isBlob(value: unknown): value is Blob {
-  if (typeof Blob === 'undefined') {
+  if (typeof value === 'undefined') {
     return false;
   }
 
@@ -46,9 +46,6 @@ export function isBlob(value: unknown): value is Blob {
     Object.prototype.toString.call(value) === '[object Blob]'
   );
 }
-
-// This is used by deprecated() to keep track of "hits".
-const deprecatedHits: Record<string, boolean> = {};
 
 /**
  * Create warning for deprecated method usage.
@@ -64,10 +61,7 @@ export function deprecated(methodName: string, notice?: string): void {
   if (notice) {
     message += ` ${notice}`;
   }
-  if (deprecatedHits[message]) {
-    return;
-  }
-  deprecatedHits[message] = true;
+
   if (process.env.NODE_ENV !== 'production') {
     warning(false, message);
   }

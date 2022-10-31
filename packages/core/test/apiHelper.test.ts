@@ -47,6 +47,8 @@ describe('test user agent', () => {
     [
       'test user agent with engine, engine version, os-info',
       'Typescript|4.8.3|{engine}|{engine-version}|{os-info}',
+      undefined,
+      undefined,
     ],
     [
       'test user agent with api-version, detail, engine, engine version, os-info',
@@ -63,27 +65,27 @@ describe('test user agent', () => {
     ],
   ])(
     '%s',
-    (_: string, userAgent: string, detail?: string, apiVersion?: string) => {
-      updateUserAgent(userAgent, apiVersion, detail);
+    (_: string, userAgent: string, details?: string, apiVersion?: string) => {
+      try {
+        const result = updateUserAgent(userAgent, apiVersion, details);
+        expect(result).not.toBeNull();
+      } catch (e) {
+        expect(e.message).toStrictEqual(
+          'userAgentDetail length exceeds 128 characters limit'
+        );
+      }
     }
   );
 });
 
-describe('test message deprecation', () => {
-  test.each([
-    [
-      'test message deprecation with notice',
-      'v1_create_refund',
-      'Use v2_create_refund',
-      'Method v1_create_refund is deprecated. Use v2_create_refund',
-    ],
-  ])(
-    '%s',
-    (_: string, methodName: string, notice: string, expectedResult: string) => {
-      const result = deprecated(methodName, notice);
-      expect(result).toStrictEqual(expectedResult);
-    }
-  );
+it('should log a warning of deprecation message', () => {
+  const methodName = 'v1_create_refund';
+  const notice = 'Use v2_create_refund';
+  const expectedResult =
+    'Warning: Method v1_create_refund is deprecated. Use v2_create_refund';
+  const deprecationSpy = jest.spyOn(console, 'warn');
+  deprecated(methodName, notice);
+  expect(deprecationSpy).toHaveBeenCalledWith(expectedResult);
 });
 
 describe('test blob type', () => {
@@ -93,8 +95,10 @@ describe('test blob type', () => {
       new Blob([JSON.stringify({ isBlob: true })], {
         type: 'application/json',
       }),
+      true,
     ],
-  ])('%s', (_: string, value: unknown) => {
-    isBlob(value);
+    ['test undefined type', undefined, false],
+  ])('%s', (_: string, value: unknown, expectedResult: boolean) => {
+    expect(isBlob(value)).toStrictEqual(expectedResult);
   });
 });
