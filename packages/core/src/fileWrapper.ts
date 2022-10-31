@@ -17,7 +17,7 @@ export class FileWrapper {
 }
 
 /** File upload options such as filename and mime-type */
-interface FileWrapperOptions {
+export interface FileWrapperOptions {
   /** Mime-type to be sent with the file */
   contentType?: string;
   /** Name of the file to be used in the upload data */
