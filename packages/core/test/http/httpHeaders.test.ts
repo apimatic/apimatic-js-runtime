@@ -1,4 +1,10 @@
-import { mergeHeaders, assertHeaders } from '../../src/http/httpHeaders';
+import {
+  mergeHeaders,
+  assertHeaders,
+  getHeader,
+  setHeader,
+  setHeaderIfNotSet,
+} from '../../src/http/httpHeaders';
 
 describe('HTTP Headers', () => {
   describe('Merge headers', () => {
@@ -102,5 +108,89 @@ describe('HTTP Headers', () => {
         );
       }
     });
+  });
+
+  describe('Get headers', () => {
+    test.each([
+      [
+        'get present header from headers',
+        { header1: 'value1', header2: 'value2' },
+        'header1',
+        'value1',
+      ],
+      [
+        'get absent header from headers',
+        { header1: 'value1' },
+        'header2',
+        null,
+      ],
+    ])(
+      '%s',
+      (
+        _: string,
+        headers: Record<string, string>,
+        name: string,
+        expectedResult: string | null
+      ) => {
+        const headerValue = getHeader(headers, name);
+        expect(headerValue).toStrictEqual(expectedResult);
+      }
+    );
+  });
+
+  describe('Set headers', () => {
+    test.each([
+      [
+        'set an already present header in headers',
+        { header1: 'value1', header2: 'value2' },
+        'header1',
+        undefined,
+      ],
+      [
+        'set an absent header in headers',
+        { header1: 'value1' },
+        'header2',
+        'value2',
+      ],
+    ])(
+      '%s',
+      (
+        _: string,
+        headers: Record<string, string>,
+        name: string,
+        value?: string
+      ) => {
+        setHeader(headers, name, value);
+        expect(headers[name]).toStrictEqual(value);
+      }
+    );
+  });
+
+  describe('Set headers if not set', () => {
+    test.each([
+      [
+        'set an already present header in headers',
+        { header1: 'value1', header2: 'value2' },
+        'header1',
+        'value1',
+      ],
+      [
+        'set an absent header in headers',
+        { header1: 'value1' },
+        'header2',
+        'value2',
+      ],
+    ])(
+      '%s',
+      (
+        _: string,
+        headers: Record<string, string>,
+        name: string,
+        value?: string
+      ) => {
+        setHeaderIfNotSet(headers, name, value);
+        expect(headers[name]).toStrictEqual(value);
+      }
+    );
   });
 });
