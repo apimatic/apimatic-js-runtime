@@ -202,11 +202,9 @@ export function urlEncodeObject(
  * @param params List of key-value pairs to serialize
  * @return The result of serialization
  */
-export function urlEncodeKeyValuePairs(
-  params: FormKeyValuePairList | undefined
-): string {
+export function urlEncodeKeyValuePairs(params: FormKeyValuePairList): string {
   const encode = encodeURIComponent;
-  return (params || [])
+  return params
     .map((p) => `${encode(p.key)}=${encode(p.value.toString())}`)
     .join('&');
 }
