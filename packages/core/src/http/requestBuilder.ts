@@ -590,8 +590,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       let waitTime = 0;
       let timeoutError: Error | undefined;
       const shouldRetry = shouldRetryRequest(
-        this._retryConfig,
         this._retryOption,
+        this._retryConfig,
         this._httpMethod
       );
       do {
