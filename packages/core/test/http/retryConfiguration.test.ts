@@ -38,6 +38,9 @@ describe('Retry Configuration', () => {
   });
 
   it('should not retry request', () => {
+    expect(shouldRetryRequest(RequestRetryOption.Default)).toBeFalsy();
+  });
+  it('should not retry request', () => {
     const retryConfig = {
       maxNumberOfRetries: 3,
       retryOnTimeout: false,
@@ -272,6 +275,64 @@ describe('Retry Configuration', () => {
           message: 'The client did not produce the result within the time',
           name: 'TimeoutError',
         },
+      ],
+      [
+        'calculate retry wait time by setting retry-after header in string',
+        0,
+        {
+          maxNumberOfRetries: 1,
+          retryOnTimeout: false,
+          retryInterval: 1,
+          maximumRetryWaitTime: 3,
+          backoffFactor: 2,
+          httpStatusCodesToRetry: [
+            408,
+            413,
+            429,
+            500,
+            502,
+            503,
+            504,
+            521,
+            522,
+            524,
+          ],
+          httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
+        },
+        10,
+        0,
+        200,
+        { 'retry-after': 'test-string-value' },
+        undefined,
+      ],
+      [
+        'calculate retry wait time by setting undefined headers and httpCode',
+        0,
+        {
+          maxNumberOfRetries: 3,
+          retryOnTimeout: false,
+          retryInterval: 1,
+          maximumRetryWaitTime: 3,
+          backoffFactor: 2,
+          httpStatusCodesToRetry: [
+            408,
+            413,
+            429,
+            500,
+            502,
+            503,
+            504,
+            521,
+            522,
+            524,
+          ],
+          httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
+        },
+        3,
+        0,
+        undefined,
+        undefined,
+        undefined,
       ],
     ])(
       '%s',
