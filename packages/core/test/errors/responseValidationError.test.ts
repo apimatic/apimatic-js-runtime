@@ -34,7 +34,7 @@ describe('Test Response Validation Instance', () => {
       },
       statusCode: 200,
       headers: { 'test-header': 'test-value' },
-      body: '{ \'name\': \'maryam\', \'id\' : \'1234\'}',
+      body: "{ 'name': 'maryam', 'id' : '1234'}",
       result: '',
     };
     const responseValidationError = new ResponseValidationError(response, [
