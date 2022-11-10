@@ -68,7 +68,7 @@ describe('Test API Error Instance', () => {
       } as HttpResponse,
       undefined,
       'development',
-      "Unexpected error: Could not parse HTTP response body as JSON. Unexpected \']\'",
+      "Unexpected error: Could not parse HTTP response body as JSON. Unexpected ']'",
     ],
     [
       'test with incorrect json string in response body with production environment',
@@ -90,7 +90,7 @@ describe('Test API Error Instance', () => {
       },
       undefined,
       'production',
-      "Unexpected error: Could not parse HTTP response body as JSON. Unexpected \']\'",
+      "Unexpected error: Could not parse HTTP response body as JSON. Unexpected ']'",
     ],
   ])(
     '%s',
