@@ -123,51 +123,6 @@ describe('HTTP Client', () => {
     });
   });
 
-  it('converts request with http form-data(blob) body and http get method', async () => {
-    const httpClient = new HttpClient();
-    const blob = new Blob(['I have dummy data'], {
-      type: 'application/x-www-form-urlencoded',
-    });
-    const fileWrapper = new FileWrapper(blob, {
-      contentType: 'application/x-www-form-urlencoded',
-      filename: 'dummy_file',
-      headers: { 'test-header': 'test-value' },
-    });
-
-    const formDataBody: HttpRequestMultipartFormBody = {
-      type: 'form-data',
-      content: [
-        { key: 'param1', value: 'value1' },
-        { key: 'param2', value: fileWrapper },
-      ],
-    };
-
-    const request: HttpRequest = {
-      method: 'GET',
-      url: 'url',
-      headers: { 'test-header': 'test-value' },
-      body: formDataBody,
-      responseType: 'text',
-      auth: { username: 'test-username', password: 'test-password' },
-    };
-
-    const axiosRequestConfig = httpClient.convertHttpRequest(request);
-    expect(axiosRequestConfig).toMatchObject({
-      url: 'url',
-      method: 'GET',
-      headers: {
-        'test-header': 'test-value',
-        'content-type': new RegExp(
-          '^multipart/form-data; boundary=--------------------------'
-        ),
-      },
-      timeout: DEFAULT_TIMEOUT,
-      responseType: 'text',
-      data: expect.any(FormData),
-      auth: { username: 'test-username', password: 'test-password' },
-    });
-  });
-
   it('converts request with http stream body(file stream) and http get method', async () => {
     const httpClient = new HttpClient();
     const streamBody: HttpRequestStreamBody = {
