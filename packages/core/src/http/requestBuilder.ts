@@ -610,7 +610,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
             this._retryConfig,
             allowedWaitTime,
             retryCount,
-            context?.response.statusCode,
+            context?.response?.statusCode,
             context?.response?.headers,
             timeoutError
           );
