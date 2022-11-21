@@ -7,7 +7,7 @@ import {
 import { HttpMethod } from '../../src/http/httpRequest';
 
 describe('Retry Configuration', () => {
-  it('should retry request', () => {
+  it('should retry request with default retry option and GET(allowed http method to retry)', () => {
     const retryConfig = {
       maxNumberOfRetries: 3,
       retryOnTimeout: false,
@@ -33,14 +33,14 @@ describe('Retry Configuration', () => {
     ).toBeTruthy();
   });
 
-  it('should retry request', () => {
+  it('should retry request with enable retry option', () => {
     expect(shouldRetryRequest(RequestRetryOption.Enable)).toBeTruthy();
   });
 
-  it('should not retry request', () => {
+  it('should not retry request with default retry option and undefined retry config', () => {
     expect(shouldRetryRequest(RequestRetryOption.Default)).toBeFalsy();
   });
-  it('should not retry request', () => {
+  it('should not retry request with not default retry option and POST (not allowed http method to retry)', () => {
     const retryConfig = {
       maxNumberOfRetries: 3,
       retryOnTimeout: false,
