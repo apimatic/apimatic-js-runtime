@@ -2,7 +2,6 @@ import {
   cloneFileWrapper,
   FileWrapper,
   isFileWrapper,
-  FileWrapperOptions,
 } from '../src/fileWrapper';
 import fs from 'fs';
 describe('isFileWrapper', () => {
@@ -13,7 +12,7 @@ describe('isFileWrapper', () => {
     expect(isFileWrapper(cloneFileWrapper(fileWrapper))).not.toBeFalsy();
   });
   it('should verify the instance of FileWrapper after clonning with headers', () => {
-    const options: FileWrapperOptions = {
+    const options = {
       contentType: 'optional-content-type',
       filename: 'dummy_file',
       headers: { 'test header': 'test value' },
@@ -25,7 +24,7 @@ describe('isFileWrapper', () => {
     expect(isFileWrapper(cloneFileWrapper(fileWrapper))).not.toBeFalsy();
   });
   it('should verify the instance of FileWrapper after clonning without headers', () => {
-    const options: FileWrapperOptions = {
+    const options = {
       contentType: 'optional-content-type',
       filename: 'dummy_file',
     };
