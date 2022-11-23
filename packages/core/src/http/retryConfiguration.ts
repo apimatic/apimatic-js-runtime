@@ -94,13 +94,15 @@ function getRetryAfterSeconds(retryAfter: string | null): number {
 }
 
 export function shouldRetryRequest(
-  retryConfig: RetryConfiguration,
   retryOption: RequestRetryOption,
-  httpMethod: HttpMethod
+  retryConfig?: RetryConfiguration,
+  httpMethod?: HttpMethod
 ): boolean {
   switch (retryOption) {
     case RequestRetryOption.Default:
-      return retryConfig.httpMethodsToRetry.includes(httpMethod);
+      return retryConfig !== undefined && httpMethod !== undefined
+        ? retryConfig.httpMethodsToRetry.includes(httpMethod)
+        : false;
     case RequestRetryOption.Enable:
       return true;
     case RequestRetryOption.Disable:
