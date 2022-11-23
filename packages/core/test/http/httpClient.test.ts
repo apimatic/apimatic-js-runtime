@@ -80,9 +80,7 @@ describe('HTTP Client', () => {
   it('converts request with http form-data(file-stream) body and http get method', async () => {
     const httpClient = new HttpClient();
     const fileWrapper = new FileWrapper(
-      fs.createReadStream(
-        path.join(__dirname, '/packages/core/test/dummy_file.txt')
-      ),
+      fs.createReadStream(path.join(__dirname, '../dummy_file.txt')),
       {
         contentType: 'application/x-www-form-urlencoded',
         filename: 'dummy_file',
@@ -128,9 +126,7 @@ describe('HTTP Client', () => {
     const streamBody: HttpRequestStreamBody = {
       type: 'stream',
       content: new FileWrapper(
-        fs.createReadStream(
-          path.join(__dirname, '/packages/core/test/dummy_file.txt')
-        ),
+        fs.createReadStream(path.join(__dirname, '../dummy_file.txt')),
         {
           contentType: 'application/x-www-form-urlencoded',
           filename: 'dummy_file',

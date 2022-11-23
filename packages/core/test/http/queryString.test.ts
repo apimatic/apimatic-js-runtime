@@ -704,9 +704,7 @@ describe('test file wrapper filter', () => {
         {
           key: 'file-param',
           value: new FileWrapper(
-            fs.createReadStream(
-              path.join(__dirname, '/packages/core/test/dummy_file.txt')
-            )
+            fs.createReadStream(path.join(__dirname, '../dummy_file.txt'))
           ),
         },
         { key: 'string-param', value: 'string' },
@@ -732,9 +730,7 @@ describe('test file wrapper form encoding', () => {
       'test file wrapper indexed prefix format',
       {
         param: new FileWrapper(
-          fs.createReadStream(
-            path.join(__dirname, '/packages/core/test/dummy_file.txt')
-          )
+          fs.createReadStream(path.join(__dirname, '..//dummy_file.txt'))
         ),
       },
     ],

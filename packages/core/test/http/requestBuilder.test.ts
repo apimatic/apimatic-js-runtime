@@ -209,7 +209,7 @@ describe('test default request builder behavior with succesful responses', () =>
     const expectedRequest: HttpRequest = {
       method: 'GET',
       url:
-        'http://apimatic.hopto.org:3000/auth/basic/test/requestBuilder/?form-data=true',
+        'http://apimatic.hopto.org:3000/auth/basic/test/requestBuilder?form-data=true',
       headers: {
         'test-header': 'test-value',
         accept: 'application/json',
@@ -274,9 +274,7 @@ describe('test default request builder behavior with succesful responses', () =>
       auth: { username: 'maryam-adnan', password: '12345678' },
     };
     const file = new FileWrapper(
-      fs.createReadStream(
-        path.join(__dirname, '/packages/core/test/dummy_file.txt')
-      ),
+      fs.createReadStream(path.join(__dirname, '../dummy_file.txt')),
       {
         contentType: 'application/x-www-form-urlencoded',
         filename: 'dummy_file',
