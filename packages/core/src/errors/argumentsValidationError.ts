@@ -37,6 +37,7 @@ export class ArgumentsValidationError extends Error {
     }
 
     super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
     this.errors = errors;
   }
 }

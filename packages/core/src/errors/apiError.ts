@@ -26,6 +26,7 @@ export class ApiError<T = {}>
 
   constructor(context: HttpContext, message: string) {
     super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
 
     const { request, response } = context;
     this.request = request;

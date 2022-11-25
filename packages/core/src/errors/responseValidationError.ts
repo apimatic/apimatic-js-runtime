@@ -27,6 +27,7 @@ export class ResponseValidationError
     }
 
     super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
 
     this.request = apiResponse.request;
     this.statusCode = apiResponse.statusCode;

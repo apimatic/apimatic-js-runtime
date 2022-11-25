@@ -10,4 +10,9 @@
  * Note that when an AbortError is thrown, it is not a guarantee that the API call
  * did not go through.
  */
-export class AbortError extends Error {}
+export class AbortError extends Error {
+  constructor(message: string) {
+    super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
