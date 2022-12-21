@@ -9,7 +9,6 @@ export * from './errors/argumentsValidationError';
 export * from './errors/responseValidationError';
 export * from './errors/apiError';
 export * from './http/httpClient';
-export * from './http/httpContext';
 export * from './http/httpHeaders';
 export * from './http/httpInterceptor';
 export * from './http/httpRequest';

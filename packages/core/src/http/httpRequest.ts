@@ -1,4 +1,4 @@
-import { FileWrapper } from '../fileWrapper';
+import { FileWrapper } from '@apimatic/core-interfaces';
 
 /**
  * Represents an HTTP request
