@@ -33,6 +33,7 @@ export class HttpClient {
   private _abortErrorFactory: AbortErrorConstructor;
 
   constructor(
+    abortErrorFactory: AbortErrorConstructor,
     {
       clientConfigOverrides,
       timeout = DEFAULT_TIMEOUT,
@@ -43,8 +44,7 @@ export class HttpClient {
       timeout?: number;
       httpAgent?: any;
       httpsAgent?: any;
-    } = {},
-    abortErrorFactory: AbortErrorConstructor
+    } = {}
   ) {
     this._timeout = timeout;
     this._axiosInstance = axios.create({
