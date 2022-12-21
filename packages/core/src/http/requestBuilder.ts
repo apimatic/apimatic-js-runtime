@@ -1,7 +1,16 @@
 import JSONBig from '@apimatic/json-bigint';
 import { FileWrapper } from '../fileWrapper';
 import { deprecated, sanitizeUrl } from '../apiHelper';
-import { ApiResponse } from '../apiResponse';
+import {
+  ApiResponse,
+  HttpContext,
+  HttpMethod,
+  HttpRequest,
+  HttpRequestMultipartFormBody,
+  HttpRequestUrlEncodedFormBody,
+  HttpResponse,
+  RetryConfiguration,
+} from '../coreInterfaces';
 import { ArgumentsValidationError } from '../errors/argumentsValidationError';
 import { ResponseValidationError } from '../errors/responseValidationError';
 import {
@@ -10,7 +19,6 @@ import {
   validateAndMapXml,
   validateAndUnmapXml,
 } from '../schema';
-import { HttpContext } from './httpContext';
 import {
   ACCEPT_HEADER,
   CONTENT_LENGTH_HEADER,
@@ -27,13 +35,6 @@ import {
   HttpInterceptorInterface,
 } from './httpInterceptor';
 import {
-  HttpMethod,
-  HttpRequest,
-  HttpRequestMultipartFormBody,
-  HttpRequestUrlEncodedFormBody,
-} from './httpRequest';
-import { HttpResponse } from './httpResponse';
-import {
   pathTemplate,
   PathTemplatePrimitiveTypes,
   PathTemplateTypes,
@@ -47,7 +48,6 @@ import {
 } from './queryString';
 import { prepareArgs } from './validate';
 import {
-  RetryConfiguration,
   getRetryWaitTime,
   shouldRetryRequest,
   RequestRetryOption,

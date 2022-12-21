@@ -1,5 +1,4 @@
-import { HttpContext } from './httpContext';
-import { HttpRequest } from './httpRequest';
+import { HttpContext, HttpRequest } from '../coreInterfaces';
 
 /**
  * Interface for a method that executes an HTTP request and returns the HTTP context.

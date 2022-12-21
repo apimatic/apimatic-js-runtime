@@ -3,11 +3,13 @@ import {
   HttpCallExecutor,
   passThroughInterceptor,
 } from '../../src/http/httpInterceptor';
-import { HttpRequest } from '../../lib/http/httpRequest';
+import {
+  HttpContext,
+  HttpRequest,
+  HttpResponse,
+} from '../../src/coreInterfaces';
 import { AbortError } from '../../src/errors/abortError';
-import { HttpContext } from '../../lib/http/httpContext';
 import { RequestOptions } from '../../lib/http/requestBuilder';
-import { HttpResponse } from '../../lib/http/httpResponse';
 
 it('calls http interceptor chain', async () => {
   const intercept = (req, opt, next: HttpCallExecutor<RequestOptions>) =>

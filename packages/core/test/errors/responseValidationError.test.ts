@@ -1,9 +1,6 @@
-import {
-  SchemaValidationError,
-  SchemaContext,
-} from '../../../schema/lib/schema';
-import { ResponseValidationError } from '../../../core/src/errors/responseValidationError';
-import { ApiResponse } from '../../src/apiResponse';
+import { SchemaValidationError, SchemaContext } from '../../src/schema';
+import { ResponseValidationError } from '../../src/errors/responseValidationError';
+import { ApiResponse } from '../../src/coreInterfaces';
 describe('Test Response Validation Instance', () => {
   it('tests ResponseValidationError with a single argument', () => {
     const context = {
@@ -34,7 +31,7 @@ describe('Test Response Validation Instance', () => {
       },
       statusCode: 200,
       headers: { 'test-header': 'test-value' },
-      body: "{ 'name': 'maryam', 'id' : '1234'}",
+      body: '{ \'name\': \'maryam\', \'id\' : \'1234\'}',
       result: '',
     };
     const responseValidationError = new ResponseValidationError(response, [
