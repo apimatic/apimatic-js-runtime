@@ -1,7 +1,19 @@
 import JSONBig from '@apimatic/json-bigint';
 import { FileWrapper } from '@apimatic/file-wrapper';
 import { deprecated, sanitizeUrl } from '../apiHelper';
-import { ApiResponse } from '../apiResponse';
+import {
+  ApiResponse,
+  AuthenticatorInterface,
+  HttpContext,
+  HttpMethod,
+  HttpRequest,
+  HttpRequestMultipartFormBody,
+  HttpRequestUrlEncodedFormBody,
+  HttpResponse,
+  HttpInterceptorInterface,
+  RequestOptions,
+  RetryConfiguration,
+} from '../coreInterfaces';
 import { ArgumentsValidationError } from '../errors/argumentsValidationError';
 import { ResponseValidationError } from '../errors/responseValidationError';
 import {
@@ -10,12 +22,6 @@ import {
   validateAndMapXml,
   validateAndUnmapXml,
 } from '../schema';
-import {
-  HttpContext,
-  RequestOptions,
-  HttpInterceptorInterface,
-  AuthenticatorInterface,
-} from '@apimatic/core-interfaces';
 import {
   ACCEPT_HEADER,
   CONTENT_LENGTH_HEADER,
@@ -28,13 +34,6 @@ import {
   XML_CONTENT_TYPE,
 } from './httpHeaders';
 import { callHttpInterceptors } from './httpInterceptor';
-import {
-  HttpMethod,
-  HttpRequest,
-  HttpRequestMultipartFormBody,
-  HttpRequestUrlEncodedFormBody,
-} from './httpRequest';
-import { HttpResponse } from './httpResponse';
 import {
   pathTemplate,
   PathTemplatePrimitiveTypes,
@@ -49,7 +48,6 @@ import {
 } from './queryString';
 import { prepareArgs } from './validate';
 import {
-  RetryConfiguration,
   getRetryWaitTime,
   shouldRetryRequest,
   RequestRetryOption,

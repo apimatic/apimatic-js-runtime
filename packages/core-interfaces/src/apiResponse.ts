@@ -1,4 +1,4 @@
-import { HttpRequest } from './http/httpRequest';
+import { HttpRequest } from './httpRequest';
 
 /** An interface for the result of an API call. */
 export interface ApiResponse<T> {

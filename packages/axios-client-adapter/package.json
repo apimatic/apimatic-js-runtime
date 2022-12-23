@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/axios-client-adapter",
-  "author": "Wajahat Iqbal",
+  "author": "APIMatic Ltd.",
   "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE.md",
   "sideEffects": false,
@@ -75,6 +75,6 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:apimatic/apimatic-js-runtime.git",
-    "directory": "packages/core"
+    "directory": "packages/axios-client-adapter"
   }
 }

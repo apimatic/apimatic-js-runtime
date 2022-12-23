@@ -1,19 +1,23 @@
 import {
   HttpClientInterface,
-  AuthenticatorInterface,
   XmlSerializerInterface,
   createRequestBuilderFactory,
-  RequestOptions,
   skipEncode,
 } from '../../src/http/requestBuilder';
-import { passThroughInterceptor } from '../../src/http/httpInterceptor';
-import { RetryConfiguration } from '../../src/http/retryConfiguration';
-import { HttpMethod, HttpRequest } from '../../src/http/httpRequest';
+import {
+  AuthenticatorInterface,
+  HttpContext,
+  HttpMethod,
+  HttpRequest,
+  HttpResponse,
+  passThroughInterceptor,
+  RequestOptions,
+  RetryConfiguration,
+} from '../../src/coreInterfaces';
 import { ApiError } from '../../src/errors/apiError';
 import { RequestRetryOption } from '../../src/http/retryConfiguration';
 import { employeeSchema, Employee } from '../../../schema/test/employeeSchema';
 import { array, number, string } from '../../../schema';
-import { HttpResponse } from '../../src/http/httpResponse';
 import {
   FORM_URLENCODED_CONTENT_TYPE,
   TEXT_CONTENT_TYPE,
@@ -22,7 +26,6 @@ import { FileWrapper } from '../../src/fileWrapper';
 import fs from 'fs';
 import path from 'path';
 import { bossSchema } from '../../../schema/test/bossSchema';
-import { HttpContext } from '../../src/http/httpContext';
 
 describe('test default request builder behavior with succesful responses', () => {
   const authParams = {
@@ -419,7 +422,7 @@ describe('test default request builder behavior with succesful responses', () =>
       await reqBuilder.callAsJson(employeeSchema);
     } catch (error) {
       const expectedResult =
-        "Could not parse body as JSON.\n\nExpected 'r' instead of 'e'";
+        'Could not parse body as JSON.\n\nExpected \'r\' instead of \'e\'';
       expect(error.message).toEqual(expectedResult);
     }
   });

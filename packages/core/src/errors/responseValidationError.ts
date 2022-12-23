@@ -1,5 +1,4 @@
-import { HttpRequest } from '../http/httpRequest';
-import { ApiResponse } from '../apiResponse';
+import { ApiResponse, HttpRequest } from '../coreInterfaces';
 import { SchemaValidationError } from '../schema';
 
 /**

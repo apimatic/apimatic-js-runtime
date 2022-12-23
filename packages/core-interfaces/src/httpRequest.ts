@@ -57,3 +57,17 @@ export interface HttpRequestStreamBody {
   type: 'stream';
   content: FileWrapper;
 }
+
+/** Optional API call options such as the Abort Signal. */
+export interface RequestOptions {
+  /**
+   * Allows cancelling the API call using an Abort Signal.
+   *
+   * This must be set to an instance compatible with the
+   * [WHATWG AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal). The
+   * AbortSignal comes built-in in modern browsers and can be polyfilled for older browser versions
+   * and Node.js using the
+   * [abort-controller](https://github.com/mysticatea/abort-controller) package.
+   */
+  abortSignal?: AbortSignal;
+}

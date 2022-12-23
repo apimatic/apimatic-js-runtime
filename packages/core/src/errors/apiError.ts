@@ -1,7 +1,9 @@
 import JSONBig from '@apimatic/json-bigint';
-import { HttpContext } from '../http/httpContext';
-import { HttpRequest } from '../http/httpRequest';
-import { ApiResponse } from '../apiResponse';
+import {
+  ApiResponse,
+  HttpContext,
+  HttpRequest,
+} from '@apimatic/core-interfaces';
 
 /**
  * Thrown when the HTTP status code is not okay.

@@ -1,4 +1,4 @@
-import { FileWrapper, isFileWrapper } from '@apimatic';
+import { FileWrapper, isFileWrapper } from '@apimatic/file-wrapper';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -13,7 +13,7 @@ import {
   filterFileWrapperFromKeyValuePairs,
   FormKeyValuePairList,
   formDataEncodeObject,
-} from '../../src/http/queryString';
+} from '../src/queryString';
 
 const dependent1 = {
   name: 'rehan',

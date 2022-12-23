@@ -1,8 +1,6 @@
 import {
   HttpInterceptorInterface,
   HttpCallExecutor,
-  HttpRequest,
-  HttpContext,
 } from '@apimatic/core-interfaces';
 /**
  * Calls HTTP interceptor chain
@@ -21,13 +19,4 @@ export function callHttpInterceptors<T>(
     next = (request, options) => current(request, options, last);
   }
   return next;
-}
-
-/** Pass-through HTTP interceptor. */
-export function passThroughInterceptor<T>(
-  request: HttpRequest,
-  requestOptions: T,
-  next: HttpCallExecutor<T>
-): Promise<HttpContext> {
-  return next(request, requestOptions);
 }

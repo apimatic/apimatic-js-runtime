@@ -11,11 +11,11 @@ import {
 import { FileWrapper } from '@apimatic/file-wrapper';
 import FormData from 'form-data';
 import fs from 'fs';
-import path from 'path';
+import { AbortError } from './abortError';
 
 describe('HTTP Client', () => {
   it('converts request with http text body and http get method', () => {
-    const httpClient = new HttpClient();
+    const httpClient = new HttpClient(AbortError);
     const textBody: HttpRequestTextBody = {
       content: 'testBody',
       type: 'text',
@@ -43,7 +43,7 @@ describe('HTTP Client', () => {
   });
 
   it('converts request with http form body and http get method', async () => {
-    const httpClient = new HttpClient();
+    const httpClient = new HttpClient(AbortError);
     const formBody: HttpRequestUrlEncodedFormBody = {
       type: 'form',
       content: [
@@ -78,9 +78,9 @@ describe('HTTP Client', () => {
   });
 
   it('converts request with http form-data(file-stream) body and http get method', async () => {
-    const httpClient = new HttpClient();
+    const httpClient = new HttpClient(AbortError);
     const fileWrapper = new FileWrapper(
-      fs.createReadStream(path.join(__dirname, '../dummy_file.txt')),
+      fs.createReadStream('test/dummy_file.txt'),
       {
         contentType: 'application/x-www-form-urlencoded',
         filename: 'dummy_file',
@@ -122,17 +122,14 @@ describe('HTTP Client', () => {
   });
 
   it('converts request with http stream body(file stream) and http get method', async () => {
-    const httpClient = new HttpClient();
+    const httpClient = new HttpClient(AbortError);
     const streamBody: HttpRequestStreamBody = {
       type: 'stream',
-      content: new FileWrapper(
-        fs.createReadStream(path.join(__dirname, '../dummy_file.txt')),
-        {
-          contentType: 'application/x-www-form-urlencoded',
-          filename: 'dummy_file',
-          headers: { 'test-header': 'test-value' },
-        }
-      ),
+      content: new FileWrapper(fs.createReadStream('test/dummy_file.txt'), {
+        contentType: 'application/x-www-form-urlencoded',
+        filename: 'dummy_file',
+        headers: { 'test-header': 'test-value' },
+      }),
     };
 
     const request: HttpRequest = {
@@ -160,7 +157,7 @@ describe('HTTP Client', () => {
   });
 
   it('converts request with http stream body(blob) and http get method', async () => {
-    const httpClient = new HttpClient();
+    const httpClient = new HttpClient(AbortError);
     const blob = new Blob(['I have dummy data'], {
       type: 'text/plain;charset=utf-8',
     });
@@ -201,7 +198,7 @@ describe('HTTP Client', () => {
   });
 
   it('converts response to HTTPResponse', async () => {
-    const httpClient = new HttpClient();
+    const httpClient = new HttpClient(AbortError);
     const config: AxiosRequestConfig = {
       url: 'url',
       method: 'GET',

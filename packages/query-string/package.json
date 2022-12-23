@@ -62,15 +62,15 @@
     "typescript": "^4.1.2"
   },
   "dependencies": {
-    "tslib": "^2.1.0"
+    "tslib": "^2.1.0",
+    "@apimatic/file-wrapper": "../file-wrapper"
   },
   "publishConfig": {
-    "@apimatic/file-wrapper": "^0.1.0",
     "access": "public"
   },
   "repository": {
     "type": "git",
     "url": "git@github.com:apimatic/apimatic-js-runtime.git",
-    "directory": "packages/schema"
+    "directory": "packages/query-string"
   }
 }

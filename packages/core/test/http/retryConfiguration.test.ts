@@ -1,10 +1,9 @@
 import {
   getRetryWaitTime,
   RequestRetryOption,
-  RetryConfiguration,
   shouldRetryRequest,
 } from '../../src/http/retryConfiguration';
-import { HttpMethod } from '../../src/http/httpRequest';
+import { HttpMethod, RetryConfiguration } from '../../../core-interfaces/src';
 
 describe('Retry Configuration', () => {
   it('should retry request with default retry option and GET(allowed http method to retry)', () => {
