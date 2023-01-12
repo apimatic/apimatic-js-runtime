@@ -3,8 +3,6 @@ import {
   passThroughInterceptor,
 } from '@apimatic/core-interfaces';
 
-/** None authentication provider */
-
 export const basicAuthAuthenticationProvider = ({
   basicAuthUserName,
   basicAuthPassword,

@@ -4,9 +4,6 @@ import {
 } from '@apimatic/core-interfaces';
 import { mergeHeaders } from '@apimatic/http-headers';
 
-/** None authentication provider */
-export const noneAuthenticationProvider = () => passThroughInterceptor;
-
 export const customHeaderAuthenticationProvider = ({
   token,
   apiKey,

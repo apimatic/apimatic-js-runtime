@@ -3,6 +3,7 @@ import {
   passThroughInterceptor,
 } from '@apimatic/core-interfaces';
 import { encodeURIComponent } from '@apimatic/query-string';
+
 export const customQueryAuthenticationProvider = ({
   token,
   apiKey,
