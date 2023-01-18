@@ -1,5 +1,5 @@
 {
-  "name": "@apimatic/query-string",
+  "name": "@apimatic/xml-adapter",
   "author": "APIMatic Ltd.",
   "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -47,6 +47,7 @@
     "@babel/cli": "^7.10.5",
     "@babel/core": "^7.10.5",
     "@size-limit/preset-small-lib": "^4.6.0",
+    "@types/xml2js": "^0.4.11",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "jest": "^26.4.2",
     "jsdom": "^16.5.0",
@@ -62,8 +63,8 @@
     "typescript": "^4.1.2"
   },
   "dependencies": {
-    "@apimatic/file-wrapper": "^0.1.0",
-    "tslib": "^2.1.0"
+    "tslib": "^2.1.0",
+    "xml2js": "^0.4.23"
   },
   "publishConfig": {
     "access": "public"
