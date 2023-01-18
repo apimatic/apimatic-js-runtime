@@ -1,1 +1,1 @@
-export * from './grantTypeAdapter';
+export * from './oauthAuthenticationAdapter';

@@ -21,7 +21,8 @@ export const customHeaderAuthenticationProvider = ({
         token,
         'api-key': apiKey,
       };
-      mergeHeaders(request.headers ?? {}, customHeaderParams);
+      request.headers = request.headers ?? {};
+      mergeHeaders(request.headers, customHeaderParams);
 
       return next(request, options);
     };

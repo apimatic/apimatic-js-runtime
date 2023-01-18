@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/authentication-adapters",
-  "author": "Mehdi Jaffery",
+  "author": "APIMatic Ltd.",
   "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE.md",
   "sideEffects": false,
@@ -63,7 +63,6 @@
   },
   "dependencies": {
     "@apimatic/core-interfaces": "../core-interfaces",
-    "@apimatic/file-wrapper": "../file-wrapper",
     "@apimatic/query-string": "../query-string",
     "@apimatic/http-headers": "../http-headers",
     "tslib": "^2.1.0"

@@ -9,6 +9,21 @@
     },
     {
       "path": "./packages/convert-to-stream"
+    },
+    {
+      "path": "./packages/axios-client-adapter"
+    },
+    {
+      "path": "./packages/core-interfaces"
+    },
+    {
+      "path": "./packages/file-wrapper"
+    },
+    {
+      "path": "./packages/http-headers"
+    },
+    {
+      "path": "./packages/query-string"
     }
   ]
 }

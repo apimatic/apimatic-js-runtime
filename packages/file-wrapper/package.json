@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/file-wrapper",
-  "author": "Mehdi Jaffery",
+  "author": "APIMatic Ltd.",
   "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE.md",
   "sideEffects": false,
@@ -70,6 +70,6 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:apimatic/apimatic-js-runtime.git",
-    "directory": "packages/core"
+    "directory": "packages/file-wrapper"
   }
 }

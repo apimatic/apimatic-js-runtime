@@ -23,7 +23,7 @@ describe('HTTP Client', () => {
 
     const request: HttpRequest = {
       method: 'GET',
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       headers: { 'test-header': 'test-value' },
       body: textBody,
       responseType: 'text',
@@ -31,7 +31,7 @@ describe('HTTP Client', () => {
     };
 
     const expectedAxiosRequestConfig: AxiosRequestConfig = {
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       method: 'GET',
       headers: { 'test-header': 'test-value' },
       data: 'testBody',
@@ -54,14 +54,14 @@ describe('HTTP Client', () => {
 
     const request: HttpRequest = {
       method: 'GET',
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       headers: { 'test-header': 'test-value' },
       body: formBody,
       responseType: 'text',
       auth: { username: 'test-username', password: 'test-password' },
     };
     const expectedAxiosRequestConfig: AxiosRequestConfig = {
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       method: 'GET',
       headers: {
         'test-header': 'test-value',
@@ -97,7 +97,7 @@ describe('HTTP Client', () => {
 
     const request: HttpRequest = {
       method: 'GET',
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       headers: { 'test-header': 'test-value' },
       body: formDataBody,
       responseType: 'text',
@@ -106,7 +106,7 @@ describe('HTTP Client', () => {
 
     const axiosRequestConfig = httpClient.convertHttpRequest(request);
     expect(axiosRequestConfig).toMatchObject({
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       method: 'GET',
       headers: {
         'test-header': 'test-value',
@@ -134,7 +134,7 @@ describe('HTTP Client', () => {
 
     const request: HttpRequest = {
       method: 'GET',
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       headers: { 'test-header': 'test-value' },
       body: streamBody,
       responseType: 'stream',
@@ -143,7 +143,7 @@ describe('HTTP Client', () => {
 
     const axiosRequestConfig = httpClient.convertHttpRequest(request);
     expect(axiosRequestConfig).toMatchObject({
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       method: 'GET',
       headers: {
         'test-header': 'test-value',
@@ -175,7 +175,7 @@ describe('HTTP Client', () => {
 
     const request: HttpRequest = {
       method: 'GET',
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       headers: { 'test-header': 'test-value' },
       body: streamBody,
       responseType: 'stream',
@@ -184,7 +184,7 @@ describe('HTTP Client', () => {
 
     const axiosRequestConfig = httpClient.convertHttpRequest(request);
     expect(axiosRequestConfig).toMatchObject({
-      url: 'url',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       method: 'GET',
       headers: {
         'test-header': 'test-value',

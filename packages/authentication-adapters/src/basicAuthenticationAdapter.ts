@@ -3,7 +3,7 @@ import {
   passThroughInterceptor,
 } from '@apimatic/core-interfaces';
 
-export const basicAuthAuthenticationProvider = ({
+export const basicAuthenticationProvider = ({
   basicAuthUserName,
   basicAuthPassword,
 }: {
