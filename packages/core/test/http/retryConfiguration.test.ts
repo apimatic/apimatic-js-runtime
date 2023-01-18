@@ -3,7 +3,7 @@ import {
   RequestRetryOption,
   shouldRetryRequest,
 } from '../../src/http/retryConfiguration';
-import { HttpMethod, RetryConfiguration } from '../../src/coreInterfaces';
+import { HttpMethod, RetryConfiguration } from '../../../core-interfaces/src';
 
 describe('Retry Configuration', () => {
   it('should retry request with default retry option and GET(allowed http method to retry)', () => {

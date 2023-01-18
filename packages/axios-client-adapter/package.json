@@ -75,6 +75,6 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:apimatic/apimatic-js-runtime.git",
-    "directory": "packages/core"
+    "directory": "packages/axios-client-adapter"
   }
 }

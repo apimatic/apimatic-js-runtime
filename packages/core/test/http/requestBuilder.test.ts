@@ -1,17 +1,17 @@
 import {
   HttpClientInterface,
-  AuthenticatorInterface,
   XmlSerializerInterface,
   createRequestBuilderFactory,
-  RequestOptions,
   skipEncode,
 } from '../../src/http/requestBuilder';
-import { passThroughInterceptor } from '../../src/http/httpInterceptor';
 import {
+  AuthenticatorInterface,
   HttpContext,
   HttpMethod,
   HttpRequest,
   HttpResponse,
+  passThroughInterceptor,
+  RequestOptions,
   RetryConfiguration,
 } from '../../src/coreInterfaces';
 import { ApiError } from '../../src/errors/apiError';

@@ -1,14 +1,17 @@
 import JSONBig from '@apimatic/json-bigint';
-import { FileWrapper } from '../fileWrapper';
+import { FileWrapper } from '@apimatic/file-wrapper';
 import { deprecated, sanitizeUrl } from '../apiHelper';
 import {
   ApiResponse,
+  AuthenticatorInterface,
   HttpContext,
   HttpMethod,
   HttpRequest,
   HttpRequestMultipartFormBody,
   HttpRequestUrlEncodedFormBody,
   HttpResponse,
+  HttpInterceptorInterface,
+  RequestOptions,
   RetryConfiguration,
 } from '../coreInterfaces';
 import { ArgumentsValidationError } from '../errors/argumentsValidationError';
@@ -30,10 +33,7 @@ import {
   TEXT_CONTENT_TYPE,
   XML_CONTENT_TYPE,
 } from './httpHeaders';
-import {
-  callHttpInterceptors,
-  HttpInterceptorInterface,
-} from './httpInterceptor';
+import { callHttpInterceptors } from './httpInterceptor';
 import {
   pathTemplate,
   PathTemplatePrimitiveTypes,
@@ -79,20 +79,6 @@ export function skipEncode<T extends PathTemplatePrimitiveTypes>(
   return new SkipEncode(value);
 }
 
-/** Optional API call options such as the Abort Signal. */
-export interface RequestOptions {
-  /**
-   * Allows cancelling the API call using an Abort Signal.
-   *
-   * This must be set to an instance compatible with the
-   * [WHATWG AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal). The
-   * AbortSignal comes built-in in modern browsers and can be polyfilled for older browser versions
-   * and Node.js using the
-   * [abort-controller](https://github.com/mysticatea/abort-controller) package.
-   */
-  abortSignal?: AbortSignal;
-}
-
 export interface XmlSerializerInterface {
   xmlSerialize: (rootName: string, value: unknown) => string;
   xmlDeserialize: (rootName: string, xmlString: string) => Promise<any>;
@@ -107,10 +93,6 @@ export type ApiErrorConstructor = new (
   response: HttpContext,
   message: string
 ) => any;
-
-export type AuthenticatorInterface<AuthParams> = (
-  authParams?: AuthParams
-) => HttpInterceptorInterface<RequestOptions | undefined>;
 
 export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   deprecated(methodName: string, message?: string): void;

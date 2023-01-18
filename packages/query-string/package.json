@@ -71,6 +71,6 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:apimatic/apimatic-js-runtime.git",
-    "directory": "packages/schema"
+    "directory": "packages/query-string"
   }
 }
