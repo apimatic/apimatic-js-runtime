@@ -24,6 +24,12 @@
     },
     {
       "path": "./packages/query-string"
+    },
+    {
+      "path": "./packages/xml-adapter"
+    },
+    {
+      "path": "./packages/authentication-adapters"
     }
   ]
 }

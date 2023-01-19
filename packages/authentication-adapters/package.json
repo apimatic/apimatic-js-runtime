@@ -62,9 +62,9 @@
     "typescript": "^4.1.2"
   },
   "dependencies": {
-    "@apimatic/core-interfaces": "../core-interfaces",
-    "@apimatic/query-string": "../query-string",
-    "@apimatic/http-headers": "../http-headers",
+    "@apimatic/core-interfaces": "^0.1.0",
+    "@apimatic/query-string": "^0.1.0",
+    "@apimatic/http-headers": "^0.1.0",
     "tslib": "^2.1.0"
   },
   "publishConfig": {

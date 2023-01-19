@@ -21,3 +21,4 @@ export {
   tabPrefix,
   pipePrefix,
 } from './http/queryString';
+export { XmlSerializerInterface } from './xml/xmlSerializer';

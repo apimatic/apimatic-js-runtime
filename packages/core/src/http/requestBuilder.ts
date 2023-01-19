@@ -53,6 +53,7 @@ import {
   RequestRetryOption,
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
+import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -605,8 +606,8 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   baseUrlProvider: (arg?: BaseUrlParamType) => string,
   apiErrorFactory: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
-  xmlSerializer: XmlSerializerInterface,
-  retryConfig: RetryConfiguration
+  retryConfig: RetryConfiguration,
+  xmlSerializer: XmlSerializerInterface = new XmlSerialization()
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
     return new DefaultRequestBuilder(

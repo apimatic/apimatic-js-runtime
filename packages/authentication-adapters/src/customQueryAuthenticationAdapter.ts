@@ -24,7 +24,7 @@ export const customQueryAuthenticationProvider = ({
   };
 };
 function encodeQueryParams(queryParams: Record<string, string>) {
-  const queryString = [];
+  const queryString: string[] = [];
   for (const key of Object.keys(queryParams)) {
     queryString.push(
       `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`
