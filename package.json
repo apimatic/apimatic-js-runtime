@@ -15,7 +15,7 @@
     "check-style:fix": "lerna run check-style:fix",
     "build:dev": "tsc -b ./tsconfig.monorepo.json",
     "test:watch": "jest",
-    "test": "lerna run test -- --ci --coverage --maxWorkers=2",
+    "test": "lerna run test -- --ci --coverage --maxWorkers=2 --passWithNoTests",
     "dev": "node ./scripts/dev.js",
     "ci": "npm run build && npm run test",
     "prerelease": "npm run build && npm run test"
