@@ -22,7 +22,7 @@
     "check-style": "prettier --check \"{src,test}/**/*.ts\"",
     "check-style:fix": "prettier --write \"{src,test}/**/*.ts\""
   },
-  "author": "Wajahat Iqbal",
+  "author": "APIMatic Ltd.",
   "license": "ISC",
   "devDependencies": {
     "@types/jest": "^27.4.1",

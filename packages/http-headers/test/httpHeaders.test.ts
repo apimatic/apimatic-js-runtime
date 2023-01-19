@@ -12,11 +12,11 @@ describe('HTTP Headers', () => {
       [
         'should merge disjoint headers map',
         { value1: 'value1', Value2: 'value2' },
-        { value3: 'value2', Value4: 'value4' },
+        { value3: 'value3', Value4: 'value4' },
         {
           value1: 'value1',
           Value2: 'value2',
-          value3: 'value2',
+          value3: 'value3',
           Value4: 'value4',
         },
       ],
@@ -33,7 +33,7 @@ describe('HTTP Headers', () => {
         { VaLue1: 'value2', 'another-header': 'test value' },
       ],
       [
-        'should merge in empty headers',
+        'should merge empty headers',
         {},
         { value1: 'value2' },
         { value1: 'value2' },

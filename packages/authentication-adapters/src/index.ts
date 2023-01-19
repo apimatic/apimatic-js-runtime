@@ -1,5 +1,4 @@
 export * from './basicAuthenticationAdapter';
-export * from './customAuthenticationAdapter';
 export * from './customHeaderAuthenticationAdapter';
 export * from './customQueryAuthenticationAdapter';
 export * from './accessTokenAdapter';

@@ -79,11 +79,6 @@ export function skipEncode<T extends PathTemplatePrimitiveTypes>(
   return new SkipEncode(value);
 }
 
-export interface XmlSerializerInterface {
-  xmlSerialize: (rootName: string, value: unknown) => string;
-  xmlDeserialize: (rootName: string, xmlString: string) => Promise<any>;
-}
-
 export type HttpClientInterface = (
   request: HttpRequest,
   requestOptions?: RequestOptions

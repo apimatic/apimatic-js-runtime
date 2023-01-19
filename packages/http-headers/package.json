@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/http-headers",
-  "author": "Mehdi Jaffery",
+  "author": "APIMatic Ltd.",
   "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE.md",
   "sideEffects": false,
