@@ -30,6 +30,9 @@
     },
     {
       "path": "./packages/authentication-adapters"
+    },
+    {
+      "path": "./packages/oauth-adapters"
     }
   ]
 }
