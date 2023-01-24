@@ -23,7 +23,7 @@
       "path": "./packages/http-headers"
     },
     {
-      "path": "./packages/query-string"
+      "path": "./packages/http-query"
     },
     {
       "path": "./packages/xml-adapter"

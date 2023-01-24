@@ -14,7 +14,7 @@ import {
   HttpResponse,
   RetryConfiguration,
 } from '@apimatic/core-interfaces';
-import { urlEncodeKeyValuePairs } from '@apimatic/query-string';
+import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
 
 export const DEFAULT_AXIOS_CONFIG_OVERRIDES: AxiosRequestConfig = {
   transformResponse: [],
@@ -200,6 +200,17 @@ export interface HttpClientOptions {
   retryConfig: Partial<RetryConfiguration>;
 }
 
+export type AbortErrorConstructor = new (message?: string) => any;
+
+/**
+ * Check whether value is an instance of Blob
+ *
+ * @remark
+ * Reference: https://github.com/sindresorhus/is-blob/blob/master/index.js
+ *
+ * @param value Value to check
+ * @returns True if the value is a Blob instance
+ */
 export function isBlob(value: unknown): value is Blob {
   if (typeof value === 'undefined') {
     return false;
@@ -210,5 +221,3 @@ export function isBlob(value: unknown): value is Blob {
     Object.prototype.toString.call(value) === '[object Blob]'
   );
 }
-
-export type AbortErrorConstructor = new (message?: string) => any;

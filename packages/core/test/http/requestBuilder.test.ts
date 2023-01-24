@@ -1,6 +1,5 @@
 import {
   HttpClientInterface,
-  XmlSerializerInterface,
   createRequestBuilderFactory,
   skipEncode,
 } from '../../src/http/requestBuilder';
@@ -47,7 +46,6 @@ describe('test default request builder behavior with succesful responses', () =>
     (server) => mockBaseURIProvider(server),
     ApiError,
     basicAuth,
-    mockXmlSerializerInterface(),
     retryConfig
   );
 
@@ -614,7 +612,6 @@ describe('test default request builder behavior to test retries', () => {
     (server) => mockBaseURIProvider(server),
     ApiError,
     noneAuthenticationProvider,
-    mockXmlSerializerInterface(),
     retryConfig
   );
 
@@ -684,17 +681,4 @@ function mockBaseURIProvider(server: string | undefined) {
     return 'http://apimaticauth.hopto.org:3000/';
   }
   return '';
-}
-
-function mockXmlSerializerInterface(): XmlSerializerInterface {
-  const xmlSerialize = (_rootName: string, _value: unknown): string => {
-    throw new Error('XML serialization is not available.');
-  };
-  const xmlDeserialize = (
-    _rootName: string,
-    _xmlString: string
-  ): Promise<any> => {
-    throw new Error('XML deserialization is not available.');
-  };
-  return { xmlSerialize, xmlDeserialize };
 }

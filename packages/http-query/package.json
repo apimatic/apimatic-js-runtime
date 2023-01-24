@@ -1,5 +1,5 @@
 {
-  "name": "@apimatic/query-string",
+  "name": "@apimatic/http-query",
   "author": "APIMatic Ltd.",
   "version": "0.1.0",
   "license": "SEE LICENSE IN LICENSE.md",
@@ -71,6 +71,6 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:apimatic/apimatic-js-runtime.git",
-    "directory": "packages/query-string"
+    "directory": "packages/http-query"
   }
 }

@@ -22,26 +22,6 @@ export function sanitizeUrl(url: string): string {
 }
 
 /**
- * Check whether value is an instance of Blob
- *
- * @remark
- * Reference: https://github.com/sindresorhus/is-blob/blob/master/index.js
- *
- * @param value Value to check
- * @returns True if the value is a Blob instance
- */
-export function isBlob(value: unknown): value is Blob {
-  if (typeof value === 'undefined') {
-    return false;
-  }
-
-  return (
-    value instanceof Blob ||
-    Object.prototype.toString.call(value) === '[object Blob]'
-  );
-}
-
-/**
  * Create warning for deprecated method usage.
  *
  * This is called once per deprecated method. If this method is called again

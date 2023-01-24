@@ -1,9 +1,4 @@
-import {
-  sanitizeUrl,
-  updateUserAgent,
-  deprecated,
-  isBlob,
-} from '../src/apiHelper';
+import { sanitizeUrl, updateUserAgent, deprecated } from '../src/apiHelper';
 
 describe('sanitizeUrl', () => {
   it('should throw error on protocol not matching http or https', () => {
@@ -86,19 +81,4 @@ it('should log a warning of deprecation message', () => {
   const deprecationSpy = jest.spyOn(console, 'warn');
   deprecated(methodName, notice);
   expect(deprecationSpy).toHaveBeenCalledWith(expectedResult);
-});
-
-describe('test blob type', () => {
-  test.each([
-    [
-      'test blob type',
-      new Blob([JSON.stringify({ isBlob: true })], {
-        type: 'application/json',
-      }),
-      true,
-    ],
-    ['test undefined type', undefined, false],
-  ])('%s', (_: string, value: unknown, expectedResult: boolean) => {
-    expect(isBlob(value)).toStrictEqual(expectedResult);
-  });
 });

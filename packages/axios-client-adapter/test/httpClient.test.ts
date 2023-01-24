@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEOUT, HttpClient } from '../src/httpClient';
+import { DEFAULT_TIMEOUT, HttpClient, isBlob } from '../src/httpClient';
 import { AxiosRequestConfig, AxiosResponse } from 'axios';
 import {
   HttpRequest,
@@ -224,5 +224,20 @@ describe('HTTP Client', () => {
 
     const httpResponse = httpClient.convertHttpResponse(response);
     expect(httpResponse).toMatchObject(expectedHttpResponse);
+  });
+});
+
+describe('test blob type', () => {
+  test.each([
+    [
+      'test blob type',
+      new Blob([JSON.stringify({ isBlob: true })], {
+        type: 'application/json',
+      }),
+      true,
+    ],
+    ['test undefined type', undefined, false],
+  ])('%s', (_: string, value: unknown, expectedResult: boolean) => {
+    expect(isBlob(value)).toStrictEqual(expectedResult);
   });
 });

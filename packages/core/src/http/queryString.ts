@@ -1,1 +1,1 @@
-export * from '@apimatic/query-string';
+export * from '@apimatic/http-query';
