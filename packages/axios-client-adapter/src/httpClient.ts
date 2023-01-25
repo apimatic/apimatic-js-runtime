@@ -212,7 +212,7 @@ export type AbortErrorConstructor = new (message?: string) => any;
  * @returns True if the value is a Blob instance
  */
 export function isBlob(value: unknown): value is Blob {
-  if (typeof value === 'undefined') {
+  if (typeof Blob === 'undefined') {
     return false;
   }
 

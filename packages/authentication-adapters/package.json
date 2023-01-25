@@ -63,7 +63,7 @@
   },
   "dependencies": {
     "@apimatic/core-interfaces": "^0.1.0",
-    "@apimatic/query-string": "^0.1.0",
+    "@apimatic/http-query": "^0.1.0",
     "@apimatic/http-headers": "^0.1.0",
     "tslib": "^2.1.0"
   },
