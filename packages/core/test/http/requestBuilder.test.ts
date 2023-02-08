@@ -5,7 +5,6 @@ import {
 } from '../../src/http/requestBuilder';
 import {
   AuthenticatorInterface,
-  HttpContext,
   HttpMethod,
   HttpRequest,
   HttpResponse,
@@ -420,7 +419,7 @@ describe('test default request builder behavior with succesful responses', () =>
       await reqBuilder.callAsJson(employeeSchema);
     } catch (error) {
       const expectedResult =
-        "Could not parse body as JSON.\n\nExpected 'r' instead of 'e'";
+        'Could not parse body as JSON.\n\nExpected \'r\' instead of \'e\'';
       expect(error.message).toEqual(expectedResult);
     }
   });
@@ -638,9 +637,24 @@ describe('test default request builder behavior to test retries', () => {
       );
       reqBuilder.baseUrl('default');
       reqBuilder.text('result');
-      await reqBuilder.throwOn(400, MockError);
-      await reqBuilder.throwOn(200, MockError);
-      await reqBuilder.throwOn([400, 500], MockError);
+      await reqBuilder.throwOn(
+        400,
+        true,
+        ApiError,
+        'Global Error template 500: {$statusCode}, accept => {$response.header.content-type}, body => {$response.body}.'
+      );
+      await reqBuilder.throwOn(
+        400,
+        false,
+        ApiError,
+        'Server responded with a bad request'
+      );
+      await reqBuilder.throwOn(
+        [400, 500],
+        true,
+        ApiError,
+        'Global Error template 500: {$statusCode}, accept => {$response.header.content-type}, body => {$response.body}.'
+      );
     } catch (error) {
       expect(error.message).toEqual(
         'Time out error against http method GET and status code 500'
@@ -661,15 +675,6 @@ describe('test default request builder behavior to test retries', () => {
         `Time out error against http method ${request.method} and status code ${statusCode}`
       );
     };
-  }
-
-  class MockError extends Error {
-    constructor(context: HttpContext, ..._args: any[]) {
-      super(_args.join());
-      const { response } = context;
-      response.statusCode = 400;
-      this.message = 'The response returns a 400 request';
-    }
   }
 });
 

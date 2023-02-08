@@ -1,6 +1,6 @@
 import JSONBig from '@apimatic/json-bigint';
 import { FileWrapper } from '@apimatic/file-wrapper';
-import { deprecated, sanitizeUrl } from '../apiHelper';
+import { deprecated, sanitizeUrl, updateErrorMessage } from '../apiHelper';
 import {
   ApiResponse,
   AuthenticatorInterface,
@@ -143,6 +143,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   validateResponse(validate: boolean): void;
   throwOn<ErrorCtorArgs extends any[]>(
     statusCode: number | [number, number],
+    isTemplate: boolean,
     errorConstructor: new (
       response: HttpContext,
       ...args: ErrorCtorArgs
@@ -393,6 +394,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   public throwOn<ErrorCtorArgs extends any[]>(
     statusCode: number | [number, number],
+    isTemplate: boolean = false,
     errorConstructor: new (
       response: HttpContext,
       ...args: ErrorCtorArgs
@@ -401,6 +403,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   ): void {
     this.interceptResponse((context) => {
       const { response } = context;
+      if (isTemplate && args.length > 0) {
+        args[0] = updateErrorMessage(args[0], response);
+      }
       if (
         (typeof statusCode === 'number' &&
           response.statusCode === statusCode) ||

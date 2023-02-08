@@ -1,5 +1,8 @@
+import { HttpResponse } from '@apimatic/core-interfaces';
+import { getHeader } from '@apimatic/http-headers';
 import { detect } from 'detect-browser';
 import warning from 'tiny-warning';
+import Ptr, { EvalError } from '@json-schema-spec/json-pointer';
 
 /**
  * Validates the protocol and removes duplicate forward slashes
@@ -77,4 +80,57 @@ function assertUserAgentDetail(detail: string) {
   if (detail.length > 128) {
     throw new Error('userAgentDetail length exceeds 128 characters limit');
   }
+}
+
+/**
+ * Replace the templated placeholders in error with the platform
+ * related information.
+ * @param message message value to be updated
+ * @returns Updated message value
+ */
+export function updateErrorMessage(
+  message: string,
+  response: HttpResponse
+): string {
+  const placeholders = message.match(/\{\$.*?\}/g);
+  const statusCodePlaceholder = placeholders?.includes('{$statusCode}');
+  const headerPlaceholders = placeholders?.filter((value) =>
+    value.startsWith('{$response.header')
+  );
+  const bodyPlaceholders = placeholders?.filter((value) =>
+    value.startsWith('{$response.body')
+  );
+  if (statusCodePlaceholder) {
+    message = message.replace('{$statusCode}', response.statusCode.toString());
+  }
+  if (headerPlaceholders) {
+    headerPlaceholders.forEach((element) => {
+      const headerName = element.split('.').pop()?.slice(0, -1);
+      if (typeof headerName !== 'undefined') {
+        const value = getHeader(response.headers, headerName) ?? '';
+        message = message.replace(element, value);
+      }
+    });
+  }
+  if (typeof response.body === 'string') {
+    const parsed = JSON.parse(response.body);
+    bodyPlaceholders?.forEach((element) => {
+      if (element.includes('#')) {
+        const nodePointer = element?.split('#').pop()?.slice(0, -1);
+        try {
+          if (nodePointer) {
+            const value = Ptr.parse(nodePointer).eval(parsed);
+            message = message.replace(element, JSON.stringify(value));
+          }
+        } catch (err) {
+          if (err instanceof EvalError) {
+            message = message.replace(element, '');
+          }
+        }
+      } else {
+        message = message.replace(element, JSON.stringify(parsed));
+      }
+    });
+  }
+  return message;
 }
