@@ -36,7 +36,7 @@ jobs:
         run: yarn check-style
         
       - name: Upload coverage reports
-        uses: paambaati/codeclimate-action@v2.2.4
+        uses: paambaati/codeclimate-action@v3.0.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.TEST_REPORTER_ID }}
         with:
