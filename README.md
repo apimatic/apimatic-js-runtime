@@ -15,12 +15,12 @@ They provide common runtime utilities needed by SDKs to make API calls and handl
 | [@apimatic/authentication-adapters](packages/authentication-adapter) | Provides pluggable adapters for different authentication schemes. |
 | [@apimatic/axios-client-adapter](packages/axios-client-adapter) | Axios HTTP Client adapter which can be plugged into @apimatic/core package. |
 | [@apimatic/convert-to-stream](packages/convert-to-stream) | Converts data into streams/blobs. |
-| [@apimatic/core](packages/core) | Provides core http logic, file wrapper, api response and validation error classes. |
+| [@apimatic/core](packages/core) | Provides core http logic of request building, response handling and validation and using api error classes |
 | [@apimatic/core-interfaces](packages/core-interfaces) | Abstraction layer for @apimatic/core. |
 | [@apimatic/file-wrapper](packages/file-wrapper) | Wrapper around the file types and their utilities. |
 | [@apimatic/http-headers](packages/http-headers) | HTTP Headers utilities for apimatic-js-runtime libraries. |
 | [@apimatic/http-query](packages/http-query) | HTTP Query utilities for apimatic-js-runtime libraries |
-| [@apimatic/oauth-adapters](packages/oauth-adapters) | Provides oauth schemes pluggables. |
+| [@apimatic/oauth-adapters](packages/oauth-adapters) | Provides pluggable adapters for OAth 2.0 authentication schemes. |
 | [@apimatic/xml-adapter](packages/xml-adapter) | Provides XML serialization and deserialization utilities for apimatic-js-runtime libraries. |
 
 [ci-badge]: https://github.com/apimatic/apimatic-js-runtime/actions/workflows/main.yml/badge.svg
