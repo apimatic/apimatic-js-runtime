@@ -20,7 +20,7 @@ They provide common runtime utilities needed by SDKs to make API calls and handl
 | [@apimatic/file-wrapper](packages/file-wrapper) | Wrapper around the file types and their utilities. |
 | [@apimatic/http-headers](packages/http-headers) | HTTP Headers utilities for apimatic-js-runtime libraries. |
 | [@apimatic/http-query](packages/http-query) | HTTP Query utilities for apimatic-js-runtime libraries |
-| [@apimatic/oauth-adapters](packages/oauth-adapters) | Provides pluggable adapters for OAth 2.0 authentication schemes. |
+| [@apimatic/oauth-adapters](packages/oauth-adapters) | Provides pluggable adapters for OAuth 2.0 authentication schemes. |
 | [@apimatic/xml-adapter](packages/xml-adapter) | Provides XML serialization and deserialization utilities for apimatic-js-runtime libraries. |
 
 [ci-badge]: https://github.com/apimatic/apimatic-js-runtime/actions/workflows/main.yml/badge.svg
