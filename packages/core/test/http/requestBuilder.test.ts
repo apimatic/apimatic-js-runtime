@@ -419,7 +419,7 @@ describe('test default request builder behavior with succesful responses', () =>
       await reqBuilder.callAsJson(employeeSchema);
     } catch (error) {
       const expectedResult =
-        "Could not parse body as JSON.\n\nExpected 'r' instead of 'e'";
+        'Could not parse body as JSON.\n\nExpected \'r\' instead of \'e\'';
       expect(error.message).toEqual(expectedResult);
     }
   });
@@ -639,20 +639,19 @@ describe('test default request builder behavior to test retries', () => {
       reqBuilder.text('result');
       await reqBuilder.throwOn(
         400,
-        true,
         ApiError,
+        true,
         'Global Error template 500: {$statusCode}, accept => {$response.header.content-type}, body => {$response.body}.'
       );
       await reqBuilder.throwOn(
         400,
-        false,
         ApiError,
         'Server responded with a bad request'
       );
       await reqBuilder.throwOn(
         [400, 500],
-        true,
         ApiError,
+        true,
         'Global Error template 500: {$statusCode}, accept => {$response.header.content-type}, body => {$response.body}.'
       );
     } catch (error) {

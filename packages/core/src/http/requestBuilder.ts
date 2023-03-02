@@ -148,11 +148,19 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   validateResponse(validate: boolean): void;
   throwOn<ErrorCtorArgs extends any[]>(
     statusCode: number | [number, number],
-    isTemplate: boolean,
     errorConstructor: new (
       response: HttpContext,
       ...args: ErrorCtorArgs
     ) => any,
+    ...args: ErrorCtorArgs
+  ): void;
+  throwOn<ErrorCtorArgs extends any[]>(
+    statusCode: number | [number, number],
+    errorConstructor: new (
+      response: HttpContext,
+      ...args: ErrorCtorArgs
+    ) => any,
+    isTemplate: boolean,
     ...args: ErrorCtorArgs
   ): void;
   call(requestOptions?: RequestOptions): Promise<ApiResponse<void>>;
@@ -404,11 +412,19 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   public throwOn<ErrorCtorArgs extends any[]>(
     statusCode: number | [number, number],
-    isTemplate: boolean = false,
     errorConstructor: new (
       response: HttpContext,
       ...args: ErrorCtorArgs
     ) => any,
+    ...args: ErrorCtorArgs
+  ): void;
+  public throwOn<ErrorCtorArgs extends any[]>(
+    statusCode: number | [number, number],
+    errorConstructor: new (
+      response: HttpContext,
+      ...args: ErrorCtorArgs
+    ) => any,
+    isTemplate?: boolean,
     ...args: ErrorCtorArgs
   ): void {
     this.interceptResponse((context) => {

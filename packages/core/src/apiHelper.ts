@@ -123,7 +123,7 @@ function replaceStatusCodePlaceholder(
   statusCodePlaceholder?: boolean
 ): string {
   if (statusCodePlaceholder) {
-    message = message.replace('{$statusCode}', statusCode.toString());
+    return message.replace('{$statusCode}', statusCode.toString());
   }
   return message;
 }
