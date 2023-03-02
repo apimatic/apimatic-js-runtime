@@ -112,6 +112,36 @@ describe('test error template', () => {
       `{"keyC":true,"keyD":34}-[{"key1":123,"key2":false},{"key3":1234,"key4":null}]-"some string"`,
     ],
     [
+      'test error message with response.body known values with # to be replaced',
+      '{$response.body#/object#keyA}-{$response.body#/object#keyB}',
+      {
+        statusCode: 500,
+        body: `{"scalar": 123.2,"object": {"keyA": {"keyC": true, "keyD": 34}, "keyB": "some string", "arrayScalar": ["value1", "value2"], "arrayObjects":[{"key1": 123, "key2": false}, {"key3": 1234, "key4": null}]}}`,
+        headers: { 'content-type': 'text/plain' },
+      } as HttpResponse,
+      `-`,
+    ],
+    [
+      'test error message with response.body known values with #/ to be replaced',
+      '{$response.body#/object#/keyA}-{$response.body#/object#/keyB}',
+      {
+        statusCode: 500,
+        body: `{"scalar": 123.2,"object": {"keyA": {"keyC": true, "keyD": 34}, "keyB": "some string", "arrayScalar": ["value1", "value2"], "arrayObjects":[{"key1": 123, "key2": false}, {"key3": 1234, "key4": null}]}}`,
+        headers: { 'content-type': 'text/plain' },
+      } as HttpResponse,
+      `-`,
+    ],
+    [
+      'test error message with response.body known values with #// to be replaced',
+      '{$response.body#/object#//keyA}-{$response.body#/object#//keyB}',
+      {
+        statusCode: 500,
+        body: `{"scalar": 123.2,"object": {"keyA": {"keyC": true, "keyD": 34}, "keyB": "some string", "arrayScalar": ["value1", "value2"], "arrayObjects":[{"key1": 123, "key2": false}, {"key3": 1234, "key4": null}]}}`,
+        headers: { 'content-type': 'text/plain' },
+      } as HttpResponse,
+      `-`,
+    ],
+    [
       'test error message with response.body unknown values to be replaced',
       '{$response.body#/unknown}-{$response.body#/object/unknown}',
       {
@@ -120,6 +150,46 @@ describe('test error template', () => {
         headers: { 'content-type': 'text/plain' },
       } as HttpResponse,
       `-`,
+    ],
+    [
+      'test error message with response header with missing . to be replaced',
+      'Global Error template 500: {$statusCode}, accept => {$response.headercontent-type}.',
+      {
+        statusCode: 500,
+        body: '{}',
+        headers: { 'content-type': 'text/plain' },
+      } as HttpResponse,
+      `Global Error template 500: 500, accept => .`,
+    ],
+    [
+      'test error message with case insenstive response header to be replaced',
+      'Global Error template 500: {$statusCode}, accept => {$response.header.CONTENT-TYPE}.',
+      {
+        statusCode: 500,
+        body: '{}',
+        headers: { 'content-type': 'text/plain' },
+      } as HttpResponse,
+      `Global Error template 500: 500, accept => text/plain.`,
+    ],
+    [
+      'test error message with response header with spaces in header name to be replaced',
+      'Global Error template 500: {$statusCode}, accept => {$response.header.content - type}.',
+      {
+        statusCode: 500,
+        body: '{}',
+        headers: { 'content - type': 'text/plain' },
+      } as HttpResponse,
+      `Global Error template 500: 500, accept => text/plain.`,
+    ],
+    [
+      'test error message with missing response header to be replaced',
+      'Global Error template 500: {$statusCode}, accept => {$response.header.content-length}.',
+      {
+        statusCode: 500,
+        body: '{}',
+        headers: { 'content - type': 'text/plain' },
+      } as HttpResponse,
+      `Global Error template 500: 500, accept => .`,
     ],
   ])(
     '%s',

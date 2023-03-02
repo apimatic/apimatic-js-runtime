@@ -2,7 +2,7 @@ import { HttpResponse } from '@apimatic/core-interfaces';
 import { getHeader } from '@apimatic/http-headers';
 import { detect } from 'detect-browser';
 import warning from 'tiny-warning';
-import Ptr, { EvalError } from '@json-schema-spec/json-pointer';
+import { JsonPointer } from 'json-ptr';
 
 /**
  * Validates the protocol and removes duplicate forward slashes
@@ -116,11 +116,14 @@ export function updateErrorMessage(
     const parsed = JSON.parse(response.body);
     bodyPlaceholders?.forEach((element) => {
       if (element.includes('#')) {
-        const nodePointer = element?.split('#').pop()?.slice(0, -1);
+        const [, ...rest] = element?.split('#');
+        const nodePointer = rest.join('#')?.slice(0, -1);
         try {
           if (nodePointer) {
-            const value = Ptr.parse(nodePointer).eval(parsed);
-            message = message.replace(element, JSON.stringify(value));
+            const value = JsonPointer.create(nodePointer).get(parsed);
+            const replaced_value =
+              typeof value !== 'undefined' ? JSON.stringify(value) : '';
+            message = message.replace(element, replaced_value);
           }
         } catch (err) {
           if (err instanceof EvalError) {
