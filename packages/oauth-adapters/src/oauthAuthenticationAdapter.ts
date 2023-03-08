@@ -1,4 +1,5 @@
 import { OAuthToken } from './oAuthToken';
+import { OAuthTokenWithAdditionalProperties } from './oAuthTokenWithAdditionalProperties';
 import {
   AuthenticatorInterface,
   passThroughInterceptor,
@@ -8,7 +9,7 @@ import { AUTHORIZATION_HEADER, setHeader } from '@apimatic/http-headers';
 export const requestAuthenticationProvider = ({
   oAuthToken,
 }: {
-  oAuthToken?: OAuthToken;
+  oAuthToken?: OAuthToken | OAuthTokenWithAdditionalProperties;
 }): AuthenticatorInterface<boolean> => {
   return (requiresAuth?: boolean) => {
     if (!requiresAuth) {
@@ -39,11 +40,15 @@ export const requestAuthenticationProvider = ({
   };
 };
 
-function isValid(oAuthToken: OAuthToken | undefined): oAuthToken is OAuthToken {
+function isValid(
+  oAuthToken: OAuthToken | OAuthTokenWithAdditionalProperties | undefined
+): oAuthToken is OAuthToken | OAuthTokenWithAdditionalProperties {
   return typeof oAuthToken !== 'undefined';
 }
 
-function isExpired(oAuthToken: OAuthToken) {
+function isExpired(
+  oAuthToken: OAuthToken | OAuthTokenWithAdditionalProperties
+) {
   return (
     typeof oAuthToken.expiry !== 'undefined' &&
     oAuthToken.expiry < Date.now() / 1000
