@@ -4,14 +4,6 @@ import { HttpRequest } from '../../core-interfaces/src/httpRequest';
 import { HttpResponse } from '../../core-interfaces/src/httpResponse';
 
 describe('test custom header authentication scheme', () => {
-  const config = {
-    timeout: 60000,
-    environment: 'Production',
-    customUrl: 'https://connect.product.com',
-    token: 'Qaws2W233WedeRe4T56G6Vref2',
-    apiKey: 'api-key',
-  };
-
   test.each([
     [
       'should test custom header auth with enabled authentication',
@@ -25,8 +17,7 @@ describe('test custom header authentication scheme', () => {
         body: 'testBody',
         headers: { 'test-header': 'test-value' },
       } as HttpResponse,
-      'Qaws2W233WedeRe4T56G6Vref2',
-      'api-key',
+      { token: 'Qaws2W233WedeRe4T56G6Vref2', 'api-key': 'api-key' },
     ],
     [
       'should test custom header auth with disabled authentication',
@@ -40,8 +31,7 @@ describe('test custom header authentication scheme', () => {
         body: 'testBody',
         headers: { 'test-header': 'test-value' },
       } as HttpResponse,
-      undefined,
-      undefined,
+      { token: 'Qaws2W233WedeRe4T56G6Vref2', 'api-key': 'api-key' },
     ],
   ])(
     '%s',
@@ -50,10 +40,11 @@ describe('test custom header authentication scheme', () => {
       enableAuthentication: boolean,
       request: HttpRequest,
       response: HttpResponse,
-      token: string | undefined,
-      apiKey: string | undefined
+      authParams: Record<string, string>
     ) => {
-      const authenticationProvider = customHeaderAuthenticationProvider(config);
+      const authenticationProvider = customHeaderAuthenticationProvider(
+        authParams
+      );
       const handler = authenticationProvider(enableAuthentication);
       const interceptor = [handler];
       const client = async (req) => {
@@ -61,13 +52,13 @@ describe('test custom header authentication scheme', () => {
       };
       const executor = callHttpInterceptors(interceptor, client);
       const context = await executor(request, undefined);
-      if (token === undefined || apiKey === undefined) {
-        expect(context.request.headers).toBeUndefined();
-      } else {
+      if (enableAuthentication) {
         expect(context.request.headers).toEqual({
           token: 'Qaws2W233WedeRe4T56G6Vref2',
           'api-key': 'api-key',
         });
+      } else {
+        expect(context.request.headers).toBeUndefined();
       }
     }
   );
