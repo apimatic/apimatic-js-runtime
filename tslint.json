@@ -13,7 +13,8 @@
     "interface-name": false,
     "member-ordering": false,
     "no-namespace": false,
-    "no-unused-expression": [true, "allow-fast-null-checks"]
+    "no-unused-expression": [true, "allow-fast-null-checks"],
+    "interface-over-type-literal": false
   },
   "rulesDirectory": [],
   "ignorePaths": ["es/", "umd/", "lib/"]

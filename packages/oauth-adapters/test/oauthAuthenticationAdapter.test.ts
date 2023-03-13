@@ -6,6 +6,7 @@ import {
   HttpResponse,
 } from '../../core-interfaces/src';
 import { OAuthToken } from '../src/oAuthToken';
+import { OAuthTokenWithAdditionalProperties } from '../src/oAuthTokenWithAdditionalProperties';
 
 describe('test oauth request provider', () => {
   it('should test oauth request provider with enabled authentication', async () => {
@@ -62,7 +63,9 @@ describe('test oauth request provider', () => {
         expiresIn: BigInt(100000),
         scope: '[products, orders]',
         expiry: BigInt(Date.now()),
-      } as OAuthToken,
+        hostType: 'Deployment',
+        redirectURI: 'http://apimatic.hopto.org:3000/test/rediret-uri',
+      } as OAuthTokenWithAdditionalProperties,
     };
     const authenticationProvider = requestAuthenticationProvider(token);
     let context: HttpContext = { request, response };
