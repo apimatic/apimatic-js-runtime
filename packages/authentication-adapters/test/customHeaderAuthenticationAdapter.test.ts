@@ -6,11 +6,26 @@ import { HttpResponse } from '../../core-interfaces/src/httpResponse';
 describe('test custom header authentication scheme', () => {
   test.each([
     [
-      'should test custom header auth with enabled authentication',
+      'should test custom header auth with enabled authentication and empty request headers',
       true,
       {
         method: 'GET',
         url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+      } as HttpRequest,
+      {
+        statusCode: 200,
+        body: 'testBody',
+        headers: { 'test-header': 'test-value' },
+      } as HttpResponse,
+      { token: 'Qaws2W233WedeRe4T56G6Vref2', 'api-key': 'api-key' },
+    ],
+    [
+      'should test custom header auth with enabled authentication and existing request headers',
+      true,
+      {
+        method: 'GET',
+        url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+        headers: { 'test-header': 'test-value' },
       } as HttpRequest,
       {
         statusCode: 200,
@@ -42,6 +57,7 @@ describe('test custom header authentication scheme', () => {
       response: HttpResponse,
       authParams: Record<string, string>
     ) => {
+      const headers = request.headers ?? {};
       const authenticationProvider = customHeaderAuthenticationProvider(
         authParams
       );
@@ -53,10 +69,18 @@ describe('test custom header authentication scheme', () => {
       const executor = callHttpInterceptors(interceptor, client);
       const context = await executor(request, undefined);
       if (enableAuthentication) {
-        expect(context.request.headers).toEqual({
-          token: 'Qaws2W233WedeRe4T56G6Vref2',
-          'api-key': 'api-key',
-        });
+        if (Object.keys(headers).length !== 0) {
+          expect(context.request.headers).toEqual({
+            token: 'Qaws2W233WedeRe4T56G6Vref2',
+            'test-header': 'test-value',
+            'api-key': 'api-key',
+          });
+        } else {
+          expect(context.request.headers).toEqual({
+            token: 'Qaws2W233WedeRe4T56G6Vref2',
+            'api-key': 'api-key',
+          });
+        }
       } else {
         expect(context.request.headers).toBeUndefined();
       }

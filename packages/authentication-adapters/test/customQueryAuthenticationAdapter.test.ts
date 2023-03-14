@@ -6,11 +6,25 @@ import { HttpResponse } from '../../core-interfaces/src/httpResponse';
 describe('test custom query authentication scheme', () => {
   test.each([
     [
-      'should test custom query auth with enabled authentication',
+      'should test custom query auth with enabled authentication and empty param list in url',
       true,
       {
         method: 'GET',
         url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+      } as HttpRequest,
+      {
+        statusCode: 200,
+        body: 'testBody',
+        headers: { 'test-header': 'test-value' },
+      } as HttpResponse,
+      { token: 'Qaws2W233WedeRe4T56G6Vref2', 'api-key': 'api-key' },
+    ],
+    [
+      'should test custom query auth with enabled authentication and non empty param list in url',
+      true,
+      {
+        method: 'GET',
+        url: 'http://apimatic.hopto.org:3000/test/requestBuilder?param=1',
       } as HttpRequest,
       {
         statusCode: 200,
@@ -42,6 +56,7 @@ describe('test custom query authentication scheme', () => {
       response: HttpResponse,
       authParams: Record<string, string>
     ) => {
+      const urlHaveParams = request.url.includes('?');
       const authenticationProvider = customQueryAuthenticationProvider(
         authParams
       );
@@ -53,9 +68,15 @@ describe('test custom query authentication scheme', () => {
       const executor = callHttpInterceptors(interceptor, client);
       const context = await executor(request, undefined);
       if (enableAuthentication) {
-        expect(context.request.url).toEqual(
-          'http://apimatic.hopto.org:3000/test/requestBuilder?token=Qaws2W233WedeRe4T56G6Vref2&api-key=api-key'
-        );
+        if (urlHaveParams) {
+          expect(context.request.url).toEqual(
+            'http://apimatic.hopto.org:3000/test/requestBuilder?param=1&token=Qaws2W233WedeRe4T56G6Vref2&api-key=api-key'
+          );
+        } else {
+          expect(context.request.url).toEqual(
+            'http://apimatic.hopto.org:3000/test/requestBuilder?token=Qaws2W233WedeRe4T56G6Vref2&api-key=api-key'
+          );
+        }
       } else {
         expect(context.request.url).toEqual(
           'http://apimatic.hopto.org:3000/test/requestBuilder'
