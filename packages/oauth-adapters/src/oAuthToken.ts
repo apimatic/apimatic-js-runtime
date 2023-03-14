@@ -1,5 +1,4 @@
-import { object, Schema } from '@apimatic/schema';
-import { oauthTokenSchemObject } from './oauthTokenSchema';
+import { bigint, object, optional, Schema, string } from '@apimatic/schema';
 
 /** OAuth 2 Authorization endpoint response */
 export interface OAuthToken {
@@ -23,6 +22,11 @@ export interface OAuthToken {
   refreshToken?: string;
 }
 
-export const oAuthTokenSchema: Schema<OAuthToken> = object(
-  oauthTokenSchemObject
-);
+export const oAuthTokenSchema: Schema<OAuthToken> = object({
+  accessToken: ['access_token', string()],
+  tokenType: ['token_type', string()],
+  expiresIn: ['expires_in', optional(bigint())],
+  scope: ['scope', optional(string())],
+  expiry: ['expiry', optional(bigint())],
+  refreshToken: ['refresh_token', optional(string())],
+});
