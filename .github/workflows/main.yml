@@ -40,6 +40,7 @@ jobs:
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.TEST_REPORTER_ID }}
         with:
+          debug: true
           coverageLocations: |
             ${{github.workspace}}/packages/core/coverage/lcov.info:lcov
             ${{github.workspace}}/packages/authentication-adapters/coverage/lcov.info:lcov
