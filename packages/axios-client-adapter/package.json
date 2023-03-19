@@ -42,7 +42,7 @@
   "devDependencies": {
     "@babel/cli": "^7.10.5",
     "@babel/core": "^7.10.5",
-    "@size-limit/preset-small-lib": "^4.6.0",
+    "@size-limit/preset-small-lib": "^8.2.4",
     "@types/detect-node": "^2.0.0",
     "@types/lodash.flatmap": "^4.5.6",
     "abort-controller": "^3.0.0",
