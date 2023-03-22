@@ -1,12 +1,12 @@
 {
   "name": "@apimatic/convert-to-stream",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "description": "converts the content to stream",
   "main": "lib/index.js",
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
   "engines": {
-    "node": ">=14.15.0"
+    "node": ">=14.15.0 || >=16.0.0"
   },
   "scripts": {
     "clean": "rm -rf lib es umd tsconfig.tsbuildinfo",

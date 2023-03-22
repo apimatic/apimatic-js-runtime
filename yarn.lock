@@ -2,10 +2,52 @@
 # yarn lockfile v1
 
 
-"@apimatic/json-bigint@^1.2.0":
+"@apimatic/convert-to-stream@^0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@apimatic/convert-to-stream/-/convert-to-stream-0.0.2.tgz#7d9942071291011c4576de97619d974face8acaa"
+  integrity sha512-1DRg17ItExfMYsXwjt6WIjJSCgV5RGg3fHPLgYD44/YmiU+7suWj7YfPKKUqmNcnJ/AvMh4lG1+tHrfOT01zXw==
+
+"@apimatic/core-interfaces@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@apimatic/core-interfaces/-/core-interfaces-0.1.0.tgz#d5ea9cc3d24d019d6feff81a3abfc3266e64919e"
+  integrity sha512-rHdAExd/2axvd0JoT6xpMbpKm9qvvT3ccS6G1pjzZTtb3Y4SS3nDyc/jT39mQ1fWAaELqFj1gEjmm10FgAbGRw==
+  dependencies:
+    "@apimatic/file-wrapper" "^0.1.0"
+    tslib "^2.1.0"
+
+"@apimatic/file-wrapper@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@apimatic/file-wrapper/-/file-wrapper-0.1.0.tgz#24b5e8a583df051dd522b4e787edfcda1be5b909"
+  integrity sha512-9YnaUSKODtCJ16ViQAc1QosFBuX/usl4ISJR/o4fPU89rZZahp99f9XInhPBl7vhSKjX88DByt12JtPIiu7LRA==
+  dependencies:
+    tslib "^2.1.0"
+
+"@apimatic/http-headers@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@apimatic/http-headers/-/http-headers-0.1.0.tgz#436134c565cb5c0ea5dd48a965e8238f881462c3"
+  integrity sha512-eZfPP9Hy0E9lzUk7rS6fwIo7HWxeM6k4/YBbjZZ8GdlbfiawuF+84B0oQ6BtTTZvJou2uDXO7KNyL9UbFfE0oA==
+  dependencies:
+    tslib "^2.1.0"
+
+"@apimatic/http-query@^0.1.0":
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/@apimatic/http-query/-/http-query-0.1.0.tgz#7c8bf19e4f7664fc81c109f87cf602e86f5cf5b9"
+  integrity sha512-2qdMaReyHZi50Emo1hyZ7REuxItnx1FFhnSISLY2zOg/5JeBaBNp9/FSZuwD5TSL8osvrIrBCQskuO5L3rBz5w==
+  dependencies:
+    "@apimatic/file-wrapper" "^0.1.0"
+    tslib "^2.1.0"
+
+"@apimatic/json-bigint@^1.0.0", "@apimatic/json-bigint@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@apimatic/json-bigint/-/json-bigint-1.2.0.tgz#05223455ec135976fe7a55456c2d21a3bbde56d8"
   integrity sha512-+bmVzYMdZu0Ya5L+my4FXFUih54OvQA/qlZsFOYdOoostyUuB27UDrVWQs/WVCmS0ADdo5vTU0eeTrrBkHoySw==
+
+"@apimatic/schema@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@apimatic/schema/-/schema-0.6.0.tgz#b239f38c0e0d8509bc29dfbfd98452d71cf68617"
+  integrity sha512-JgG32LQRLphHRWsn64vIt7wD2m+JH46swM6ZrY7g1rdiGiKV5m+A+TBrJKoUUQRmS14azMgePNZY30NauWqzLg==
+  dependencies:
+    tslib "^2.1.0"
 
 "@babel/cli@^7.10.5":
   version "7.13.16"

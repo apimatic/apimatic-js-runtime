@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/oauth-adapters",
   "author": "APIMatic Ltd.",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "license": "MIT",
   "sideEffects": false,
   "main": "lib/index.js",
@@ -17,7 +17,7 @@
     "LICENSE.md"
   ],
   "engines": {
-    "node": ">=14.15.0"
+    "node": ">=14.15.0 || >=16.0.0"
   },
   "scripts": {
     "clean": "rm -rf lib es umd tsconfig.tsbuildinfo",
@@ -62,10 +62,10 @@
     "typescript": "^4.1.2"
   },
   "dependencies": {
-    "@apimatic/schema": "^0.6.0",
-    "@apimatic/core-interfaces": "^0.1.0",
-    "@apimatic/file-wrapper": "^0.1.0",
-    "@apimatic/http-headers": "^0.1.0",
+    "@apimatic/schema": "^1.0.0",
+    "@apimatic/core-interfaces": "^1.0.0",
+    "@apimatic/file-wrapper": "^1.0.0",
+    "@apimatic/http-headers": "^1.0.0",
     "tslib": "^2.1.0"
   },
   "publishConfig": {

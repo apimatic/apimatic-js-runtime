@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/schema",
   "author": "APIMatic Ltd.",
-  "version": "0.6.0",
+  "version": "1.0.0",
   "license": "MIT",
   "sideEffects": false,
   "main": "lib/index.js",
@@ -17,7 +17,7 @@
     "LICENSE.md"
   ],
   "engines": {
-    "node": ">=14.15.0"
+    "node": ">=14.15.0 || >=16.0.0"
   },
   "scripts": {
     "clean": "rm -rf lib es umd tsconfig.tsbuildinfo",
