@@ -9,7 +9,7 @@ describe('test access token authentication scheme', () => {
     environment: 'Production',
     customUrl: 'https://connect.product.com',
     accessToken:
-      'EAAAEFZnu3e-UrU0rgzD0RxbOBCEOYRGgAM1DcZq0B8IGl9iLutT-w8phqs3B8e2',
+      'EAAAEFZ2rlng8y69fd9EAAAAqvvahxso2knEAAAAxlb4r-rqsEAAAA0s2rh210e18mspf4dzga',
   };
 
   it('should test access token auth with enabled authentication', async () => {
@@ -33,7 +33,7 @@ describe('test access token authentication scheme', () => {
     const context = await executor(request, undefined);
     expect(context.request.headers).toEqual({
       authorization:
-        'Bearer EAAAEFZnu3e-UrU0rgzD0RxbOBCEOYRGgAM1DcZq0B8IGl9iLutT-w8phqs3B8e2',
+        'Bearer EAAAEFZ2rlng8y69fd9EAAAAqvvahxso2knEAAAAxlb4r-rqsEAAAA0s2rh210e18mspf4dzga',
     });
   });
 
