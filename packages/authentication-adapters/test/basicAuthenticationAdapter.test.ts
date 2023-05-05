@@ -53,7 +53,10 @@ describe('test basic authentication scheme', () => {
       token: string | undefined,
       apiKey: string | undefined
     ) => {
-      const authenticationProvider = basicAuthenticationProvider(config);
+      const authenticationProvider = basicAuthenticationProvider(
+        config.basicAuthUserName,
+        config.basicAuthPassword
+      );
       const handler = authenticationProvider(enableAuthentication);
       const interceptor = [handler];
       const client = async (req) => {
