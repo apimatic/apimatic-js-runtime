@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/xml-adapter",
   "author": "APIMatic Ltd.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "license": "MIT",
   "sideEffects": false,
   "main": "lib/index.js",
@@ -46,7 +46,7 @@
     "@types/xml2js": "^0.4.11",
     "babel-plugin-annotate-pure-calls": "^0.4.0",
     "jest": "^26.4.2",
-    "jsdom": "^16.5.0",
+    "jsdom": "^19.0.0",
     "jsdom-global": "^3.0.2",
     "lerna-alias": "3.0.3-0",
     "rollup": "^2.79.0",
