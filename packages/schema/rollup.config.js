@@ -1,7 +1,6 @@
 import typescript from 'rollup-plugin-typescript2';
 import { terser } from 'rollup-plugin-terser';
 import rollupReplace from 'rollup-plugin-replace';
-import fileSize from 'rollup-plugin-filesize';
 const packageJson = require('./package.json');
 
 const createTsPlugin = ({ declaration = true, target } = {}) =>
@@ -36,10 +35,6 @@ const createUmdConfig = ({ input, output, target = undefined }) => ({
       format: {
         comments: false
       }
-    }),
-    fileSize({
-      showMinifiedSize: false,
-      showBrotliSize: true
     })
   ]
 });
