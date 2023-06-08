@@ -1,5 +1,5 @@
 import typescript from 'rollup-plugin-typescript2';
-import { terser } from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 import rollupReplace from 'rollup-plugin-replace';
 const packageJson = require('./package.json');
 
