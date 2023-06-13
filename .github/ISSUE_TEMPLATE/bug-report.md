@@ -27,7 +27,7 @@ For example:  0.1.1
 **Environmental details**
 For example:
 OS: Linux
-Runtime version: Typescript 5
+Runtime version: Typescript 14.2
 
 **Additional context**
 Add any other context about the problem here.
