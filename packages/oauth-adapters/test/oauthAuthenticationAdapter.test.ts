@@ -20,16 +20,14 @@ describe('test oauth request provider', () => {
       url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
     };
 
-    const token = {
-      oAuthToken: {
-        accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
-        tokenType: 'Bearer',
-        expiresIn: BigInt(100000),
-        scope: '[products, orders]',
-        expiry: BigInt(Date.now()),
-      } as OAuthToken,
+    const oAuthToken: OAuthToken = {
+      accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+      tokenType: 'Bearer',
+      expiresIn: BigInt(100000),
+      scope: '[products, orders]',
+      expiry: BigInt(Date.now()),
     };
-    const authenticationProvider = requestAuthenticationProvider(token);
+    const authenticationProvider = requestAuthenticationProvider(oAuthToken);
     let context: HttpContext = { request, response };
     const handler = authenticationProvider(true);
     const interceptor = [handler];
@@ -55,16 +53,14 @@ describe('test oauth request provider', () => {
       url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
     };
 
-    const token = {
-      oAuthToken: {
-        accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
-        tokenType: 'Bearer',
-        expiresIn: BigInt(100000),
-        scope: '[products, orders]',
-        expiry: BigInt(Date.now()),
-      } as OAuthToken,
+    const oAuthToken = {
+      accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+      tokenType: 'Bearer',
+      expiresIn: BigInt(100000),
+      scope: '[products, orders]',
+      expiry: BigInt(Date.now()),
     };
-    const authenticationProvider = requestAuthenticationProvider(token);
+    const authenticationProvider = requestAuthenticationProvider(oAuthToken);
     let context: HttpContext = { request, response };
     const handler = authenticationProvider(false);
     const interceptor = [handler];
@@ -88,17 +84,15 @@ describe('test oauth request provider', () => {
       url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
     };
 
-    const token = {
-      oAuthToken: {
-        accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
-        tokenType: 'Bearer',
-        expiresIn: BigInt(100000),
-        scope: '[products, orders]',
-        expiry: BigInt(2000),
-      } as OAuthToken,
+    const oAuthToken = {
+      accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+      tokenType: 'Bearer',
+      expiresIn: BigInt(100000),
+      scope: '[products, orders]',
+      expiry: BigInt(2000),
     };
     try {
-      const authenticationProvider = requestAuthenticationProvider(token);
+      const authenticationProvider = requestAuthenticationProvider(oAuthToken);
       const handler = authenticationProvider(true);
       const interceptor = [handler];
       const client = async (req) => {
@@ -127,11 +121,8 @@ describe('test oauth request provider', () => {
       url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
     };
 
-    const token = {
-      oAuthToken: undefined,
-    };
     try {
-      const authenticationProvider = requestAuthenticationProvider(token);
+      const authenticationProvider = requestAuthenticationProvider();
       let context: HttpContext = { request, response };
       const handler = authenticationProvider(true);
       const interceptor = [handler];

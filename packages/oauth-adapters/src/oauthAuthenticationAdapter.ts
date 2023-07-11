@@ -5,11 +5,9 @@ import {
 } from '@apimatic/core-interfaces';
 import { AUTHORIZATION_HEADER, setHeader } from '@apimatic/http-headers';
 
-export const requestAuthenticationProvider = ({
-  oAuthToken,
-}: {
-  oAuthToken?: OAuthToken;
-}): AuthenticatorInterface<boolean> => {
+export const requestAuthenticationProvider = (
+  oAuthToken?: OAuthToken
+): AuthenticatorInterface<boolean> => {
   return (requiresAuth?: boolean) => {
     if (!requiresAuth) {
       return passThroughInterceptor;
