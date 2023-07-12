@@ -12,30 +12,38 @@ export const requestAuthenticationProvider = (
     if (!requiresAuth) {
       return passThroughInterceptor;
     }
-    if (!isValid(oAuthToken)) {
-      throw new Error(
-        'Client is not authorized. An OAuth token is needed to make API calls.'
-      );
-    }
 
-    if (isExpired(oAuthToken)) {
-      throw new Error(
-        'OAuth token is expired. A valid token is needed to make API calls.'
-      );
-    }
-
-    return (request, options, next) => {
-      request.headers = request.headers ?? {};
-      setHeader(
-        request.headers,
-        AUTHORIZATION_HEADER,
-        `Bearer ${oAuthToken?.accessToken}`
-      );
-
-      return next(request, options);
-    };
+    validateAuthorization(oAuthToken);
+    return createRequestInterceptor(oAuthToken);
   };
 };
+
+function validateAuthorization(oAuthToken?: OAuthToken) {
+  if (!isValid(oAuthToken)) {
+    throw new Error(
+      'Client is not authorized. An OAuth token is needed to make API calls.'
+    );
+  }
+
+  if (isExpired(oAuthToken)) {
+    throw new Error(
+      'OAuth token is expired. A valid token is needed to make API calls.'
+    );
+  }
+}
+
+function createRequestInterceptor(oAuthToken?: OAuthToken) {
+  return (request: any, options: any, next: any) => {
+    request.headers = request.headers ?? {};
+    setHeader(
+      request.headers,
+      AUTHORIZATION_HEADER,
+      `Bearer ${oAuthToken?.accessToken}`
+    );
+
+    return next(request, options);
+  };
+}
 
 function isValid(oAuthToken: OAuthToken | undefined): oAuthToken is OAuthToken {
   return typeof oAuthToken !== 'undefined';
