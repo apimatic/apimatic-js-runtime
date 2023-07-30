@@ -1,4 +1,4 @@
-import { array } from '../../src';
+import { array, object } from '../../src';
 import { validateAndMap, validateAndUnmap } from '../../src/schema';
 import { nullable } from '../../src/types/nullable';
 import { number } from '../../src/types/number';
@@ -132,8 +132,8 @@ describe('OnyOf', () => {
       const input: Color = Color.Green;
       const schema = oneOf([colorSchema, string()]);
       const output = validateAndMap(input, schema);
-      expect(output.errors).toBeFalsy();
-      expect((output as any).result).toStrictEqual(input);
+      expect(output.errors).toBeTruthy();
+      expect((output as any).result).toBeUndefined();
     });
 
     it('should handle oneOf with deep nesting', () => {
@@ -150,6 +150,37 @@ describe('OnyOf', () => {
       const output = validateAndMap(input, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should unmap oneOf with discriminator', () => {
+      const schema1 = object({
+        type: ['type', string()],
+        name: ['name', string()],
+        age: ['age', number()],
+      });
+
+      const schema2 = object({
+        type: ['type', string()],
+        title: ['title', string()],
+        rating: ['rating', string()],
+      });
+
+      const discriminatorMap = {
+        object1: schema1,
+        object2: schema2,
+      };
+
+      const input = {
+        type: 'object1', // The discriminator field value that matches schema1
+        name: 'John',
+        age: 30,
+      };
+
+      const schema = oneOf([schema1, schema2], discriminatorMap, 'type');
+      const output = validateAndMap(input, schema);
+
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input); // The input should be unchanged since it matches schema1
     });
   });
 
@@ -303,6 +334,37 @@ describe('OnyOf', () => {
       const output = validateAndUnmap(input, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should unmap oneOf with discriminator', () => {
+      const schema1 = object({
+        type: ['type', string()],
+        name: ['name', string()],
+        age: ['age', number()],
+      });
+
+      const schema2 = object({
+        type: ['type', string()],
+        title: ['title', string()],
+        rating: ['rating', string()],
+      });
+
+      const discriminatorMap = {
+        object1: schema1,
+        object2: schema2,
+      };
+
+      const input = {
+        type: 'object1', // The discriminator field value that matches schema1
+        name: 'John',
+        age: 30,
+      };
+
+      const schema = oneOf([schema1, schema2], discriminatorMap, 'type');
+      const output = validateAndUnmap(input, schema);
+
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input); // The input should be unchanged since it matches schema1
     });
   });
 });
