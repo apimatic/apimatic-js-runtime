@@ -100,6 +100,10 @@ export function isNumericString(value: unknown): value is number | string {
   );
 }
 
+export function isNumeric(value: unknown): value is number {
+  return typeof value === 'number';
+}
+
 export function coerceNumericStringToNumber(value: number | string): number {
   return typeof value === 'number' ? value : +value;
 }

@@ -13,11 +13,17 @@ function isValidBigIntValue(value: unknown): value is bigint {
   );
 }
 
+function isValidStrictBigIntValue(value: unknown): value is bigint {
+  return typeof value === 'bigint';
+}
 /** Create a bigint schema */
-export function bigint(): Schema<bigint, bigint> {
+export function bigint(strict: boolean = false): Schema<bigint, bigint> {
+  const validator = strict
+    ? toValidator(isValidStrictBigIntValue)
+    : toValidator(isValidBigIntValue);
   return createSymmetricSchema({
     type: 'bigint',
-    validate: toValidator(isValidBigIntValue),
+    validate: validator,
     map: coerceStringOrNumberToBigInt as (arg: bigint) => bigint,
   });
 }

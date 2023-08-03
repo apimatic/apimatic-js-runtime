@@ -9,6 +9,30 @@ describe('bigint', () => {
       expect((output as any).result).toBe(input);
     });
 
+    it('should not accept number in bigint constructor', () => {
+      const input = 9532532599932;
+      const schema = bigint(true);
+      const output = validateAndMap(input as any, schema);
+      expect(output.errors).toHaveLength(1);
+      expect(output.errors).toMatchInlineSnapshot(`
+        Array [
+          Object {
+            "branch": Array [
+              9532532599932,
+            ],
+            "message": "Expected value to be of type 'bigint' but found 'number'.
+
+        Given value: 9532532599932
+        Type: 'number'
+        Expected type: 'bigint'",
+            "path": Array [],
+            "type": "bigint",
+            "value": 9532532599932,
+          },
+        ]
+      `);
+    });
+
     it('should accept negative number bigint constructor', () => {
       const input = BigInt(-9532532599932);
       const schema = bigint();
@@ -23,6 +47,30 @@ describe('bigint', () => {
       const output = validateAndMap(input, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toBe(input);
+    });
+
+    it('should not accept string in bigint constructor', () => {
+      const input = '9532532599932222222';
+      const schema = bigint(true);
+      const output = validateAndMap(input as any, schema);
+      expect(output.errors).toHaveLength(1);
+      expect(output.errors).toMatchInlineSnapshot(`
+        Array [
+          Object {
+            "branch": Array [
+              "9532532599932222222",
+            ],
+            "message": "Expected value to be of type 'bigint' but found 'string'.
+
+        Given value: \\"9532532599932222222\\"
+        Type: 'string'
+        Expected type: 'bigint'",
+            "path": Array [],
+            "type": "bigint",
+            "value": "9532532599932222222",
+          },
+        ]
+      `);
     });
 
     it('should accept negative numeric string in bigint constructor', () => {

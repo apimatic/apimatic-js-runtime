@@ -18,6 +18,30 @@ describe('Number', () => {
       expect((output as any).result).toBe(123123);
     });
 
+    it('should not accept numeric string', () => {
+      const input = '123123';
+      const schema = number(true);
+      const output = validateAndMap(input as any, schema);
+      expect(output.errors).toHaveLength(1);
+      expect(output.errors).toMatchInlineSnapshot(`
+        Array [
+          Object {
+            "branch": Array [
+              "123123",
+            ],
+            "message": "Expected value to be of type 'number' but found 'string'.
+
+        Given value: \\"123123\\"
+        Type: 'string'
+        Expected type: 'number'",
+            "path": Array [],
+            "type": "number",
+            "value": "123123",
+          },
+        ]
+      `);
+    });
+
     it('should fail on other types', () => {
       const input = true;
       const schema = number();
