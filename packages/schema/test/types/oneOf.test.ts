@@ -19,6 +19,7 @@ import {
 } from '../types';
 import { dict } from '../../src/types/dict';
 import { stringEnum } from '../../src/types/stringEnum';
+import { literal } from '../../src/types/literal';
 
 describe('OnyOf', () => {
   describe('Mapping', () => {
@@ -152,7 +153,7 @@ describe('OnyOf', () => {
       expect((output as any).result).toStrictEqual(input);
     });
 
-    it('should unmap oneOf with discriminator', () => {
+    it('should map oneOf with discriminator', () => {
       const schema1 = object({
         type: ['type', string()],
         name: ['name', string()],
@@ -161,6 +162,37 @@ describe('OnyOf', () => {
 
       const schema2 = object({
         type: ['type', string()],
+        title: ['title', string()],
+        rating: ['rating', string()],
+      });
+
+      const discriminatorMap = {
+        object1: schema1,
+        object2: schema2,
+      };
+
+      const input = {
+        type: 'object1', // The discriminator field value that matches schema1
+        name: 'John',
+        age: 30,
+      };
+
+      const schema = oneOf([schema1, schema2], discriminatorMap, 'type');
+      const output = validateAndMap(input, schema);
+
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input); // The input should be unchanged since it matches schema1
+    });
+
+    it('should map oneOf with discriminator literal', () => {
+      const schema1 = object({
+        type: ['type', number()],
+        name: ['name', string()],
+        age: ['age', number()],
+      });
+
+      const schema2 = object({
+        type: ['type', literal('object2')],
         title: ['title', string()],
         rating: ['rating', string()],
       });
@@ -325,7 +357,7 @@ describe('OnyOf', () => {
       expect((output as any).result).toStrictEqual(input);
     });
 
-    it('should unmap oneOf with nested dictionary types', () => {
+    it('should unmap oneOf with discriminator oneOf types', () => {
       const input: Record<string, Record<string, string | number>> = {
         person1: { name: 'John', age: 30 },
         person2: { name: 'Jane', age: 25 },
