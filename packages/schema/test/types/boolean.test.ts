@@ -34,62 +34,6 @@ describe('Boolean', () => {
       expect((output as any).result).toBe(false);
     });
 
-    it('should not accept string "true"', () => {
-      const input = 'true';
-      const schema = boolean(true);
-      const output = validateAndMap(input as any, schema);
-      expect(output.errors).toHaveLength(1);
-      expect(output.errors).toMatchInlineSnapshot(`
-        Array [
-          Object {
-            "branch": Array [
-              "true",
-            ],
-            "message": "Expected value to be of type 'boolean' but found 'string'.
-
-        Given value: \\"true\\"
-        Type: 'string'
-        Expected type: 'boolean'",
-            "path": Array [],
-            "type": "boolean",
-            "value": "true",
-          },
-        ]
-      `);
-    });
-
-    it('should not accept string "false"', () => {
-      const input = 'false';
-      const schema = boolean(true);
-      const output = validateAndMap(input as any, schema);
-      expect(output.errors).toHaveLength(1);
-      expect(output.errors).toMatchInlineSnapshot(`
-        Array [
-          Object {
-            "branch": Array [
-              "false",
-            ],
-            "message": "Expected value to be of type 'boolean' but found 'string'.
-
-        Given value: \\"false\\"
-        Type: 'string'
-        Expected type: 'boolean'",
-            "path": Array [],
-            "type": "boolean",
-            "value": "false",
-          },
-        ]
-      `);
-    });
-
-    it('should accept string "false"', () => {
-      const input = 'false';
-      const schema = boolean();
-      const output = validateAndMap(input as any, schema);
-      expect(output.errors).toBeFalsy();
-      expect((output as any).result).toBe(false);
-    });
-
     it('should fail on other types', () => {
       const input = 123123;
       const schema = boolean();

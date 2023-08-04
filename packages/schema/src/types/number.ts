@@ -2,19 +2,15 @@ import { Schema } from '../schema';
 import {
   coerceNumericStringToNumber,
   createSymmetricSchema,
-  isNumeric,
   isNumericString,
   toValidator,
 } from '../utils';
 
 /** Create a number schema. */
-export function number(strict: boolean = false): Schema<number, number> {
-  const validator = strict
-    ? toValidator(isNumeric)
-    : toValidator(isNumericString);
+export function number(): Schema<number, number> {
   return createSymmetricSchema({
     type: 'number',
-    validate: validator,
+    validate: toValidator(isNumericString),
     map: coerceNumericStringToNumber as (arg: number) => number,
   });
 }
