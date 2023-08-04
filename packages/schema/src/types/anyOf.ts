@@ -172,9 +172,7 @@ function validateSchemas<T extends Array<Schema<any, any>>>(
   if (schemas.length > 0) {
     return [];
   } else {
-    return ctxt.fail(
-      'We could not match any acceptable types against the given JSON.'
-    );
+    return ctxt.fail('Could not match against any acceptable type.');
   }
 }
 

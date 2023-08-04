@@ -173,12 +173,10 @@ function validateSchemas<T extends Array<Schema<any, any>>>(
   if (schemas.length === 1) {
     return [];
   } else if (schemas.length === 0) {
-    return ctxt.fail(
-      'We could not match any acceptable types against the given JSON.'
-    );
+    return ctxt.fail('Could not match against any acceptable type.');
   } else {
     return ctxt.fail(
-      `There are more than one acceptable type matched against the given JSON. Matched multiple schemas: ${schemas
+      `Matched more than one type. Matched types include: ${schemas
         .map((schema) => schema.type())
         .join(', ')}`
     );
