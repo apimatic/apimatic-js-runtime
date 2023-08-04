@@ -152,7 +152,7 @@ describe('OnyOf', () => {
       expect((output as any).result).toStrictEqual(input);
     });
 
-    it('should unmap oneOf with discriminator', () => {
+    it('should map oneOf with discriminator', () => {
       const schema1 = object({
         type: ['type', string()],
         name: ['name', string()],
@@ -325,7 +325,7 @@ describe('OnyOf', () => {
       expect((output as any).result).toStrictEqual(input);
     });
 
-    it('should unmap oneOf with nested dictionary types', () => {
+    it('should unmap oneOf with discriminator oneOf types', () => {
       const input: Record<string, Record<string, string | number>> = {
         person1: { name: 'John', age: 30 },
         person2: { name: 'Jane', age: 25 },

@@ -1,12 +1,9 @@
-// Remove typed param
-// Give name to the types
-// Errors
-
-import { Schema, SchemaValidationError } from '../schema';
+import { Schema, SchemaContextCreator } from '../schema';
 
 type SchemaType<T extends Schema<any, any>> = T extends Schema<infer U, any>
   ? U
   : never;
+
 type ArraySchemaType<
   T extends Array<Schema<any, any>>
 > = T[number] extends Schema<any, any> ? SchemaType<T[number]> : never;
@@ -47,27 +44,7 @@ function createOneOfWithDiscriminator<T extends Array<Schema<any, any>>>(
           ctxt
         );
       }
-
-      const matchedSchemas: Array<Schema<any, any>> = [];
-
-      for (const schema of schemas) {
-        const validationErrors = schema.validateBeforeMap(value, ctxt);
-        if (validationErrors.length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-
-      if (matchedSchemas.length === 1) {
-        return [];
-      } else if (matchedSchemas.length === 0) {
-        return ctxt.fail('Did not match any schema.');
-      } else {
-        return ctxt.fail(
-          `Matched multiple schemas: ${matchedSchemas
-            .map((schema) => schema.type())
-            .join(', ')}`
-        );
-      }
+      return matchAndValidateBeforeMap(schemas, value, ctxt);
     },
     validateBeforeUnmap: (value, ctxt) => {
       const discriminatorValue =
@@ -78,63 +55,21 @@ function createOneOfWithDiscriminator<T extends Array<Schema<any, any>>>(
           ctxt
         );
       }
-
-      const matchedSchemas: Array<Schema<any, any>> = [];
-
-      for (const schema of schemas) {
-        const validationErrors = schema.validateBeforeUnmap(value, ctxt);
-        if (validationErrors.length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-
-      if (matchedSchemas.length === 1) {
-        return [];
-      } else if (matchedSchemas.length === 0) {
-        return ctxt.fail('Did not match any schema.');
-      } else {
-        return ctxt.fail(
-          `Matched multiple schemas: ${matchedSchemas
-            .map((schema) => schema.type())
-            .join(', ')}`
-        );
-      }
+      return matchAndValidateBeforeUnmap(schemas, value, ctxt);
     },
     map: (value, ctxt) => {
       const discriminatorValue = value && value[discriminatorField];
       if (discriminatorValue && discriminatorMap[discriminatorValue]) {
         return discriminatorMap[discriminatorValue].map(value, ctxt);
       }
-
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      for (const schema of schemas) {
-        if (schema.validateBeforeMap(value, ctxt).length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-      if (matchedSchemas.length === 1) {
-        return matchedSchemas[0].map(value, ctxt);
-      } else {
-        return undefined;
-      }
+      return matchAndMap(schemas, value, ctxt);
     },
     unmap: (value, ctxt) => {
       const discriminatorValue = value && value[discriminatorField];
       if (discriminatorValue && discriminatorMap[discriminatorValue]) {
         return discriminatorMap[discriminatorValue].unmap(value, ctxt);
       }
-
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      for (const schema of schemas) {
-        if (schema.validateBeforeUnmap(value, ctxt).length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-      if (matchedSchemas.length === 1) {
-        return matchedSchemas[0].unmap(value, ctxt);
-      } else {
-        return undefined;
-      }
+      return matchAndUnmap(schemas, value, ctxt);
     },
     validateBeforeMapXml: (value, ctxt) => {
       const discriminatorValue =
@@ -145,67 +80,21 @@ function createOneOfWithDiscriminator<T extends Array<Schema<any, any>>>(
           ctxt
         );
       }
-
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      const errors: SchemaValidationError[] = [];
-
-      for (const schema of schemas) {
-        const validationErrors = schema.validateBeforeMapXml(value, ctxt);
-        if (validationErrors.length === 0) {
-          matchedSchemas.push(schema);
-        } else {
-          // The schema didn't match, add the validation errors to the main error list
-          errors.push(...validationErrors);
-        }
-      }
-
-      if (matchedSchemas.length === 1) {
-        return [];
-      } else if (matchedSchemas.length === 0) {
-        return ctxt.fail('Did not match any schema.');
-      } else {
-        return ctxt.fail(
-          `Matched multiple schemas: ${matchedSchemas
-            .map((schema) => schema.type())
-            .join(', ')}`
-        );
-      }
+      return matchAndValidateBeforeMapXml(schemas, value, ctxt);
     },
     mapXml: (value, ctxt) => {
       const discriminatorValue = value && value[discriminatorField];
       if (discriminatorValue && discriminatorMap[discriminatorValue]) {
         return discriminatorMap[discriminatorValue].mapXml(value, ctxt);
       }
-
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      for (const schema of schemas) {
-        if (schema.validateBeforeMapXml(value, ctxt).length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-      if (matchedSchemas.length === 1) {
-        return matchedSchemas[0].mapXml(value, ctxt);
-      } else {
-        return undefined;
-      }
+      return matchAndMapXml(schemas, value, ctxt);
     },
     unmapXml: (value, ctxt) => {
       const discriminatorValue = value && value[discriminatorField];
       if (discriminatorValue && discriminatorMap[discriminatorValue]) {
         return discriminatorMap[discriminatorValue].unmapXml(value, ctxt);
       }
-
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      for (const schema of schemas) {
-        if (schema.validateBeforeMapXml(value, ctxt).length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-      if (matchedSchemas.length === 1) {
-        return matchedSchemas[0].unmapXml(value, ctxt);
-      } else {
-        return undefined;
-      }
+      return matchAndUnmapXml(schemas, value, ctxt);
     },
   };
 }
@@ -215,304 +104,145 @@ function createOneOfWithoutDiscriminator<T extends Array<Schema<any, any>>>(
 ): Schema<ArraySchemaType<T>> {
   return {
     type: () => `OneOf<${schemas.map((schema) => schema.type()).join(' | ')}>`,
-    validateBeforeMap: (value, ctxt) => {
-      const matchedSchemas: Array<Schema<any, any>> = [];
-
-      for (const schema of schemas) {
-        const validationErrors = schema.validateBeforeMap(value, ctxt);
-        if (validationErrors.length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-
-      if (matchedSchemas.length === 1) {
-        return [];
-      } else if (matchedSchemas.length === 0) {
-        return ctxt.fail('Did not match any schema.');
-      } else {
-        return ctxt.fail(
-          `Matched multiple schemas: ${matchedSchemas
-            .map((schema) => schema.type())
-            .join(', ')}`
-        );
-      }
-    },
-    validateBeforeUnmap: (value, ctxt) => {
-      const matchedSchemas: Array<Schema<any, any>> = [];
-
-      for (const schema of schemas) {
-        const validationErrors = schema.validateBeforeUnmap(value, ctxt);
-        if (validationErrors.length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-
-      if (matchedSchemas.length === 1) {
-        return [];
-      } else if (matchedSchemas.length === 0) {
-        return ctxt.fail('Did not match any schema.');
-      } else {
-        return ctxt.fail(
-          `Matched multiple schemas: ${matchedSchemas
-            .map((schema) => schema.type())
-            .join(', ')}`
-        );
-      }
-    },
-    map: (value, ctxt) => {
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      for (const schema of schemas) {
-        if (schema.validateBeforeMap(value, ctxt).length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-      if (matchedSchemas.length === 1) {
-        return matchedSchemas[0].map(value, ctxt);
-      } else {
-        return undefined;
-      }
-    },
-    unmap: (value, ctxt) => {
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      for (const schema of schemas) {
-        if (schema.validateBeforeUnmap(value, ctxt).length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-      if (matchedSchemas.length === 1) {
-        return matchedSchemas[0].unmap(value, ctxt);
-      } else {
-        return undefined;
-      }
-    },
-    validateBeforeMapXml: (value, ctxt) => {
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      const errors: SchemaValidationError[] = [];
-
-      for (const schema of schemas) {
-        const validationErrors = schema.validateBeforeMapXml(value, ctxt);
-        if (validationErrors.length === 0) {
-          matchedSchemas.push(schema);
-        } else {
-          // The schema didn't match, add the validation errors to the main error list
-          errors.push(...validationErrors);
-        }
-      }
-
-      if (matchedSchemas.length === 1) {
-        return [];
-      } else if (matchedSchemas.length === 0) {
-        return ctxt.fail('Did not match any schema.');
-      } else {
-        return ctxt.fail(
-          `Matched multiple schemas: ${matchedSchemas
-            .map((schema) => schema.type())
-            .join(', ')}`
-        );
-      }
-    },
-    mapXml: (value, ctxt) => {
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      for (const schema of schemas) {
-        if (schema.validateBeforeMapXml(value, ctxt).length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-      if (matchedSchemas.length === 1) {
-        return matchedSchemas[0].mapXml(value, ctxt);
-      } else {
-        return undefined;
-      }
-    },
-    unmapXml: (value, ctxt) => {
-      const matchedSchemas: Array<Schema<any, any>> = [];
-      for (const schema of schemas) {
-        if (schema.validateBeforeMapXml(value, ctxt).length === 0) {
-          matchedSchemas.push(schema);
-        }
-      }
-      if (matchedSchemas.length === 1) {
-        return matchedSchemas[0].unmapXml(value, ctxt);
-      } else {
-        return undefined;
-      }
-    },
+    validateBeforeMap: (value, ctxt) =>
+      matchAndValidateBeforeMap(schemas, value, ctxt),
+    validateBeforeUnmap: (value, ctxt) =>
+      matchAndValidateBeforeUnmap(schemas, value, ctxt),
+    map: (value, ctxt) => matchAndMap(schemas, value, ctxt),
+    unmap: (value, ctxt) => matchAndUnmap(schemas, value, ctxt),
+    validateBeforeMapXml: (value, ctxt) =>
+      matchAndValidateBeforeMapXml(schemas, value, ctxt),
+    mapXml: (value, ctxt) => matchAndMapXml(schemas, value, ctxt),
+    unmapXml: (value, ctxt) => matchAndUnmapXml(schemas, value, ctxt),
   };
 }
 
-// import { Schema, SchemaValidationError } from '../schema';
+function matchAndValidateBeforeMap<T extends Array<Schema<any, any>>>(
+  schemas: T,
+  value: unknown,
+  ctxt: SchemaContextCreator
+) {
+  const matchedSchemas: Array<Schema<any, any>> = [];
 
-// export function oneOf<T extends any[]>(
-//   ...schemas: { [K in keyof T]: Schema<T[K], any> }
-// ): Schema<T[number], any> {
-//   return {
-//     type: () => `OneOf<${schemas.map((schema) => schema.type()).join(', ')}>`,
+  for (const schema of schemas) {
+    const validationErrors = schema.validateBeforeMap(value, ctxt);
+    if (validationErrors.length === 0) {
+      matchedSchemas.push(schema);
+    }
+  }
+  return validateSchemas(matchedSchemas, ctxt);
+}
 
-//     validateBeforeMap: (value, ctxt) => {
-//       let matchingSchemas = 0;
-//       const validationErrors: SchemaValidationError[] = [];
+function matchAndValidateBeforeUnmap<T extends Array<Schema<any, any>>>(
+  schemas: T,
+  value: unknown,
+  ctxt: SchemaContextCreator
+) {
+  const matchedSchemas: Array<Schema<any, any>> = [];
 
-//       for (const schema of schemas) {
-//         const validationResult = schema.validateBeforeMap(value, ctxt);
+  for (const schema of schemas) {
+    const validationErrors = schema.validateBeforeUnmap(value, ctxt);
+    if (validationErrors.length === 0) {
+      matchedSchemas.push(schema);
+    }
+  }
+  return validateSchemas(matchedSchemas, ctxt);
+}
 
-//         if (validationResult.length === 0) {
-//           matchingSchemas++;
-//         } else {
-//           validationErrors.push(...validationResult);
-//         }
-//       }
+function matchAndValidateBeforeMapXml<T extends Array<Schema<any, any>>>(
+  schemas: T,
+  value: unknown,
+  ctxt: SchemaContextCreator
+) {
+  const matchedSchemas: Array<Schema<any, any>> = [];
 
-//       if (matchingSchemas !== 1) {
-//         return ctxt.fail(
-//           `The value must match exactly one of the following schemas: ${schemas
-//             .map((schema) => schema.type())
-//             .join(', ')}`
-//         );
-//       }
+  for (const schema of schemas) {
+    const validationErrors = schema.validateBeforeMapXml(value, ctxt);
+    if (validationErrors.length === 0) {
+      matchedSchemas.push(schema);
+    }
+  }
 
-//       return [];
-//     },
+  return validateSchemas(matchedSchemas, ctxt);
+}
 
-//     validateBeforeUnmap: (value, ctxt) => {
-//       let matchingSchemas = 0;
-//       const validationErrors: SchemaValidationError[] = [];
+function validateSchemas<T extends Array<Schema<any, any>>>(
+  schemas: T,
+  ctxt: SchemaContextCreator
+) {
+  if (schemas.length === 1) {
+    return [];
+  } else if (schemas.length === 0) {
+    return ctxt.fail('Could not match against any acceptable type.');
+  } else {
+    return ctxt.fail(
+      `Matched more than one type. Matched types include: ${schemas
+        .map((schema) => schema.type())
+        .join(', ')}`
+    );
+  }
+}
 
-//       for (const schema of schemas) {
-//         const validationResult = schema.validateBeforeUnmap(value, ctxt);
+function matchAndMap<T extends Array<Schema<any, any>>>(
+  schemas: T,
+  value: any,
+  ctxt: SchemaContextCreator
+) {
+  const matchedSchemas: Array<Schema<any, any>> = [];
+  for (const schema of schemas) {
+    if (schema.validateBeforeMap(value, ctxt).length === 0) {
+      matchedSchemas.push(schema);
+    }
+  }
+  return matchedSchemas.length === 1
+    ? matchedSchemas[0].map(value, ctxt)
+    : undefined;
+}
 
-//         if (validationResult.length === 0) {
-//           matchingSchemas++;
-//         } else {
-//           validationErrors.push(...validationResult);
-//         }
-//       }
+function matchAndUnmap<T extends Array<Schema<any, any>>>(
+  schemas: T,
+  value: any,
+  ctxt: SchemaContextCreator
+) {
+  const matchedSchemas: Array<Schema<any, any>> = [];
+  for (const schema of schemas) {
+    if (schema.validateBeforeUnmap(value, ctxt).length === 0) {
+      matchedSchemas.push(schema);
+    }
+  }
+  return matchedSchemas.length === 1
+    ? matchedSchemas[0].unmap(value, ctxt)
+    : undefined;
+}
 
-//       if (matchingSchemas !== 1) {
-//         return ctxt.fail(
-//           `The value must match exactly one of the following schemas: ${schemas
-//             .map((schema) => schema.type())
-//             .join(', ')}`
-//         );
-//       }
+function matchAndMapXml<T extends Array<Schema<any, any>>>(
+  schemas: T,
+  value: any,
+  ctxt: SchemaContextCreator
+) {
+  const matchedSchemas: Array<Schema<any, any>> = [];
+  for (const schema of schemas) {
+    if (schema.validateBeforeMapXml(value, ctxt).length === 0) {
+      matchedSchemas.push(schema);
+    }
+  }
+  return matchedSchemas.length === 1
+    ? matchedSchemas[0].mapXml(value, ctxt)
+    : undefined;
+}
 
-//       return [];
-//     },
-
-//     map: (value, ctxt) => {
-//       let matchingSchemas = 0;
-//       let mappedValue;
-
-//       for (const schema of schemas) {
-//         mappedValue = schema.map(value, ctxt);
-
-//         if (mappedValue !== undefined) {
-//           matchingSchemas++;
-//         }
-//       }
-
-//       if (matchingSchemas !== 1) {
-//         return ctxt.fail(
-//           `The value must match exactly one of the following schemas: ${schemas
-//             .map((schema) => schema.type())
-//             .join(', ')}`
-//         );
-//       }
-
-//       return mappedValue;
-//     },
-
-//     unmap: (value, ctxt) => {
-//       let matchingSchemas = 0;
-//       let unmappedValue;
-
-//       for (const schema of schemas) {
-//         unmappedValue = schema.unmap(value, ctxt);
-
-//         if (unmappedValue !== undefined) {
-//           matchingSchemas++;
-//         }
-//       }
-
-//       if (matchingSchemas !== 1) {
-//         return ctxt.fail(
-//           `The value must match exactly one of the following schemas: ${schemas
-//             .map((schema) => schema.type())
-//             .join(', ')}`
-//         );
-//       }
-
-//       return unmappedValue;
-//     },
-
-//     validateBeforeMapXml: (value, ctxt) => {
-//       let matchingSchemas = 0;
-//       const validationErrors: SchemaValidationError[] = [];
-
-//       for (const schema of schemas) {
-//         const validationResult = schema.validateBeforeMapXml(value, ctxt);
-
-//         if (validationResult.length === 0) {
-//           matchingSchemas++;
-//         } else {
-//           validationErrors.push(...validationResult);
-//         }
-//       }
-
-//       if (matchingSchemas !== 1) {
-//         return ctxt.fail(
-//           `The value must match exactly one of the following schemas: ${schemas
-//             .map((schema) => schema.type())
-//             .join(', ')}`
-//         );
-//       }
-
-//       return [];
-//     },
-
-//     mapXml: (value, ctxt) => {
-//       let matchingSchemas = 0;
-//       let mappedValue;
-
-//       for (const schema of schemas) {
-//         mappedValue = schema.mapXml(value, ctxt);
-
-//         if (mappedValue !== undefined) {
-//           matchingSchemas++;
-//         }
-//       }
-
-//       if (matchingSchemas !== 1) {
-//         return ctxt.fail(
-//           `The value must match exactly one of the following schemas: ${schemas
-//             .map((schema) => schema.type())
-//             .join(', ')}`
-//         );
-//       }
-
-//       return mappedValue;
-//     },
-
-//     unmapXml: (value, ctxt) => {
-//       let matchingSchemas = 0;
-//       let unmappedValue;
-
-//       for (const schema of schemas) {
-//         unmappedValue = schema.unmapXml(value, ctxt);
-
-//         if (unmappedValue !== undefined) {
-//           matchingSchemas++;
-//         }
-//       }
-
-//       if (matchingSchemas !== 1) {
-//         return ctxt.fail(
-//           `The value must match exactly one of the following schemas: ${schemas
-//             .map((schema) => schema.type())
-//             .join(', ')}`
-//         );
-//       }
-
-//       return unmappedValue;
-//     },
-//   };
-// }
+function matchAndUnmapXml<T extends Array<Schema<any, any>>>(
+  schemas: T,
+  value: any,
+  ctxt: SchemaContextCreator
+) {
+  const matchedSchemas: Array<Schema<any, any>> = [];
+  for (const schema of schemas) {
+    if (schema.validateBeforeMapXml(value, ctxt).length === 0) {
+      matchedSchemas.push(schema);
+    }
+  }
+  return matchedSchemas.length === 1
+    ? matchedSchemas[0].unmapXml(value, ctxt)
+    : undefined;
+}
