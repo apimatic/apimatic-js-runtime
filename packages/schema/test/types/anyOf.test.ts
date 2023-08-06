@@ -6,6 +6,7 @@ import { string } from '../../src/types/string';
 import { Boss, bossSchema } from '../bossSchema';
 import { employeeSchema } from '../employeeSchema';
 import { Human, Animal, animalSchema, humanSchema } from '../types';
+import { boolean } from '../../src/types/boolean';
 describe('AnyOf', () => {
   describe('Mapping', () => {
     it('should accept anyOf primitives', () => {
@@ -54,9 +55,53 @@ describe('AnyOf', () => {
     });
 
     it('should map anyOf with inner array types', () => {
-      // Array(AnyOf(string, number))
+      // AnyOf(Array(string, number))
       const input: boolean[] | string[] = ['apple', 'orange'];
       const schema = anyOf([array(string()), array(number())]);
+      const output = validateAndMap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should map anyOf with array of map types', () => {
+      // AnyOf(Array(dict(boolean)), Array(dict(number)))
+      const input:
+        | Array<Record<string, number>>
+        | Array<Record<string, boolean>> = [{ keyA: 1 }, { keyB: 2 }];
+      const schema = anyOf([array(dict(boolean())), array(dict(number()))]);
+      const output = validateAndMap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should map anyOf with map of array types', () => {
+      // AnyOf(dict(array(boolean)), dict(array(number)))
+      const input: Record<string, number[]> | Record<string, boolean[]> = {
+        keyA: [true, false],
+      };
+      const schema = anyOf([dict(array(boolean())), dict(array(number()))]);
+      const output = validateAndMap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should map anyOf with nested array types', () => {
+      const input: Array<Array<string | number>> = [
+        ['apple', 10],
+        ['orange', 20],
+      ];
+      const schema = array(array(anyOf([string(), number()])));
+      const output = validateAndMap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should map anyOf with nested recod types', () => {
+      const input: Record<string, Record<string, string | number>> = {
+        person1: { name: 'John', age: 30 },
+        person2: { name: 'Jane', age: 25 },
+      };
+      const schema = dict(dict(anyOf([number(), string()])));
       const output = validateAndMap(input, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input);
@@ -179,6 +224,50 @@ describe('AnyOf', () => {
       // Array(AnyOf(string, number))
       const input: boolean[] | string[] = ['apple', 'orange'];
       const schema = anyOf([array(string()), array(number())]);
+      const output = validateAndUnmap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should unmap anyOf with array of map types', () => {
+      // AnyOf(Array(dict(boolean)), Array(dict(number)))
+      const input:
+        | Array<Record<string, number>>
+        | Array<Record<string, boolean>> = [{ keyA: 1 }, { keyB: 2 }];
+      const schema = anyOf([array(dict(boolean())), array(dict(number()))]);
+      const output = validateAndUnmap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should unmap anyOf with map of array types', () => {
+      // AnyOf(dict(array(boolean)), dict(array(number)))
+      const input: Record<string, number[]> | Record<string, boolean[]> = {
+        keyA: [true, false],
+      };
+      const schema = anyOf([dict(array(boolean())), dict(array(number()))]);
+      const output = validateAndUnmap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should unmap anyOf with nested array types', () => {
+      const input: Array<Array<string | number>> = [
+        ['apple', 10],
+        ['orange', 20],
+      ];
+      const schema = array(array(anyOf([string(), number()])));
+      const output = validateAndUnmap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should unmap anyOf with nested recod types', () => {
+      const input: Record<string, Record<string, string | number>> = {
+        person1: { name: 'John', age: 30 },
+        person2: { name: 'Jane', age: 25 },
+      };
+      const schema = dict(dict(anyOf([number(), string()])));
       const output = validateAndUnmap(input, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input);

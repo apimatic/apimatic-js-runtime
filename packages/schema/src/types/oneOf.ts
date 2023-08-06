@@ -172,15 +172,17 @@ function validateSchemas<T extends Array<Schema<any, any>>>(
 ) {
   if (schemas.length === 1) {
     return [];
-  } else if (schemas.length === 0) {
-    return ctxt.fail('Could not match against any acceptable type.');
-  } else {
-    return ctxt.fail(
-      `Matched more than one type. Matched types include: ${schemas
-        .map((schema) => schema.type())
-        .join(', ')}`
-    );
   }
+
+  if (schemas.length === 0) {
+    return ctxt.fail('Could not match against any acceptable type.');
+  }
+
+  return ctxt.fail(
+    `Matched more than one type. Matched types include: ${schemas
+      .map((schema) => schema.type())
+      .join(', ')}`
+  );
 }
 
 function matchAndMap<T extends Array<Schema<any, any>>>(

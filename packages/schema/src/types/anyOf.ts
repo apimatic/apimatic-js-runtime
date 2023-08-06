@@ -171,9 +171,8 @@ function validateSchemas<T extends Array<Schema<any, any>>>(
 ) {
   if (schemas.length > 0) {
     return [];
-  } else {
-    return ctxt.fail('Could not match against any acceptable type.');
   }
+  return ctxt.fail('Could not match against any acceptable type.');
 }
 
 function matchAndMap<T extends Array<Schema<any, any>>>(
