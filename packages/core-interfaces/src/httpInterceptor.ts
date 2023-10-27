@@ -1,4 +1,4 @@
-import { HttpRequest } from './httpRequest';
+import { HttpRequest, RequestOptions } from './httpRequest';
 import { HttpContext } from './httpContext';
 
 /**
@@ -36,4 +36,20 @@ export function passThroughInterceptor<T>(
   next: HttpCallExecutor<T>
 ): Promise<HttpContext> {
   return next(request, requestOptions);
+}
+
+/**
+ * Combine multiple HTTP interceptors into one.
+ */
+export function combineHttpInterceptors(
+  interceptors: Array<HttpInterceptorInterface<RequestOptions | undefined>>
+): HttpInterceptorInterface<RequestOptions | undefined> {
+  return (firstRequest, firstOptions, next) => {
+    for (let index = interceptors.length - 1; index >= 0; index--) {
+      const current = interceptors[index];
+      const last = next;
+      next = (request, options) => current(request, options, last);
+    }
+    return next(firstRequest, firstOptions);
+  };
 }
