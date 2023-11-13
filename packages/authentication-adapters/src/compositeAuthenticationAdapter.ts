@@ -103,7 +103,7 @@ export function compositeAuthenticationProvider<
     // error.
     if (!matchingAuthCombination) {
       throw new Error(
-        'Required authentication credentials for this API call not provided.'
+        'Required authentication credentials for this API call are not provided or all provided auth combinations are disabled'
       );
     }
 
@@ -128,8 +128,10 @@ function findMatchingAuth<T extends string>(
   >,
   providerConfig: CompositeAuthProviderConfig<T>
 ) {
-  return securityRequirements.find((andRequirements) =>
-    Object.entries(andRequirements).every((entry) => entry[0] in providerConfig)
+  return securityRequirements.find(
+    (andRequirements) =>
+      Object.keys(andRequirements).every((key) => key in providerConfig) &&
+      Object.values(andRequirements).every((value) => value)
   );
 }
 
