@@ -142,8 +142,13 @@ function getHttpInterceptorsForAuths<T extends string>(
   matchingRequirements: Partial<Record<T, unknown>>,
   providerConfig: CompositeAuthProviderConfig<T>
 ): Array<HttpInterceptorInterface<RequestOptions | undefined>> {
-  return Object.entries(matchingRequirements).map((entry) =>
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (providerConfig as any)[entry[0]](entry[1])
+  return Object.entries(matchingRequirements).map(
+    ([authProvider, authParam]) => {
+      if (providerConfig[authProvider] !== undefined) {
+        return providerConfig[authProvider](authParam);
+      } else {
+        return passThroughInterceptor;
+      }
+    }
   );
 }
