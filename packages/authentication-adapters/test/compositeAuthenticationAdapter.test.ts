@@ -110,29 +110,71 @@ describe('test composite authentication adapter with false or empty security req
   });
 });
 
-describe('test composite authentication adapter with no credentials object provided', () => {
-  const config: Configuration = {
-    timeout: 60000,
-    environment: 'Production',
-    customUrl: 'https://connect.product.com',
-  };
-
-  const authConfig = {
-    apiKey:
-      config.apiKeyCredentials &&
-      customQueryAuthenticationProvider(config.apiKeyCredentials),
-    apiHeader:
-      config.apiHeaderCredentials &&
-      customHeaderAuthenticationProvider(config.apiHeaderCredentials),
-  };
-
+describe('test composite authentication adapter with missing credentials object provided', () => {
   const response: HttpResponse = {
     statusCode: 200,
     body: 'testBody',
     headers: { 'test-header': 'test-value' },
   };
 
-  it('should test OR scheme with enabled custom query and enabled custom header', async () => {
+  it('should test OR scheme with missing apiKey credentials, enabled custom query and custom header', async () => {
+    const config: Configuration = {
+      timeout: 60000,
+      environment: 'Production',
+      customUrl: 'https://connect.product.com',
+      apiHeaderCredentials: {
+        apiKey: '123',
+        token: '456',
+      },
+    };
+
+    const authConfig = {
+      apiKey:
+        config.apiKeyCredentials &&
+        customQueryAuthenticationProvider(config.apiKeyCredentials),
+      apiHeader:
+        config.apiHeaderCredentials &&
+        customHeaderAuthenticationProvider(config.apiHeaderCredentials),
+    };
+
+    const request: HttpRequest = {
+      method: 'GET',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+    };
+    const securityRequirements = [{ apiKey: true }, { apiHeader: true }];
+    const provider = compositeAuthenticationProvider(authConfig);
+    const interceptor = [provider(securityRequirements)];
+    const client = async (req) => {
+      return { request: req, response };
+    };
+    const executor = callHttpInterceptors(interceptor, client);
+    const context = await executor(request, undefined);
+    expect(context.request.headers).toEqual({ apiKey: '123', token: '456' });
+    expect(context.request.url).toEqual(
+      'http://apimatic.hopto.org:3000/test/requestBuilder'
+    );
+  });
+
+  it('should test OR scheme with missing apiHeader credentials, enabled custom query and custom header', async () => {
+    const config: Configuration = {
+      timeout: 60000,
+      environment: 'Production',
+      customUrl: 'https://connect.product.com',
+      apiKeyCredentials: {
+        apiKey: '123',
+        token: '456',
+      },
+    };
+
+    const authConfig = {
+      apiKey:
+        config.apiKeyCredentials &&
+        customQueryAuthenticationProvider(config.apiKeyCredentials),
+      apiHeader:
+        config.apiHeaderCredentials &&
+        customHeaderAuthenticationProvider(config.apiHeaderCredentials),
+    };
+
     const request: HttpRequest = {
       method: 'GET',
       url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
@@ -147,17 +189,289 @@ describe('test composite authentication adapter with no credentials object provi
     const context = await executor(request, undefined);
     expect(context.request.headers).toEqual(undefined);
     expect(context.request.url).toEqual(
-      'http://apimatic.hopto.org:3000/test/requestBuilder'
+      'http://apimatic.hopto.org:3000/test/requestBuilder?apiKey=123&token=456'
     );
   });
 
-  it('should test OR scheme with disabled accessToken and disabled basicAuth', async () => {
+  it('should test OR scheme with missing apiHeader credentials, disabled custom query and enabled custom header', async () => {
+    const config: Configuration = {
+      timeout: 60000,
+      environment: 'Production',
+      customUrl: 'https://connect.product.com',
+      apiKeyCredentials: {
+        apiKey: '123',
+        token: '456',
+      },
+    };
+
+    const authConfig = {
+      apiKey:
+        config.apiKeyCredentials &&
+        customQueryAuthenticationProvider(config.apiKeyCredentials),
+      apiHeader:
+        config.apiHeaderCredentials &&
+        customHeaderAuthenticationProvider(config.apiHeaderCredentials),
+    };
+
+    const request: HttpRequest = {
+      method: 'GET',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+    };
     try {
-      const request: HttpRequest = {
-        method: 'GET',
-        url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+      const securityRequirements = [{ apiKey: false }, { apiHeader: true }];
+      const provider = compositeAuthenticationProvider(authConfig);
+      const interceptor = [provider(securityRequirements)];
+      const client = async (req) => {
+        return { request: req, response };
       };
+      const executor = callHttpInterceptors(interceptor, client);
+      const context = await executor(request, undefined);
+      expect(context.request.headers).toEqual(undefined);
+      expect(context.request.url).toEqual(
+        'http://apimatic.hopto.org:3000/test/requestBuilder?apiKey=123&token=456'
+      );
+    } catch (error) {
+      expect(error.message).toEqual(
+        'Required authentication credentials for this API call are not provided or all provided auth combinations are disabled'
+      );
+    }
+  });
+
+  it('should test OR scheme with missing apiHeader credentials, enabled custom query and disabled custom header', async () => {
+    const config: Configuration = {
+      timeout: 60000,
+      environment: 'Production',
+      customUrl: 'https://connect.product.com',
+      apiKeyCredentials: {
+        apiKey: '123',
+        token: '456',
+      },
+    };
+
+    const authConfig = {
+      apiKey:
+        config.apiKeyCredentials &&
+        customQueryAuthenticationProvider(config.apiKeyCredentials),
+      apiHeader:
+        config.apiHeaderCredentials &&
+        customHeaderAuthenticationProvider(config.apiHeaderCredentials),
+    };
+
+    const request: HttpRequest = {
+      method: 'GET',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+    };
+    const securityRequirements = [{ apiKey: true }, { apiHeader: false }];
+    const provider = compositeAuthenticationProvider(authConfig);
+    const interceptor = [provider(securityRequirements)];
+    const client = async (req) => {
+      return { request: req, response };
+    };
+    const executor = callHttpInterceptors(interceptor, client);
+    const context = await executor(request, undefined);
+    expect(context.request.headers).toEqual(undefined);
+    expect(context.request.url).toEqual(
+      'http://apimatic.hopto.org:3000/test/requestBuilder?apiKey=123&token=456'
+    );
+  });
+
+  it('should test OR scheme with no credetials disabled custom query and  custom header', async () => {
+    const config: Configuration = {
+      timeout: 60000,
+      environment: 'Production',
+      customUrl: 'https://connect.product.com',
+    };
+
+    const authConfig = {
+      apiKey:
+        config.apiKeyCredentials &&
+        customQueryAuthenticationProvider(config.apiKeyCredentials),
+      apiHeader:
+        config.apiHeaderCredentials &&
+        customHeaderAuthenticationProvider(config.apiHeaderCredentials),
+    };
+
+    const request: HttpRequest = {
+      method: 'GET',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+    };
+
+    try {
       const securityRequirements = [{ apiKey: false }, { apiHeader: false }];
+      const provider = compositeAuthenticationProvider(authConfig);
+      const interceptor = [provider(securityRequirements)];
+      const client = async (req) => {
+        return { request: req, response };
+      };
+      const executor = callHttpInterceptors(interceptor, client);
+      const context = await executor(request, undefined);
+      expect(context.request.headers).toEqual(undefined);
+      expect(context.request.auth).toEqual(undefined);
+    } catch (error) {
+      expect(error.message).toEqual(
+        'Required authentication credentials for this API call are not provided or all provided auth combinations are disabled'
+      );
+    }
+  });
+
+  it('should test AND scheme with missing apiKey credentials, enabled custom query and custom header', async () => {
+    const config: Configuration = {
+      timeout: 60000,
+      environment: 'Production',
+      customUrl: 'https://connect.product.com',
+      apiHeaderCredentials: {
+        apiKey: '123',
+        token: '456',
+      },
+    };
+
+    const authConfig = {
+      apiKey:
+        config.apiKeyCredentials &&
+        customQueryAuthenticationProvider(config.apiKeyCredentials),
+      apiHeader:
+        config.apiHeaderCredentials &&
+        customHeaderAuthenticationProvider(config.apiHeaderCredentials),
+    };
+
+    const request: HttpRequest = {
+      method: 'GET',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+    };
+
+    try {
+      const securityRequirements = [{ apiKey: true, apiHeader: true }];
+      const provider = compositeAuthenticationProvider(authConfig);
+      const interceptor = [provider(securityRequirements)];
+      const client = async (req) => {
+        return { request: req, response };
+      };
+      const executor = callHttpInterceptors(interceptor, client);
+      const context = await executor(request, undefined);
+      expect(context.request.headers).toEqual({ apiKey: '123', token: '456' });
+      expect(context.request.url).toEqual(
+        'http://apimatic.hopto.org:3000/test/requestBuilder'
+      );
+    } catch (error) {
+      expect(error.message).toEqual(
+        'Required authentication credentials for this API call are not provided or all provided auth combinations are disabled'
+      );
+    }
+  });
+
+  it('should test AND scheme with missing apiKey credentials, enabled custom query and disabled custom header', async () => {
+    const config: Configuration = {
+      timeout: 60000,
+      environment: 'Production',
+      customUrl: 'https://connect.product.com',
+      apiHeaderCredentials: {
+        apiKey: '123',
+        token: '456',
+      },
+    };
+
+    const authConfig = {
+      apiKey:
+        config.apiKeyCredentials &&
+        customQueryAuthenticationProvider(config.apiKeyCredentials),
+      apiHeader:
+        config.apiHeaderCredentials &&
+        customHeaderAuthenticationProvider(config.apiHeaderCredentials),
+    };
+
+    const request: HttpRequest = {
+      method: 'GET',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+    };
+
+    try {
+      const securityRequirements = [{ apiKey: true, apiHeader: false }];
+      const provider = compositeAuthenticationProvider(authConfig);
+      const interceptor = [provider(securityRequirements)];
+      const client = async (req) => {
+        return { request: req, response };
+      };
+      const executor = callHttpInterceptors(interceptor, client);
+      const context = await executor(request, undefined);
+      expect(context.request.headers).toEqual({ apiKey: '123', token: '456' });
+      expect(context.request.url).toEqual(
+        'http://apimatic.hopto.org:3000/test/requestBuilder'
+      );
+    } catch (error) {
+      expect(error.message).toEqual(
+        'Required authentication credentials for this API call are not provided or all provided auth combinations are disabled'
+      );
+    }
+  });
+
+  it('should test AND scheme with missing apiHeader credentials, disabled custom query and enabled custom header', async () => {
+    const config: Configuration = {
+      timeout: 60000,
+      environment: 'Production',
+      customUrl: 'https://connect.product.com',
+      apiKeyCredentials: {
+        apiKey: '123',
+        token: '456',
+      },
+    };
+
+    const authConfig = {
+      apiKey:
+        config.apiKeyCredentials &&
+        customQueryAuthenticationProvider(config.apiKeyCredentials),
+      apiHeader:
+        config.apiHeaderCredentials &&
+        customHeaderAuthenticationProvider(config.apiHeaderCredentials),
+    };
+
+    const request: HttpRequest = {
+      method: 'GET',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+    };
+
+    try {
+      const securityRequirements = [{ apiKey: false, apiHeader: true }];
+      const provider = compositeAuthenticationProvider(authConfig);
+      const interceptor = [provider(securityRequirements)];
+      const client = async (req) => {
+        return { request: req, response };
+      };
+      const executor = callHttpInterceptors(interceptor, client);
+      const context = await executor(request, undefined);
+      expect(context.request.headers).toEqual(undefined);
+      expect(context.request.url).toEqual(
+        'http://apimatic.hopto.org:3000/test/requestBuilder?apiKey=123&token=456'
+      );
+    } catch (error) {
+      expect(error.message).toEqual(
+        'Required authentication credentials for this API call are not provided or all provided auth combinations are disabled'
+      );
+    }
+  });
+
+  it('should test AND scheme with all missing credentials, disabled custom query and custom header', async () => {
+    const config: Configuration = {
+      timeout: 60000,
+      environment: 'Production',
+      customUrl: 'https://connect.product.com',
+    };
+
+    const authConfig = {
+      apiKey:
+        config.apiKeyCredentials &&
+        customQueryAuthenticationProvider(config.apiKeyCredentials),
+      apiHeader:
+        config.apiHeaderCredentials &&
+        customHeaderAuthenticationProvider(config.apiHeaderCredentials),
+    };
+
+    const request: HttpRequest = {
+      method: 'GET',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+    };
+
+    try {
+      const securityRequirements = [{ apiKey: false, apiHeader: false }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
       const client = async (req) => {

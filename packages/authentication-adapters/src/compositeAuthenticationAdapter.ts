@@ -130,8 +130,9 @@ function findMatchingAuth<T extends string>(
 ) {
   return securityRequirements.find(
     (andRequirements) =>
-      Object.keys(andRequirements).every((key) => key in providerConfig) &&
-      Object.values(andRequirements).every((value) => value)
+      Object.keys(andRequirements).every(
+        (key) => key in providerConfig && providerConfig[key]
+      ) && Object.values(andRequirements).every((value) => value)
   );
 }
 
