@@ -44,6 +44,7 @@ export interface SchemaContext {
   readonly type: string;
   readonly branch: unknown[];
   readonly path: Array<string | number>;
+  strictValidation?: boolean;
 }
 
 /**
@@ -178,12 +179,17 @@ export function validateAndUnmapXml<T extends Schema<any, any>>(
 /**
  * Create a new schema context using the given value and type.
  */
-function createNewSchemaContext(value: unknown, type: string): SchemaContext {
+function createNewSchemaContext(
+  value: unknown,
+  type: string,
+  strict?: boolean
+): SchemaContext {
   return {
     value,
     type,
     branch: [value],
     path: [],
+    strictValidation: strict,
   };
 }
 
@@ -203,6 +209,7 @@ function createSchemaContextCreator(
       type: childSchema.type(),
       branch: [...currentContext.branch, value],
       path: [...currentContext.path, key],
+      strictValidation: currentContext.strictValidation,
     });
 
   const mapChildren: SchemaContextCreator['mapChildren'] = (
@@ -221,7 +228,10 @@ function createSchemaContextCreator(
     mapChildren,
     fail: (message) => [
       {
-        ...currentContext,
+        value: currentContext.value,
+        type: currentContext.type,
+        branch: currentContext.branch,
+        path: currentContext.path,
         message: createErrorMessage(currentContext, message),
       },
     ],

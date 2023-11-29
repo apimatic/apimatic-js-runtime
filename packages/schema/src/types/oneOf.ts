@@ -123,7 +123,7 @@ function matchAndValidateBeforeMap<T extends Array<Schema<any, any>>>(
   ctxt: SchemaContextCreator
 ) {
   const matchedSchemas: Array<Schema<any, any>> = [];
-
+  ctxt.strictValidation = true;
   for (const schema of schemas) {
     const validationErrors = schema.validateBeforeMap(value, ctxt);
     if (validationErrors.length === 0) {
@@ -139,7 +139,7 @@ function matchAndValidateBeforeUnmap<T extends Array<Schema<any, any>>>(
   ctxt: SchemaContextCreator
 ) {
   const matchedSchemas: Array<Schema<any, any>> = [];
-
+  ctxt.strictValidation = true;
   for (const schema of schemas) {
     const validationErrors = schema.validateBeforeUnmap(value, ctxt);
     if (validationErrors.length === 0) {
@@ -155,7 +155,7 @@ function matchAndValidateBeforeMapXml<T extends Array<Schema<any, any>>>(
   ctxt: SchemaContextCreator
 ) {
   const matchedSchemas: Array<Schema<any, any>> = [];
-
+  ctxt.strictValidation = true;
   for (const schema of schemas) {
     const validationErrors = schema.validateBeforeMapXml(value, ctxt);
     if (validationErrors.length === 0) {

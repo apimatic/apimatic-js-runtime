@@ -37,9 +37,9 @@ export function identityFn<T>(value: T): T {
 }
 
 export function toValidator(
-  fn: (value: unknown) => boolean
+  fn: (value: unknown, strict?: boolean) => boolean
 ): (value: unknown, ctxt: SchemaContextCreator) => SchemaValidationError[] {
-  return (value, ctxt) => (fn(value) ? [] : ctxt.fail());
+  return (value, ctxt) => (fn(value, ctxt.strictValidation) ? [] : ctxt.fail());
 }
 
 /**
@@ -93,11 +93,14 @@ function createBasicSchema<T, S>(basicSchema: BasicSchema<T, S>): Schema<T, S> {
   };
 }
 
-export function isNumericString(value: unknown): value is number | string {
-  return (
-    typeof value === 'number' ||
-    (typeof value === 'string' && !isNaN(value as any))
-  );
+export function isNumericString(
+  value: unknown,
+  strict?: boolean
+): value is number | string {
+  return strict
+    ? typeof value === 'number'
+    : typeof value === 'number' ||
+        (typeof value === 'string' && !isNaN(value as any));
 }
 
 export function coerceNumericStringToNumber(value: number | string): number {

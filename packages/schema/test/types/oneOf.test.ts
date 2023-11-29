@@ -1,4 +1,4 @@
-import { array, boolean, object } from '../../src';
+import { array, bigint, boolean, object } from '../../src';
 import { validateAndMap, validateAndUnmap } from '../../src/schema';
 import { nullable } from '../../src/types/nullable';
 import { number } from '../../src/types/number';
@@ -22,9 +22,33 @@ import { stringEnum } from '../../src/types/stringEnum';
 
 describe('OnyOf', () => {
   describe('Mapping', () => {
-    it('should map oneOf primitives', () => {
+    it('should map oneOf primitives with number value', () => {
       const input = 1;
       const schema = oneOf([string(), number()]);
+      const output = validateAndMap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should map oneOf primitives with number-string value', () => {
+      const input = '1';
+      const schema = oneOf([string(), number()]);
+      const output = validateAndMap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should map oneOf primitives with boolean-string value', () => {
+      const input = 'true';
+      const schema = oneOf([string(), boolean()]);
+      const output = validateAndMap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should map oneOf primitives with bigint-string value', () => {
+      const input = '9532532599932222222';
+      const schema = oneOf([string(), bigint()]);
       const output = validateAndMap(input, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input);
