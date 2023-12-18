@@ -204,10 +204,10 @@ describe('OnyOf', () => {
       expect((output as any).result).toBeUndefined();
     });
 
-    it('should handle oneOf with deep nesting', () => {
+    it('should handle oneOf with deep nesting of oneof type between string|number', () => {
       const input: Person | Address = {
         name: 'John',
-        age: 30,
+        age: '30',
         address: {
           street: '123 Main St',
           city: 'New York',
@@ -215,6 +215,19 @@ describe('OnyOf', () => {
       };
 
       const schema = oneOf([personSchema, addressSchema]);
+      const output = validateAndMap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+    it('should handle oneOf with deep nesting of oneof type between string|bigint and string|boolean', () => {
+      const input: Human | Animal = {
+        name: 'John',
+        age: 30,
+        id: '9532532599932222222',
+        hasChildren: 'true',
+      };
+
+      const schema = oneOf([humanSchema, animalSchema]);
       const output = validateAndMap(input, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input);

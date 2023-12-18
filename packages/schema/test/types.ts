@@ -1,5 +1,5 @@
 import { Schema } from '../lib/schema';
-import { object } from '../src';
+import { bigint, boolean, object, oneOf, optional } from '../src';
 import { string } from '../src/types/string';
 import { number } from '../src/types/number';
 import { validateAndMap } from '../src/schema';
@@ -17,11 +17,15 @@ export const animalSchema: Schema<Animal> = object({
 export interface Human {
   name: string;
   age: number;
+  id?: bigint | string;
+  hasChildren?: boolean | string;
 }
 
 export const humanSchema: Schema<Human> = object({
   name: ['name', string()],
   age: ['age', number()],
+  id: ['id', optional(oneOf([string(), bigint()]))],
+  hasChildren: ['hasChildren', optional(oneOf([string(), boolean()]))],
 });
 
 export function isHuman(value: unknown): value is Human {
@@ -44,13 +48,13 @@ export const addressSchema: Schema<Address> = object({
 
 export interface Person {
   name: string;
-  age: number;
+  age: number | string;
   address: Address;
 }
 
 export const personSchema: Schema<Person> = object({
   name: ['name', string()],
-  age: ['age', number()],
+  age: ['age', oneOf([string(), number()])],
   address: ['address', lazy(() => addressSchema)],
 });
 

@@ -191,6 +191,8 @@ function matchAndMap<T extends Array<Schema<any, any>>>(
   ctxt: SchemaContextCreator
 ) {
   const matchedSchemas: Array<Schema<any, any>> = [];
+  ctxt.strictValidation = true;
+
   for (const schema of schemas) {
     if (schema.validateBeforeMap(value, ctxt).length === 0) {
       matchedSchemas.push(schema);
@@ -207,6 +209,8 @@ function matchAndUnmap<T extends Array<Schema<any, any>>>(
   ctxt: SchemaContextCreator
 ) {
   const matchedSchemas: Array<Schema<any, any>> = [];
+  ctxt.strictValidation = true;
+
   for (const schema of schemas) {
     if (schema.validateBeforeUnmap(value, ctxt).length === 0) {
       matchedSchemas.push(schema);
@@ -223,6 +227,8 @@ function matchAndMapXml<T extends Array<Schema<any, any>>>(
   ctxt: SchemaContextCreator
 ) {
   const matchedSchemas: Array<Schema<any, any>> = [];
+  ctxt.strictValidation = true;
+
   for (const schema of schemas) {
     if (schema.validateBeforeMapXml(value, ctxt).length === 0) {
       matchedSchemas.push(schema);
@@ -239,6 +245,8 @@ function matchAndUnmapXml<T extends Array<Schema<any, any>>>(
   ctxt: SchemaContextCreator
 ) {
   const matchedSchemas: Array<Schema<any, any>> = [];
+  ctxt.strictValidation = true;
+
   for (const schema of schemas) {
     if (schema.validateBeforeMapXml(value, ctxt).length === 0) {
       matchedSchemas.push(schema);
