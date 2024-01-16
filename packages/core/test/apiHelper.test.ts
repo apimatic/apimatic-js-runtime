@@ -86,6 +86,16 @@ describe('test error template', () => {
       'Global Error template 500: {$statusCode}, accept => {$response.header.content-type}, body => {$response.body}.',
       {
         statusCode: 500,
+        body: '',
+        headers: { 'content-type': 'text/plain' },
+      } as HttpResponse,
+      `Global Error template 500: 500, accept => text/plain, body => "".`,
+    ],
+    [
+      'test error message with statusCode, response headers and response.body templates to be replaced',
+      'Global Error template 500: {$statusCode}, accept => {$response.header.content-type}, body => {$response.body}.',
+      {
+        statusCode: 500,
         body: `{"scalar": 123.2,"object": {"keyA": {"keyC": true, "keyD": 34}, "keyB": "some string", "arrayScalar": ["value1", "value2"], "arrayObjects":[{"key1": 123, "key2": false}, {"key3": 1234, "key4": null}]}}`,
         headers: { 'content-type': 'text/plain' },
       } as HttpResponse,
