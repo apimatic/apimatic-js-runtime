@@ -9,6 +9,8 @@ import { employeeSchema } from '../employeeSchema';
 import {
   Address,
   addressSchema,
+  AllOptional,
+  allOptionalSchema,
   Animal,
   animalSchema,
   Color,
@@ -190,6 +192,23 @@ describe('OnyOf', () => {
     it('should map oneOf with nullable complex types', () => {
       const input: Human | null = null;
       const schema = oneOf([humanSchema, nullable(humanSchema)]);
+      const output = validateAndMap(input, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
+    });
+
+    it('should map oneOf with array and array of object with all optional properties', () => {
+      const input: AllOptional[] = [
+        {
+          name: 'John',
+          age: 30,
+        },
+        {
+          name: 'John',
+          age: 30,
+        },
+      ];
+      const schema = oneOf([allOptionalSchema, array(allOptionalSchema)]);
       const output = validateAndMap(input, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input);

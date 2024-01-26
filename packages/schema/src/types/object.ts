@@ -204,6 +204,13 @@ function validateObjectBeforeMapXml(
     if (typeof value !== 'object' || value === null) {
       return ctxt.fail();
     }
+    if (Array.isArray(value)) {
+      return ctxt.fail(
+        `Expected value to be of type '${
+          ctxt.type
+        }' but found 'Array<${typeof value}>'.`
+      );
+    }
     const valueObject = value as {
       $?: Record<string, unknown>;
       [key: string]: unknown;
@@ -414,6 +421,13 @@ function validateObject(
   return (value: unknown, ctxt: SchemaContextCreator) => {
     if (typeof value !== 'object' || value === null) {
       return ctxt.fail();
+    }
+    if (Array.isArray(value)) {
+      return ctxt.fail(
+        `Expected value to be of type '${
+          ctxt.type
+        }' but found 'Array<${typeof value}>'.`
+      );
     }
     return validateValueObject({
       validationMethod,

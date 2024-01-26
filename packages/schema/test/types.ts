@@ -14,6 +14,16 @@ export const animalSchema: Schema<Animal> = object({
   age: ['age', number()],
 });
 
+export interface AllOptional {
+  name?: string;
+  age?: number;
+}
+
+export const allOptionalSchema: Schema<AllOptional> = object({
+  name: ['name', optional(string())],
+  age: ['age', optional(number())],
+});
+
 export interface Human {
   name: string;
   age: number;
