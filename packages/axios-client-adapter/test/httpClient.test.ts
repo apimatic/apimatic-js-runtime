@@ -1,5 +1,10 @@
 import { DEFAULT_TIMEOUT, HttpClient, isBlob } from '../src/httpClient';
-import { AxiosRequestConfig, AxiosResponse } from 'axios';
+import {
+  AxiosHeaders,
+  AxiosRequestConfig,
+  AxiosResponse,
+  InternalAxiosRequestConfig,
+} from 'axios';
 import {
   HttpRequest,
   HttpRequestMultipartFormBody,
@@ -208,12 +213,21 @@ describe('HTTP Client', () => {
       responseType: 'text',
     };
 
+    const headers = new AxiosHeaders({
+      'test-header': 'test-value',
+    });
+
+    const internalConfig: InternalAxiosRequestConfig = {
+      ...config,
+      headers,
+    };
+
     const response: AxiosResponse = {
       data: 'testBody result',
       status: 200,
       statusText: 'OK',
       headers: { 'test-header': 'test-value' },
-      config,
+      config: internalConfig,
     };
 
     const expectedHttpResponse: HttpResponse = {

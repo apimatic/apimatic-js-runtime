@@ -2,6 +2,9 @@ const { jest: lernaAliases } = require('lerna-alias');
 
 module.exports = {
   preset: 'ts-jest',
-  moduleNameMapper: lernaAliases(),
+  moduleNameMapper: { 
+    "^axios$": "axios/dist/node/axios.cjs",
+    ...lernaAliases(),
+  }, 
   coverageReporters: [['lcov', { projectRoot: '../../' }]]
 };
