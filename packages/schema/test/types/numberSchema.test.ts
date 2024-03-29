@@ -8,6 +8,26 @@ describe('Number Enum', () => {
     Diamonds,
   }
   describe('Mapping', () => {
+    it('should map unknown numeric value in enum', () => {
+      const input = 5;
+      const output = validateAndMap(
+        input as any,
+        numberEnum(SampleNumberEnum, true)
+      );
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBe(5);
+    });
+
+    it('should map unknown numeric string value in enum', () => {
+      const input = '5';
+      const output = validateAndMap(
+        input as any,
+        numberEnum(SampleNumberEnum, true)
+      );
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBe(5);
+    });
+
     it('should map enum', () => {
       const input = 0;
       const output = validateAndMap(input as any, numberEnum(SampleNumberEnum));

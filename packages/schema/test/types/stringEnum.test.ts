@@ -8,6 +8,16 @@ describe('String Enum', () => {
     Diamonds = '_diamonds',
   }
   describe('Mapping', () => {
+    it('should map unknown string value in enum', () => {
+      const input = 'unknown';
+      const output = validateAndMap(
+        input as any,
+        stringEnum(SampleStringEnum, true)
+      );
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBe('unknown');
+    });
+
     it('should map enum', () => {
       const input = '_hearts';
       const output = validateAndMap(input as any, stringEnum(SampleStringEnum));
