@@ -54,6 +54,11 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
+import {
+  createLoggerBuilderFactory,
+  Logger,
+  LoggingConfiguration,
+} from '../logger/loggerBuilder';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -94,7 +99,6 @@ export interface ApiErrorFactory {
   apiErrorCtor: ApiErrorConstructor;
   message?: string | undefined;
 }
-
 export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   deprecated(methodName: string, message?: string): void;
   prepareArgs: typeof prepareArgs;
@@ -212,6 +216,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _baseUrlProvider: (arg?: BaseUrlParamType) => string,
     protected _apiErrorCtr: ApiErrorConstructor,
     protected _authenticationProvider: AuthenticatorInterface<AuthParams>,
+    protected _logger: Logger,
+    protected _loggerConfig: LoggingConfiguration,
     protected _httpMethod: HttpMethod,
     protected _xmlSerializer: XmlSerializerInterface,
     protected _retryConfig: RetryConfiguration,
@@ -225,6 +231,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._addResponseValidator();
     this._addAuthentication();
     this._addRetryInterceptor();
+    this._addLoggerInterceptor();
     this._retryOption = RequestRetryOption.Default;
     this.prepareArgs = prepareArgs.bind(this);
   }
@@ -588,6 +595,40 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return handler(...args);
     });
   }
+  private _addLoggerInterceptor() {
+    this.interceptRequest((request) => {
+      if (this._loggerConfig.isLoggingRequestBody) {
+        this._logger.info('Request Body', request.body);
+      }
+
+      if (this._loggerConfig.isLoggingRequestHeaders) {
+        this._logger.info('Request Headers', request.headers);
+      }
+
+      if (this._loggerConfig.isLoggingRequestInfo) {
+        this._logger.info('Request Info', {
+          method: request.method,
+          url: request.url,
+        });
+      }
+      return request;
+    });
+
+    this.interceptResponse((context) => {
+      if (this._loggerConfig.isLoggingResponseBody) {
+        this._logger.info('Response Body', context.response.body);
+      }
+
+      if (this._loggerConfig.isLoggingResponseHeaders) {
+        this._logger.info('Response Headers', context.response.headers);
+      }
+
+      if (this._loggerConfig.isLoggingResponseInfo) {
+        this._logger.info('Response Info', context.response.statusCode);
+      }
+      return context;
+    });
+  }
   private _addRetryInterceptor() {
     this.intercept(async (request, options, next) => {
       let context: HttpContext | undefined;
@@ -640,6 +681,8 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   baseUrlProvider: (arg?: BaseUrlParamType) => string,
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
+  logger: Logger,
+  loggingConfig: LoggingConfiguration,
   retryConfig: RetryConfiguration,
   xmlSerializer: XmlSerializerInterface = new XmlSerialization()
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
@@ -649,6 +692,8 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       baseUrlProvider,
       apiErrorConstructor,
       authenticationProvider,
+      createLoggerBuilderFactory(logger),
+      loggingConfig,
       httpMethod,
       xmlSerializer,
       retryConfig,
