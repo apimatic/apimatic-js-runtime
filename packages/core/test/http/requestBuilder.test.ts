@@ -24,6 +24,7 @@ import { FileWrapper } from '../../src/fileWrapper';
 import fs from 'fs';
 import path from 'path';
 import { bossSchema } from '../../../schema/test/bossSchema';
+import { loggerProvider } from '../../src/logger/loggerBuilder';
 
 describe('test default request builder behavior with succesful responses', () => {
   const authParams = {
@@ -45,7 +46,8 @@ describe('test default request builder behavior with succesful responses', () =>
     (server) => mockBaseURIProvider(server),
     ApiError,
     basicAuth,
-    retryConfig
+    retryConfig,
+    loggerProvider()
   );
 
   it('should test request builder configured with text request body and text response body', async () => {
@@ -419,7 +421,7 @@ describe('test default request builder behavior with succesful responses', () =>
       await reqBuilder.callAsJson(employeeSchema);
     } catch (error) {
       const expectedResult =
-        "Could not parse body as JSON.\n\nExpected 'r' instead of 'e'";
+        'Could not parse body as JSON.\n\nExpected \'r\' instead of \'e\'';
       expect(error.message).toEqual(expectedResult);
     }
   });
@@ -611,7 +613,8 @@ describe('test default request builder behavior to test retries', () => {
     (server) => mockBaseURIProvider(server),
     ApiError,
     noneAuthenticationProvider,
-    retryConfig
+    retryConfig,
+    loggerProvider()
   );
 
   it('should test request builder with retries and response returning 500 error code', async () => {
