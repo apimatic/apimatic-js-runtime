@@ -54,7 +54,7 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
-import { customLoggerProvider, LoggingOptions } from '../logger/loggerOptions';
+import { LoggingOptions } from '../logger/loggerOptions';
 import { addApiLoggerInterceptor, ApiLogger } from '../logger/apiLogger';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
@@ -647,7 +647,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
   retryConfig: RetryConfiguration,
-  loggerBuilder: LoggingOptions,
+  logging: LoggingOptions,
   xmlSerializer: XmlSerializerInterface = new XmlSerialization()
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
@@ -656,7 +656,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       baseUrlProvider,
       apiErrorConstructor,
       authenticationProvider,
-      customLoggerProvider(loggerBuilder),
+      logging,
       httpMethod,
       xmlSerializer,
       retryConfig,
