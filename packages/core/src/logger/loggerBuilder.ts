@@ -24,7 +24,7 @@ export enum Sink {
 
 export interface LoggerBuilder {
   create(): void;
-  setLevel(level: string): void;
+  setLevel(level: Level): void;
   setFormat(format: Format): void;
   setSink(sink: Sink): void;
   trace(message: string, ...optionalParams: any[]): void;
@@ -115,7 +115,7 @@ export class DefaultLoggerBuilder implements LoggerBuilder {
 }
 
 export function createLoggerBuilderFactory(
-  config: LoggingConfiguration,
+  config?: LoggingConfiguration,
   customLogger?: LoggerBuilder
 ): LoggerBuilder {
   if (customLogger) {
@@ -124,10 +124,12 @@ export function createLoggerBuilderFactory(
   } else {
     // If no custom logger is provided, create and return the default Winston logger
     const logger = new DefaultLoggerBuilder();
-    logger.setLevel(config.level);
-    logger.setFormat(config.format);
-    logger.setSink(config.sink);
-    logger.create(); // Create the logger
+    if (config) {
+      logger.setLevel(config.level);
+      logger.setFormat(config.format);
+      logger.setSink(config.sink);
+      logger.create(); // Create the logger
+    }
     return logger;
   }
 }

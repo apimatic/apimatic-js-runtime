@@ -692,7 +692,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       baseUrlProvider,
       apiErrorConstructor,
       authenticationProvider,
-      createLoggerBuilderFactory(loggingConfig, logger),
+      logger,
       loggingConfig,
       httpMethod,
       xmlSerializer,
