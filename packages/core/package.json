@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@apimatic/convert-to-stream": "^0.0.2",
-    "@apimatic/core-interfaces": "^0.2.0",
+    "@apimatic/core-interfaces": "../core-interfaces",
     "@apimatic/file-wrapper": "^0.3.0",
     "@apimatic/http-headers": "^0.3.0",
     "@apimatic/json-bigint": "^1.2.0",

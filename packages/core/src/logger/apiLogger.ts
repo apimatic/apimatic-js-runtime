@@ -45,14 +45,16 @@ export class ApiLogger implements ApiLoggerInterface {
   }
 }
 
-export function addApiLoggerInterceptor(apiLogger: ApiLoggerInterface) {
-    this.interceptRequest((request) => {
-        apiLogger.logRequest(request);
-      return request;
-    });
+export const requestLoggerInterceptor = (apiLogger: ApiLoggerInterface) => {
+  return (request, options, next) => {
+    apiLogger.logRequest(request);
+    return next(request, options);
+  };
+}
 
-    this.interceptResponse((context) => {
-        apiLogger.logResponse(context);
-      return context;
-    });
-  }
+export const responseLoggerInterceptor = (apiLogger: ApiLoggerInterface) => {
+  return (context) => {
+    apiLogger.logResponse(context);
+    return context;
+  };
+}

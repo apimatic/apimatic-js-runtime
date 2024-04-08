@@ -55,7 +55,7 @@ import {
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
 import { LoggingOptions } from '../logger/loggerOptions';
-import { addApiLoggerInterceptor, ApiLogger } from '../logger/apiLogger';
+import { ApiLogger, requestLoggerInterceptor, responseLoggerInterceptor } from '../logger/apiLogger';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -228,7 +228,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._apiLogger = new ApiLogger(_loggerOptions);
     this._addResponseValidator();
     this._addAuthentication();
-    addApiLoggerInterceptor(this._apiLogger);
+    this._addApiLoggerInterceptors();
     this._addRetryInterceptor();
     this._retryOption = RequestRetryOption.Default;
     this.prepareArgs = prepareArgs.bind(this);
@@ -593,6 +593,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       const handler = this._authenticationProvider(this._authParams);
       return handler(...args);
     });
+  }
+  private _addApiLoggerInterceptors() {
+    this.intercept(requestLoggerInterceptor(this._apiLogger))
+    this.intercept(responseLoggerInterceptor(this._apiLogger))
   }
   private _addRetryInterceptor() {
     this.intercept(async (request, options, next) => {
