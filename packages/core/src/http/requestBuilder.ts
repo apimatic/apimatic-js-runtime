@@ -56,7 +56,7 @@ import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
 import {
   createLoggerBuilderFactory,
-  Logger,
+  LoggerBuilder,
   LoggingConfiguration,
 } from '../logger/loggerBuilder';
 
@@ -216,7 +216,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _baseUrlProvider: (arg?: BaseUrlParamType) => string,
     protected _apiErrorCtr: ApiErrorConstructor,
     protected _authenticationProvider: AuthenticatorInterface<AuthParams>,
-    protected _logger: Logger,
+    protected _logger: LoggerBuilder,
     protected _loggerConfig: LoggingConfiguration,
     protected _httpMethod: HttpMethod,
     protected _xmlSerializer: XmlSerializerInterface,
@@ -681,9 +681,9 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   baseUrlProvider: (arg?: BaseUrlParamType) => string,
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
-  logger: Logger,
-  loggingConfig: LoggingConfiguration,
   retryConfig: RetryConfiguration,
+  logger: LoggerBuilder,
+  loggingConfig: LoggingConfiguration,
   xmlSerializer: XmlSerializerInterface = new XmlSerialization()
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
@@ -692,7 +692,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       baseUrlProvider,
       apiErrorConstructor,
       authenticationProvider,
-      createLoggerBuilderFactory(logger),
+      createLoggerBuilderFactory(loggingConfig, logger),
       loggingConfig,
       httpMethod,
       xmlSerializer,
