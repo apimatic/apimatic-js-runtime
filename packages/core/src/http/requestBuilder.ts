@@ -54,7 +54,8 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
-import { Level, LoggerBuilder, loggerProvider } from '../logger/loggerBuilder';
+import { LoggerBuilder, customLoggerProvider } from '../logger/loggerBuilder';
+import { ApiLogger } from '../logger/apiLogger';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -205,6 +206,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   protected _authParams?: AuthParams;
   protected _retryOption: RequestRetryOption;
   protected _apiErrorFactory: ApiErrorFactory;
+  protected _apiLogger: ApiLogger;
   public prepareArgs: typeof prepareArgs;
 
   constructor(
@@ -223,10 +225,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._interceptors = [];
     this._validateResponse = true;
     this._apiErrorFactory = { apiErrorCtor: _apiErrorCtr };
+    this._apiLogger = new ApiLogger(_loggerBuilder._logger);
     this._addResponseValidator();
     this._addAuthentication();
     this._addRetryInterceptor();
-    this._addLoggerInterceptor();
     this._retryOption = RequestRetryOption.Default;
     this.prepareArgs = prepareArgs.bind(this);
   }
@@ -454,8 +456,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._interceptors,
       // tslint:disable-next-line:no-shadowed-variable
       async (request, opt) => {
+        this._apiLogger.logRequest(request);
         // tslint:disable-next-line:no-shadowed-variable
         const response = await this._httpClient(request, opt);
+        this._apiLogger.logResponse(response);
         return { request, response };
       }
     );
@@ -590,60 +594,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return handler(...args);
     });
   }
-  private _addLoggerInterceptor() {
-    this.interceptRequest((request) => {
-      if (this._loggerBuilder._loggerConfig.isLoggingRequestBody) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Request Body',
-          request.body
-        );
-      }
-
-      if (this._loggerBuilder._loggerConfig.isLoggingRequestHeaders) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Request Headers',
-          request.headers
-        );
-      }
-
-      if (this._loggerBuilder._loggerConfig.isLoggingRequestInfo) {
-        this._loggerBuilder._logger.log(Level.Info, 'Request Info', {
-          method: request.method,
-          url: request.url,
-        });
-      }
-      return request;
-    });
-
-    this.interceptResponse((context) => {
-      if (this._loggerBuilder._loggerConfig.isLoggingResponseBody) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Response Body',
-          context.response.body
-        );
-      }
-
-      if (this._loggerBuilder._loggerConfig.isLoggingResponseHeaders) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Response Headers',
-          context.response.headers
-        );
-      }
-
-      if (this._loggerBuilder._loggerConfig.isLoggingResponseInfo) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Response Info',
-          context.response.statusCode
-        );
-      }
-      return context;
-    });
-  }
   private _addRetryInterceptor() {
     this.intercept(async (request, options, next) => {
       let context: HttpContext | undefined;
@@ -706,7 +656,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       baseUrlProvider,
       apiErrorConstructor,
       authenticationProvider,
-      loggerProvider(loggerBuilder),
+      customLoggerProvider(loggerBuilder),
       httpMethod,
       xmlSerializer,
       retryConfig,

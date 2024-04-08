@@ -18,7 +18,9 @@ export interface LoggerBuilder {
   _loggerConfig: LoggerConfiguration;
 }
 
-export function loggerProvider(loggerBuilder?: LoggerBuilder): LoggerBuilder {
+export function customLoggerProvider(
+  loggerBuilder?: LoggerBuilder
+): LoggerBuilder {
   if (loggerBuilder) {
     return loggerBuilder;
   } else {
