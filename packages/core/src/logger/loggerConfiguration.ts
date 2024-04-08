@@ -1,13 +1,21 @@
-export class LoggerConfiguration {
-  public isLoggingRequestInfo: boolean;
-  public isLoggingRequestHeaders: boolean;
-  public isLoggingRequestBody: boolean;
-  public isLoggingResponseInfo: boolean;
-  public isLoggingResponseHeaders: boolean;
-  public isLoggingResponseBody: boolean;
-  public headerFilters: string[];
-  public headerLoggingPolicy: HeaderLoggingPolicy;
+export interface LoggingConfiguration {
+  isLoggingRequestInfo: boolean;
+  isLoggingRequestHeaders: boolean;
+  isLoggingRequestBody: boolean;
+  isLoggingResponseInfo: boolean;
+  isLoggingResponseHeaders: boolean;
+  isLoggingResponseBody: boolean;
+  headerFilters: string[];
+  headerLoggingPolicy: HeaderLoggingPolicy;
+}
 
+
+export enum HeaderLoggingPolicy {
+  Include = 'include',
+  Exculde = 'exclude',
+}
+
+/*
   public constructor() {
     this.isLoggingRequestInfo = false;
     this.isLoggingRequestHeaders = false;
@@ -60,8 +68,5 @@ export class LoggerConfiguration {
     return this;
   }
 }
+*/
 
-export enum HeaderLoggingPolicy {
-  Include = 'include',
-  Exculde = 'exclude',
-}

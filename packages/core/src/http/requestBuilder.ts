@@ -54,8 +54,8 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
-import { LoggerBuilder, customLoggerProvider } from '../logger/loggerBuilder';
-import { ApiLogger } from '../logger/apiLogger';
+import { customLoggerProvider, LoggingOptions } from '../logger/loggerOptions';
+import { addApiLoggerInterceptor, ApiLogger } from '../logger/apiLogger';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -214,7 +214,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _baseUrlProvider: (arg?: BaseUrlParamType) => string,
     protected _apiErrorCtr: ApiErrorConstructor,
     protected _authenticationProvider: AuthenticatorInterface<AuthParams>,
-    protected _loggerBuilder: LoggerBuilder,
+    protected _loggerOptions: LoggingOptions,
     protected _httpMethod: HttpMethod,
     protected _xmlSerializer: XmlSerializerInterface,
     protected _retryConfig: RetryConfiguration,
@@ -225,9 +225,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._interceptors = [];
     this._validateResponse = true;
     this._apiErrorFactory = { apiErrorCtor: _apiErrorCtr };
-    this._apiLogger = new ApiLogger(_loggerBuilder._logger);
+    this._apiLogger = new ApiLogger(_loggerOptions);
     this._addResponseValidator();
     this._addAuthentication();
+    addApiLoggerInterceptor(this._apiLogger);
     this._addRetryInterceptor();
     this._retryOption = RequestRetryOption.Default;
     this.prepareArgs = prepareArgs.bind(this);
@@ -456,10 +457,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._interceptors,
       // tslint:disable-next-line:no-shadowed-variable
       async (request, opt) => {
-        this._apiLogger.logRequest(request);
+        //this._apiLogger.logRequest(request);
         // tslint:disable-next-line:no-shadowed-variable
         const response = await this._httpClient(request, opt);
-        this._apiLogger.logResponse(response);
         return { request, response };
       }
     );
@@ -647,7 +647,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
   retryConfig: RetryConfiguration,
-  loggerBuilder: LoggerBuilder,
+  loggerBuilder: LoggingOptions,
   xmlSerializer: XmlSerializerInterface = new XmlSerialization()
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {

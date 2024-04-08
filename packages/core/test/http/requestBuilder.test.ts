@@ -24,7 +24,7 @@ import { FileWrapper } from '../../src/fileWrapper';
 import fs from 'fs';
 import path from 'path';
 import { bossSchema } from '../../../schema/test/bossSchema';
-import { customLoggerProvider } from '../../src/logger/loggerBuilder';
+import { noneLoggerProvider } from '../../src/logger/nullLogger';
 
 describe('test default request builder behavior with succesful responses', () => {
   const authParams = {
@@ -47,7 +47,7 @@ describe('test default request builder behavior with succesful responses', () =>
     ApiError,
     basicAuth,
     retryConfig,
-    customLoggerProvider()
+    noneLoggerProvider
   );
 
   it('should test request builder configured with text request body and text response body', async () => {
@@ -614,7 +614,7 @@ describe('test default request builder behavior to test retries', () => {
     ApiError,
     noneAuthenticationProvider,
     retryConfig,
-    customLoggerProvider()
+    noneLoggerProvider
   );
 
   it('should test request builder with retries and response returning 500 error code', async () => {

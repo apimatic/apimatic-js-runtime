@@ -1,11 +1,12 @@
-import { ILogger, Level } from './loggerBuilder';
-import { HttpRequest, HttpResponse } from '../coreInterfaces';
+import { HttpRequest, HttpResponse, ApiLoggerInterface, LoggerInterface, Level } from '../coreInterfaces';
+import { LoggingOptions } from './loggerOptions';
+import { NullLogger } from './nullLogger';
 
-export class ApiLogger {
-  private readonly _logger: ILogger;
+export class ApiLogger implements ApiLoggerInterface {
+  private readonly _logger: LoggerInterface;
 
-  constructor(logger: ILogger) {
-    this._logger = logger;
+  constructor(loggingOp: LoggingOptions) {
+    this._logger = loggingOp.logger ?? new NullLogger();;
   }
 
   public logRequest(coreRequest: HttpRequest): void {
@@ -44,61 +45,14 @@ export class ApiLogger {
   }
 }
 
-/*
-    this._addLoggerInterceptor();
-
-  private _addLoggerInterceptor() {
+export function addApiLoggerInterceptor(apiLogger: ApiLoggerInterface) {
     this.interceptRequest((request) => {
-      if (this._loggerBuilder._loggerConfig.isLoggingRequestBody) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Request Body',
-          request.body
-        );
-      }
-
-      if (this._loggerBuilder._loggerConfig.isLoggingRequestHeaders) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Request Headers',
-          request.headers
-        );
-      }
-
-      if (this._loggerBuilder._loggerConfig.isLoggingRequestInfo) {
-        this._loggerBuilder._logger.log(Level.Info, 'Request Info', {
-          method: request.method,
-          url: request.url,
-        });
-      }
+        apiLogger.logRequest(request);
       return request;
     });
 
     this.interceptResponse((context) => {
-      if (this._loggerBuilder._loggerConfig.isLoggingResponseBody) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Response Body',
-          context.response.body
-        );
-      }
-
-      if (this._loggerBuilder._loggerConfig.isLoggingResponseHeaders) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Response Headers',
-          context.response.headers
-        );
-      }
-
-      if (this._loggerBuilder._loggerConfig.isLoggingResponseInfo) {
-        this._loggerBuilder._logger.log(
-          Level.Info,
-          'Response Info',
-          context.response.statusCode
-        );
-      }
+        apiLogger.logResponse(context);
       return context;
     });
   }
-  */
