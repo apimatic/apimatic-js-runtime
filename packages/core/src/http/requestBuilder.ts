@@ -54,11 +54,7 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
-import {
-  createLoggerBuilderFactory,
-  LoggerBuilder,
-  LoggingConfiguration,
-} from '../logger/loggerBuilder';
+import { Level, LoggerBuilder, loggerProvider } from '../logger/loggerBuilder';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -216,8 +212,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _baseUrlProvider: (arg?: BaseUrlParamType) => string,
     protected _apiErrorCtr: ApiErrorConstructor,
     protected _authenticationProvider: AuthenticatorInterface<AuthParams>,
-    protected _logger: LoggerBuilder,
-    protected _loggerConfig: LoggingConfiguration,
+    protected _loggerBuilder: LoggerBuilder,
     protected _httpMethod: HttpMethod,
     protected _xmlSerializer: XmlSerializerInterface,
     protected _retryConfig: RetryConfiguration,
@@ -597,16 +592,24 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   private _addLoggerInterceptor() {
     this.interceptRequest((request) => {
-      if (this._loggerConfig.isLoggingRequestBody) {
-        this._logger.info('Request Body', request.body);
+      if (this._loggerBuilder._loggerConfig.isLoggingRequestBody) {
+        this._loggerBuilder._logger.log(
+          Level.Info,
+          'Request Body',
+          request.body
+        );
       }
 
-      if (this._loggerConfig.isLoggingRequestHeaders) {
-        this._logger.info('Request Headers', request.headers);
+      if (this._loggerBuilder._loggerConfig.isLoggingRequestHeaders) {
+        this._loggerBuilder._logger.log(
+          Level.Info,
+          'Request Headers',
+          request.headers
+        );
       }
 
-      if (this._loggerConfig.isLoggingRequestInfo) {
-        this._logger.info('Request Info', {
+      if (this._loggerBuilder._loggerConfig.isLoggingRequestInfo) {
+        this._loggerBuilder._logger.log(Level.Info, 'Request Info', {
           method: request.method,
           url: request.url,
         });
@@ -615,16 +618,28 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     });
 
     this.interceptResponse((context) => {
-      if (this._loggerConfig.isLoggingResponseBody) {
-        this._logger.info('Response Body', context.response.body);
+      if (this._loggerBuilder._loggerConfig.isLoggingResponseBody) {
+        this._loggerBuilder._logger.log(
+          Level.Info,
+          'Response Body',
+          context.response.body
+        );
       }
 
-      if (this._loggerConfig.isLoggingResponseHeaders) {
-        this._logger.info('Response Headers', context.response.headers);
+      if (this._loggerBuilder._loggerConfig.isLoggingResponseHeaders) {
+        this._loggerBuilder._logger.log(
+          Level.Info,
+          'Response Headers',
+          context.response.headers
+        );
       }
 
-      if (this._loggerConfig.isLoggingResponseInfo) {
-        this._logger.info('Response Info', context.response.statusCode);
+      if (this._loggerBuilder._loggerConfig.isLoggingResponseInfo) {
+        this._loggerBuilder._logger.log(
+          Level.Info,
+          'Response Info',
+          context.response.statusCode
+        );
       }
       return context;
     });
@@ -682,8 +697,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
   retryConfig: RetryConfiguration,
-  logger: LoggerBuilder,
-  loggingConfig: LoggingConfiguration,
+  loggerBuilder: LoggerBuilder,
   xmlSerializer: XmlSerializerInterface = new XmlSerialization()
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
@@ -692,8 +706,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       baseUrlProvider,
       apiErrorConstructor,
       authenticationProvider,
-      logger,
-      loggingConfig,
+      loggerProvider(loggerBuilder),
       httpMethod,
       xmlSerializer,
       retryConfig,

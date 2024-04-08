@@ -13,7 +13,9 @@ export * from './http/httpInterceptor';
 export * from './http/requestBuilder';
 export * from './http/pathTemplate';
 export { RequestRetryOption } from './http/retryConfiguration';
-export { LoggingConfiguration, LoggerBuilder } from './logger/loggerBuilder';
+export * from './logger/loggerConfiguration';
+export * from './logger/loggerBuilder';
+export { noneLoggerProvider } from './logger/nullLogger';
 export {
   indexedPrefix,
   unindexedPrefix,
