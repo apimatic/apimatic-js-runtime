@@ -22,7 +22,6 @@ export const requestAuthenticationProvider = (
 
     return async (request: any, options: any, next: any) => {
       let oAuthToken = await lastOAuthToken;
-
       if (
         oAuthTokenProvider &&
         (!isValid(oAuthToken) || isExpired(oAuthToken))
@@ -34,19 +33,24 @@ export const requestAuthenticationProvider = (
           oAuthOnTokenUpdate(oAuthToken);
         }
       }
-
-      validateAuthorization(oAuthToken);
-      request.headers = request.headers ?? {};
-      setHeader(
-        request.headers,
-        AUTHORIZATION_HEADER,
-        `Bearer ${oAuthToken?.accessToken}`
-      );
-
+      setOAuthTokenInRequest(oAuthToken, request);
       return next(request, options);
     };
   };
 };
+
+function setOAuthTokenInRequest(
+  oAuthToken: OAuthToken | undefined,
+  request: any
+) {
+  validateAuthorization(oAuthToken);
+  request.headers = request.headers ?? {};
+  setHeader(
+    request.headers,
+    AUTHORIZATION_HEADER,
+    `Bearer ${oAuthToken?.accessToken}`
+  );
+}
 
 function validateAuthorization(oAuthToken?: OAuthToken) {
   if (!isValid(oAuthToken)) {
