@@ -13,6 +13,7 @@ import {
   HttpInterceptorInterface,
   RequestOptions,
   RetryConfiguration,
+  ApiLoggerInterface,
 } from '../coreInterfaces';
 import { ArgumentsValidationError } from '../errors/argumentsValidationError';
 import { ResponseValidationError } from '../errors/responseValidationError';
@@ -54,8 +55,6 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
-import { LoggingOptions } from '../logger/loggerOptions';
-import { ApiLogger, requestLoggerInterceptor, responseLoggerInterceptor } from '../logger/apiLogger';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -189,7 +188,8 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
 }
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
-  implements RequestBuilder<BaseUrlParamType, AuthParams> {
+  implements RequestBuilder<BaseUrlParamType, AuthParams>
+{
   protected _accept?: string;
   protected _contentType?: string;
   protected _headers: Record<string, string>;
@@ -206,7 +206,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   protected _authParams?: AuthParams;
   protected _retryOption: RequestRetryOption;
   protected _apiErrorFactory: ApiErrorFactory;
-  protected _apiLogger: ApiLogger;
   public prepareArgs: typeof prepareArgs;
 
   constructor(
@@ -214,18 +213,17 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _baseUrlProvider: (arg?: BaseUrlParamType) => string,
     protected _apiErrorCtr: ApiErrorConstructor,
     protected _authenticationProvider: AuthenticatorInterface<AuthParams>,
-    protected _loggerOptions: LoggingOptions,
     protected _httpMethod: HttpMethod,
     protected _xmlSerializer: XmlSerializerInterface,
     protected _retryConfig: RetryConfiguration,
-    protected _path?: string
+    protected _path?: string,
+    protected _apiLogger?: ApiLoggerInterface
   ) {
     this._headers = {};
     this._query = [];
     this._interceptors = [];
     this._validateResponse = true;
     this._apiErrorFactory = { apiErrorCtor: _apiErrorCtr };
-    this._apiLogger = new ApiLogger(_loggerOptions);
     this._addResponseValidator();
     this._addAuthentication();
     this._addApiLoggerInterceptors();
@@ -457,7 +455,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._interceptors,
       // tslint:disable-next-line:no-shadowed-variable
       async (request, opt) => {
-        //this._apiLogger.logRequest(request);
+        // this._apiLogger.logRequest(request);
         // tslint:disable-next-line:no-shadowed-variable
         const response = await this._httpClient(request, opt);
         return { request, response };
@@ -595,8 +593,16 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     });
   }
   private _addApiLoggerInterceptors() {
-    this.intercept(requestLoggerInterceptor(this._apiLogger))
-    this.intercept(responseLoggerInterceptor(this._apiLogger))
+    if (this._apiLogger) {
+      const apiLogger = this._apiLogger;
+
+      this.intercept(async (request, options, next) => {
+        apiLogger.logRequest(request);
+        const context = await next(request, options);
+        apiLogger.logResponse(context.response);
+        return context;
+      });
+    }
   }
   private _addRetryInterceptor() {
     this.intercept(async (request, options, next) => {
@@ -651,7 +657,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
   retryConfig: RetryConfiguration,
-  logging: LoggingOptions,
+  apiLogger?: ApiLoggerInterface,
   xmlSerializer: XmlSerializerInterface = new XmlSerialization()
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
@@ -660,11 +666,11 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       baseUrlProvider,
       apiErrorConstructor,
       authenticationProvider,
-      logging,
       httpMethod,
       xmlSerializer,
       retryConfig,
-      path
+      path,
+      apiLogger
     );
   };
 }

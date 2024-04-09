@@ -11,5 +11,5 @@ export interface LoggingConfiguration {
 
 export enum HeaderLoggingPolicy {
   Include = 'include',
-  Exculde = 'exclude',
+  Exclude = 'exclude',
 }
