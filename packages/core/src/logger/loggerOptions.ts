@@ -8,8 +8,8 @@ export interface LoggingOptions {
 }
 
 export class ConsoleLogger implements LoggerInterface {
-  public log(_level: Level, message: string, ...optionalParams: any[]): void {
+  public log(_level: Level, message: string, ...params: any[]): void {
     // tslint:disable-next-line:no-console
-    console.log(message, optionalParams);
+    console.log(message, params);
   }
 }

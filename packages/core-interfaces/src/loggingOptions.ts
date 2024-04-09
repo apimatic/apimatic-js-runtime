@@ -1,13 +1,13 @@
-import { HttpRequest } from "./httpRequest";
-import { HttpResponse } from "./httpResponse";
+import { HttpRequest } from './httpRequest';
+import { HttpResponse } from './httpResponse';
 
 export interface ApiLoggerInterface {
-    logRequest(coreRequest: HttpRequest): void;
-    logResponse(coreResponse: HttpResponse): void;
+  logRequest(coreRequest: HttpRequest): void;
+  logResponse(coreResponse: HttpResponse): void;
 }
 
 export interface LoggerInterface {
-  log(level: Level, message: string, ...optionalParams: any[]): void;
+  log(level: Level, message: string, ...params: any[]): void;
 }
 
 export enum Level {

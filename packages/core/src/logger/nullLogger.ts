@@ -3,7 +3,7 @@ import { LoggerInterface, Level } from '../coreInterfaces';
 import { HeaderLoggingPolicy } from './loggerConfiguration';
 
 export class NullLogger implements LoggerInterface {
-  public log(_level: Level, _message: string, ..._optionalParams: any[]): void {
+  public log(_level: Level, _message: string, ..._params: any[]): void {
     return;
   }
 }
@@ -20,6 +20,6 @@ export const noneLoggerProvider: LoggingOptions = {
     isLoggingResponseHeaders: false,
     isLoggingResponseBody: false,
     headerLoggingPolicy: HeaderLoggingPolicy.Exculde,
-    headerFilters: []
+    headerFilters: [],
   },
 };
