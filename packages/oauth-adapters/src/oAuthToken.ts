@@ -1,4 +1,10 @@
-import { bigint, object, optional, Schema, string } from '@apimatic/schema';
+import {
+  bigint,
+  expandoObject,
+  optional,
+  Schema,
+  string,
+} from '@apimatic/schema';
 
 /** OAuth 2 Authorization endpoint response */
 export interface OAuthToken {
@@ -20,9 +26,10 @@ export interface OAuthToken {
    * Used to get a new access token when it expires.
    */
   refreshToken?: string;
+  [key: string]: unknown;
 }
 
-export const oAuthTokenSchema: Schema<OAuthToken> = object({
+export const oAuthTokenSchema: Schema<OAuthToken> = expandoObject({
   accessToken: ['access_token', string()],
   tokenType: ['token_type', string()],
   expiresIn: ['expires_in', optional(bigint())],
