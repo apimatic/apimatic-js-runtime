@@ -20,7 +20,7 @@ export const requestAuthenticationProvider = (
       return passThroughInterceptor;
     }
 
-    return async (request: any, options: any, next: any) => {
+    return async (request, options, next) => {
       let oAuthToken = await lastOAuthToken;
       if (
         oAuthTokenProvider &&

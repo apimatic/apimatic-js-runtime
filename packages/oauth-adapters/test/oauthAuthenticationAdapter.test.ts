@@ -15,7 +15,7 @@ describe('test oauth request provider', () => {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiresIn: BigInt(100000),
-      scope: '[products, orders]',
+      scope: 'products orders',
       expiry: BigInt(Date.now()),
     };
     const authenticationProvider = requestAuthenticationProvider(oAuthToken);
@@ -27,7 +27,7 @@ describe('test oauth request provider', () => {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiresIn: BigInt(100000),
-      scope: '[products, orders]',
+      scope: 'products orders',
       expiry: BigInt(Date.now()),
     };
     const authenticationProvider = requestAuthenticationProvider(oAuthToken);
@@ -41,32 +41,28 @@ describe('test oauth request provider', () => {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiresIn: BigInt(100000),
-      scope: '[products, orders]',
+      scope: 'products orders',
       expiry: BigInt(Date.now()),
     };
+    const oAuthTokenProvider = jest.fn((_: OAuthToken | undefined) => {
+      return Promise.resolve({
+        accessToken: 'Invalid',
+        tokenType: 'Bearer',
+      });
+    });
+    const oAuthOnTokenUpdate = jest.fn((_: OAuthToken) => {
+      // handler for updated token
+    });
     const authenticationProvider = requestAuthenticationProvider(
       oAuthToken,
-      (token: OAuthToken | undefined) => {
-        // return an invalid token if accessed from provider
-        if (token === undefined) {
-          return Promise.resolve({
-            accessToken: 'Invalid',
-            tokenType: 'Bearer',
-          });
-        }
-        return Promise.resolve({
-          ...token,
-          accessToken: 'Invalid',
-        });
-      },
-      (_: OAuthToken) => {
-        // fail if token gets updated
-        expect(true).toBe(false);
-      }
+      oAuthTokenProvider,
+      oAuthOnTokenUpdate
     );
-    return await executeAndExpect(authenticationProvider(true), {
+    await executeAndExpect(authenticationProvider(true), {
       authorization: 'Bearer 1f12495f1a1ad9066b51fb3b4e456aee',
     });
+    expect(oAuthTokenProvider.mock.calls).toHaveLength(0);
+    expect(oAuthOnTokenUpdate.mock.calls).toHaveLength(0);
   });
 
   it('should fail with undefined token', async () => {
@@ -79,32 +75,39 @@ describe('test oauth request provider', () => {
   });
 
   it('should pass with undefined token + authProvider + updateCallback', async () => {
+    const oAuthTokenProvider = jest.fn((token: OAuthToken | undefined) => {
+      if (token === undefined) {
+        return Promise.resolve({
+          accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+          tokenType: 'Bearer',
+          expiresIn: BigInt(100000),
+          scope: 'products orders',
+          expiry: BigInt(Date.now()),
+        });
+      }
+      // return an invalid token if existing token is not undefined
+      return Promise.resolve({
+        ...token,
+        accessToken: 'Invalid',
+      });
+    });
+    const oAuthOnTokenUpdate = jest.fn((_: OAuthToken) => {
+      // handler for updated token
+    });
     const authenticationProvider = requestAuthenticationProvider(
       undefined,
-      (token: OAuthToken | undefined) => {
-        if (token === undefined) {
-          return Promise.resolve({
-            accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
-            tokenType: 'Bearer',
-            expiresIn: BigInt(100000),
-            scope: '[products, orders]',
-            expiry: BigInt(Date.now()),
-          });
-        }
-        // return an invalid token if existing token is not undefined
-        return Promise.resolve({
-          ...token,
-          accessToken: 'Invalid',
-        });
-      },
-      (token: OAuthToken) => {
-        // check the updated token
-        expect(token.accessToken).toBe('1f12495f1a1ad9066b51fb3b4e456aee');
-      }
+      oAuthTokenProvider,
+      oAuthOnTokenUpdate
     );
-    return await executeAndExpect(authenticationProvider(true), {
+    await executeAndExpect(authenticationProvider(true), {
       authorization: 'Bearer 1f12495f1a1ad9066b51fb3b4e456aee',
     });
+    expect(oAuthTokenProvider.mock.calls).toHaveLength(1);
+    expect(oAuthTokenProvider.mock.calls[0][0]).toBe(undefined);
+    expect(oAuthOnTokenUpdate.mock.calls).toHaveLength(1);
+    expect(oAuthOnTokenUpdate.mock.calls[0][0].accessToken).toBe(
+      '1f12495f1a1ad9066b51fb3b4e456aee'
+    );
   });
 
   it('should fail with expired token', async () => {
@@ -112,7 +115,7 @@ describe('test oauth request provider', () => {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiresIn: BigInt(100000),
-      scope: '[products, orders]',
+      scope: 'products orders',
       expiry: BigInt(2000),
     };
     const authenticationProvider = requestAuthenticationProvider(oAuthToken);
@@ -128,34 +131,43 @@ describe('test oauth request provider', () => {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiresIn: BigInt(100000),
-      scope: '[products, orders]',
+      scope: 'products orders',
       expiry: BigInt(2000),
     };
+    const oAuthTokenProvider = jest.fn((token: OAuthToken | undefined) => {
+      if (token === undefined) {
+        // return an invalid token if existing token is undefined
+        return Promise.resolve({
+          accessToken: 'Invalid',
+          tokenType: 'Bearer',
+        });
+      }
+      return Promise.resolve({
+        ...token,
+        accessToken: '1f12495f1a1ad9066b51fb3b4e456aeeNEW',
+        expiry: BigInt(Date.now()),
+      });
+    });
+    const oAuthOnTokenUpdate = jest.fn((_: OAuthToken) => {
+      // handler for updated token
+    });
 
     const authenticationProvider = requestAuthenticationProvider(
       oAuthToken,
-      (token: OAuthToken | undefined) => {
-        if (token === undefined) {
-          // return an invalid token if existing token is undefined
-          return Promise.resolve({
-            accessToken: 'Invalid',
-            tokenType: 'Bearer',
-          });
-        }
-        return Promise.resolve({
-          ...token,
-          accessToken: '1f12495f1a1ad9066b51fb3b4e456aeeNEW',
-          expiry: BigInt(Date.now()),
-        });
-      },
-      (token: OAuthToken) => {
-        // check the updated token
-        expect(token.accessToken).toBe('1f12495f1a1ad9066b51fb3b4e456aeeNEW');
-      }
+      oAuthTokenProvider,
+      oAuthOnTokenUpdate
     );
-    return await executeAndExpect(authenticationProvider(true), {
+    await executeAndExpect(authenticationProvider(true), {
       authorization: 'Bearer 1f12495f1a1ad9066b51fb3b4e456aeeNEW',
     });
+    expect(oAuthTokenProvider.mock.calls).toHaveLength(1);
+    expect(oAuthTokenProvider.mock.calls[0][0]?.accessToken).toBe(
+      '1f12495f1a1ad9066b51fb3b4e456aee'
+    );
+    expect(oAuthOnTokenUpdate.mock.calls).toHaveLength(1);
+    expect(oAuthOnTokenUpdate.mock.calls[0][0].accessToken).toBe(
+      '1f12495f1a1ad9066b51fb3b4e456aeeNEW'
+    );
   });
 });
 
