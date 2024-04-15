@@ -598,7 +598,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
 
       this.intercept(async (request, options, next) => {
         apiLogger.logRequest(request);
-        const context = await next(request, options);
+        return next(request, options);
+      });
+      this.intercept(async (req, opt, next) => {
+        const context = await next(req, opt);
         apiLogger.logResponse(context.response);
         return context;
       });

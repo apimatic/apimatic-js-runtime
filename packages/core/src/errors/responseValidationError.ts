@@ -6,11 +6,12 @@ import { SchemaValidationError } from '../schema';
  */
 export class ResponseValidationError
   extends Error
-  implements ApiResponse<never> {
+  implements ApiResponse<never>
+{
   public request: HttpRequest;
   public statusCode: number;
   public headers: Record<string, string>;
-  public result: never;
+  public result!: never;
   public body: string | Blob | NodeJS.ReadableStream;
   public errors: SchemaValidationError[];
 

@@ -43,7 +43,7 @@ export function discriminatedObject<
   };
   return {
     type: () =>
-      `DiscriminatedUnion<${discriminatorPropName},[${objectEntries(
+      `DiscriminatedUnion<${String(discriminatorPropName)},[${objectEntries(
         discriminatorMap
       )
         .map(([_, v]) => v.type)
