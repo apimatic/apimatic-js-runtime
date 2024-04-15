@@ -58,9 +58,8 @@ describe('test custom header authentication scheme', () => {
       authParams: Record<string, string>
     ) => {
       const headers = request.headers ?? {};
-      const authenticationProvider = customHeaderAuthenticationProvider(
-        authParams
-      );
+      const authenticationProvider =
+        customHeaderAuthenticationProvider(authParams);
       const handler = authenticationProvider(enableAuthentication);
       const interceptor = [handler];
       const client = async (req) => {
