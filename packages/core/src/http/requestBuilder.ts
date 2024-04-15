@@ -41,6 +41,7 @@ import {
   PathTemplateTypes,
   SkipEncode,
 } from './pathTemplate';
+import { randomUUID } from 'crypto';
 import {
   filterFileWrapperFromKeyValuePairs,
   formDataEncodeObject,
@@ -226,7 +227,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._apiErrorFactory = { apiErrorCtor: _apiErrorCtr };
     this._addResponseValidator();
     this._addAuthentication();
-    this._addApiLoggerInterceptors();
     this._addRetryInterceptor();
     this._retryOption = RequestRetryOption.Default;
     this.prepareArgs = prepareArgs.bind(this);
@@ -455,9 +455,14 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._interceptors,
       // tslint:disable-next-line:no-shadowed-variable
       async (request, opt) => {
-        // this._apiLogger.logRequest(request);
         // tslint:disable-next-line:no-shadowed-variable
         const response = await this._httpClient(request, opt);
+        if (this._apiLogger) {
+          const apiLogger = this._apiLogger;
+          const scopeId = randomUUID();
+          apiLogger.logRequest(scopeId, request);
+          apiLogger.logResponse(scopeId, response);
+        }
         return { request, response };
       }
     );
@@ -592,21 +597,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return handler(...args);
     });
   }
-  private _addApiLoggerInterceptors() {
-    if (this._apiLogger) {
-      const apiLogger = this._apiLogger;
 
-      this.intercept(async (request, options, next) => {
-        apiLogger.logRequest(request);
-        return next(request, options);
-      });
-      this.intercept(async (req, opt, next) => {
-        const context = await next(req, opt);
-        apiLogger.logResponse(context.response);
-        return context;
-      });
-    }
-  }
   private _addRetryInterceptor() {
     this.intercept(async (request, options, next) => {
       let context: HttpContext | undefined;

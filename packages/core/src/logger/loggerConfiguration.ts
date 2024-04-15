@@ -1,3 +1,5 @@
+import { Level } from '@apimatic/core-interfaces';
+
 export interface LoggingConfiguration {
   isLoggingRequestInfo?: boolean;
   isLoggingRequestHeaders?: boolean;
@@ -7,6 +9,7 @@ export interface LoggingConfiguration {
   isLoggingResponseBody?: boolean;
   headerFilters?: string[];
   headerLoggingPolicy?: HeaderLoggingPolicy;
+  level?: Level;
 }
 
 export enum HeaderLoggingPolicy {

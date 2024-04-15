@@ -14,21 +14,25 @@ export class ApiLogger implements ApiLoggerInterface {
     this._logger = logger;
   }
 
-  public logRequest(request: HttpRequest): void {
+  public logRequest(scopeId: string, request: HttpRequest): void {
     this._logger.log(
       Level.Info,
-      `Request ${request.method} ${request.url}`,
-      { method: request.method, url: request.url } // move to one object and
+      `Request ${scopeId} ${request.method} ${request.url}`,
+      { scopeId, method: request.method, url: request.url } // move to one object and
     );
   }
 
-  public logResponse(response: HttpResponse): void {
+  public logResponse(scopeId: string, response: HttpResponse): void {
     const contentLength = getHeader(response.headers, CONTENT_LENGTH_HEADER);
 
     this._logger.log(
       Level.Info,
-      `Response ${response.statusCode} ${contentLength}`,
-      { statusCode: response.statusCode, contentLength }
+      `Response ${scopeId} ${response.statusCode} ${contentLength}`,
+      {
+        scopeId,
+        statusCode: response.statusCode,
+        contentLength,
+      }
     );
   }
 }
