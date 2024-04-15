@@ -41,7 +41,6 @@ import {
   PathTemplateTypes,
   SkipEncode,
 } from './pathTemplate';
-import { randomUUID } from 'crypto';
 import {
   filterFileWrapperFromKeyValuePairs,
   formDataEncodeObject,
@@ -56,6 +55,7 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
+import { generateGUID } from '../logger/apiLogger';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -459,7 +459,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         const response = await this._httpClient(request, opt);
         if (this._apiLogger) {
           const apiLogger = this._apiLogger;
-          const scopeId = randomUUID();
+          const scopeId = generateGUID();
           apiLogger.logRequest(scopeId, request);
           apiLogger.logResponse(scopeId, response);
         }
