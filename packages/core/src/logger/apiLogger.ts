@@ -10,7 +10,11 @@ import {
   CONTENT_TYPE_HEADER,
   getHeader,
 } from '../http/httpHeaders';
-import { LoggingOptions } from './loggerConfiguration';
+import {
+  LogBaseOptions,
+  LoggingOptions,
+  LogRequestOptions,
+} from './loggerConfiguration';
 import { NullLogger } from './nullLogger';
 
 export class ApiLogger implements ApiLoggerInterface {
@@ -44,41 +48,11 @@ export class ApiLogger implements ApiLoggerInterface {
         contentType: contentTypeHeader,
       }
     );
-
-    if (this._loggingOptions.logRequest) {
-      const {
-        logBody,
-        logHeaders,
-        headerToInclude,
-        headerToExclude,
-      } = this._loggingOptions.logRequest;
-
-      if (logHeaders) {
-        const headersToLog = this.extractHeadersToLog(
-          request.headers,
-          headerToInclude,
-          headerToExclude
-        );
-
-        this._loggingOptions.logger?.log(
-          logLevel,
-          `Request Headers ${headersToLog}`,
-          {
-            headers: headersToLog,
-          }
-        );
-      }
-
-      if (logBody) {
-        this._loggingOptions.logger?.log(
-          logLevel,
-          `Request Body ${request.body}`,
-          {
-            body: request.body,
-          }
-        );
-      }
-    }
+    this.applyLogRequestOptions(
+      logLevel,
+      request,
+      this._loggingOptions.logRequest
+    );
   }
 
   public logResponse(response: HttpResponse): void {
@@ -100,13 +74,66 @@ export class ApiLogger implements ApiLoggerInterface {
       }
     );
 
-    if (this._loggingOptions.logResponse) {
+    this.applyLogResponseOptions(
+      logLevel,
+      response,
+      this._loggingOptions.logRequest
+    );
+  }
+
+  private applyLogRequestOptions(
+    level: Level,
+    request: HttpRequest,
+    logRequest?: LogRequestOptions
+  ) {
+    if (logRequest) {
       const {
         logBody,
         logHeaders,
         headerToInclude,
         headerToExclude,
-      } = this._loggingOptions.logResponse;
+      } = logRequest;
+
+      if (logHeaders) {
+        const headersToLog = this.extractHeadersToLog(
+          request.headers,
+          headerToInclude,
+          headerToExclude
+        );
+
+        this._loggingOptions.logger?.log(
+          level,
+          `Request Headers ${headersToLog}`,
+          {
+            headers: headersToLog,
+          }
+        );
+      }
+
+      if (logBody) {
+        this._loggingOptions.logger?.log(
+          level,
+          `Request Body ${request.body}`,
+          {
+            body: request.body,
+          }
+        );
+      }
+    }
+  }
+
+  private applyLogResponseOptions(
+    level: Level,
+    response: HttpResponse,
+    logResponse?: LogBaseOptions
+  ) {
+    if (logResponse) {
+      const {
+        logBody,
+        logHeaders,
+        headerToInclude,
+        headerToExclude,
+      } = logResponse;
 
       if (logHeaders) {
         const headersToLog = this.extractHeadersToLog(
@@ -115,13 +142,13 @@ export class ApiLogger implements ApiLoggerInterface {
           headerToExclude
         );
 
-        this._logger.log(logLevel, `Response Headers ${headersToLog}`, {
+        this._logger.log(level, `Response Headers ${headersToLog}`, {
           headers: headersToLog,
         });
       }
 
       if (logBody) {
-        this._logger.log(logLevel, `Response Body ${response.body}`, {
+        this._logger.log(level, `Response Body ${response.body}`, {
           body: response.body,
         });
       }
