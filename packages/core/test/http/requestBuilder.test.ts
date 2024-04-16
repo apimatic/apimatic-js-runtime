@@ -210,7 +210,8 @@ describe('test default request builder behavior with succesful responses', () =>
   it('should test request builder with form-data request body and json response body', async () => {
     const expectedRequest: HttpRequest = {
       method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/auth/basic/test/requestBuilder?form-data=true',
+      url:
+        'http://apimatic.hopto.org:3000/auth/basic/test/requestBuilder?form-data=true',
       headers: {
         'test-header': 'test-value',
         accept: 'application/json',
