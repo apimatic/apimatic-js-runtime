@@ -2,6 +2,7 @@ import {
   HttpRequest,
   HttpResponse,
   ApiLoggerInterface,
+  LoggerInterface,
   Level,
 } from '../coreInterfaces';
 import {
@@ -13,113 +14,117 @@ import { LoggingOptions } from './loggerConfiguration';
 import { NullLogger } from './nullLogger';
 
 export class ApiLogger implements ApiLoggerInterface {
-  private readonly _loggingOp: LoggingOptions;
+  private readonly _loggingOptions: LoggingOptions;
   private readonly _isConfigured: boolean;
+  private readonly _logger: LoggerInterface;
 
-  constructor(loggingOp: LoggingOptions) {
-    this._loggingOp = loggingOp;
-    this._isConfigured = loggingOp.logger
-      ? loggingOp.logger !== new NullLogger()
-      : false;
+  constructor(loggingOpt: LoggingOptions) {
+    this._loggingOptions = loggingOpt;
+    this._logger = loggingOpt.logger ?? new NullLogger();
+    this._isConfigured = this._logger !== new NullLogger() ? true : false;
   }
 
-  public logRequest(scopeId: string, request: HttpRequest): void {
+  public logRequest(request: HttpRequest): void {
     if (!this._isConfigured) {
       return;
     }
 
-    const localLogLevel = this._loggingOp.logLevel ?? Level.Info;
+    const logLevel = this._loggingOptions.logLevel ?? Level.Info;
     const contentTypeHeader = this.getContentType(request.headers);
-    const url = this._loggingOp.logRequest?.includeQueryInPath
+    const url = this._loggingOptions.logRequest?.includeQueryInPath
       ? request.url
-      : this.parseQueryPath(request.url);
+      : this.removeQueryParams(request.url);
 
-    this._loggingOp.logger?.log(
-      localLogLevel,
-      `Request ${scopeId} ${request.method} ${url} ${contentTypeHeader}`,
+    this._logger.log(
+      logLevel,
+      `$Request  HttpMethod: ${request.method} Url: ${url} ContentType: ${contentTypeHeader}`,
       {
-        scopeId,
         method: request.method,
         url,
         contentType: contentTypeHeader,
       }
     );
 
-    if (this._loggingOp.logRequest?.logHeaders) {
-      const headersToLog = this.extractHeadersToLog(
-        request.headers,
-        this._loggingOp.logRequest?.headerToInclude,
-        this._loggingOp.logRequest?.headerToExclude
-      );
+    if (this._loggingOptions.logRequest) {
+      const {
+        logBody,
+        logHeaders,
+        headerToInclude,
+        headerToExclude,
+      } = this._loggingOptions.logRequest;
 
-      this._loggingOp.logger?.log(
-        localLogLevel,
-        `Request Headers ${scopeId} ${headersToLog}`,
-        {
-          scopeId,
-          headers: headersToLog,
-        }
-      );
-    }
+      if (logHeaders) {
+        const headersToLog = this.extractHeadersToLog(
+          request.headers,
+          headerToInclude,
+          headerToExclude
+        );
 
-    if (this._loggingOp.logRequest?.logBody) {
-      this._loggingOp.logger?.log(
-        localLogLevel,
-        `Request Body ${scopeId} ${request.body}`,
-        {
-          scopeId,
-          body: request.body,
-        }
-      );
+        this._loggingOptions.logger?.log(
+          logLevel,
+          `Request Headers ${headersToLog}`,
+          {
+            headers: headersToLog,
+          }
+        );
+      }
+
+      if (logBody) {
+        this._loggingOptions.logger?.log(
+          logLevel,
+          `Request Body ${request.body}`,
+          {
+            body: request.body,
+          }
+        );
+      }
     }
   }
 
-  public logResponse(scopeId: string, response: HttpResponse): void {
+  public logResponse(response: HttpResponse): void {
     if (!this._isConfigured) {
       return;
     }
 
-    const localLogLevel = this._loggingOp.logLevel ?? Level.Info;
+    const logLevel = this._loggingOptions.logLevel ?? Level.Info;
     const contentTypeHeader = this.getContentType(response.headers);
     const contentLengthHeader = this.getContentLength(response.headers);
 
-    this._loggingOp.logger?.log(
-      localLogLevel,
-      `Response ${scopeId} ${response.statusCode} ${contentLengthHeader} ${contentTypeHeader}`,
+    this._logger.log(
+      logLevel,
+      `Response HttpStatusCode ${response.statusCode} Length ${contentLengthHeader} ContentType ${contentTypeHeader}`,
       {
-        scopeId,
         statusCode: response.statusCode,
         contentLength: contentLengthHeader,
         contentType: contentTypeHeader,
       }
     );
 
-    if (this._loggingOp.logResponse?.logHeaders) {
-      const headersToLog = this.extractHeadersToLog(
-        response.headers,
-        this._loggingOp.logResponse?.headerToInclude,
-        this._loggingOp.logResponse?.headerToExclude
-      );
+    if (this._loggingOptions.logResponse) {
+      const {
+        logBody,
+        logHeaders,
+        headerToInclude,
+        headerToExclude,
+      } = this._loggingOptions.logResponse;
 
-      this._loggingOp.logger?.log(
-        localLogLevel,
-        `Response Headers ${scopeId} ${headersToLog}`,
-        {
-          scopeId,
+      if (logHeaders) {
+        const headersToLog = this.extractHeadersToLog(
+          response.headers,
+          headerToInclude,
+          headerToExclude
+        );
+
+        this._logger.log(logLevel, `Response Headers ${headersToLog}`, {
           headers: headersToLog,
-        }
-      );
-    }
+        });
+      }
 
-    if (this._loggingOp.logResponse?.logBody) {
-      this._loggingOp.logger?.log(
-        localLogLevel,
-        `Response Body ${scopeId} ${response.body}`,
-        {
-          scopeId,
+      if (logBody) {
+        this._logger.log(logLevel, `Response Body ${response.body}`, {
           body: response.body,
-        }
-      );
+        });
+      }
     }
   }
 
@@ -131,10 +136,7 @@ export class ApiLogger implements ApiLoggerInterface {
     return headers ? getHeader(headers, CONTENT_LENGTH_HEADER) ?? '' : '';
   }
 
-  private parseQueryPath(url: string): string {
-    if (!url) {
-      return url;
-    }
+  private removeQueryParams(url: string): string {
     const queryStringIndex: number = url.indexOf('?');
     return queryStringIndex !== -1 ? url.substring(0, queryStringIndex) : url;
   }
@@ -149,27 +151,29 @@ export class ApiLogger implements ApiLoggerInterface {
     }
 
     if (headersToInclude && headersToInclude.length > 0) {
-      return headers;
-      // .Where(h => headersToInclude.Contains(h.Key))
-      // .ToDictionary(h => h.Key, h => h.Value);
+      // Filter headers based on the keys specified in headersToInclude
+      const filteredHeaders = Object.entries(headers)
+        .filter(([key]) => headersToInclude.includes(key))
+        .reduce((acc, [key, value]) => {
+          acc[key] = value;
+          return acc;
+        }, {});
+
+      return filteredHeaders;
     }
 
     if (headersToExclude && headersToExclude.length > 0) {
-      return headers;
-      // .Where(h => !headersToExclude.Contains(h.Key))
-      // .ToDictionary(h => h.Key, h => h.Value);
+      // Filter headers based on the keys specified in headersToExclude
+      const filteredHeaders = Object.entries(headers)
+        .filter(([key]) => !headersToExclude.includes(key))
+        .reduce((acc, [key, value]) => {
+          acc[key] = value;
+          return acc;
+        }, {});
+
+      return filteredHeaders;
     }
 
     return headers;
   }
-}
-
-export function generateGUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-    /* tslint:disable:no-bitwise */
-    const r = (Math.random() * 16) | 0;
-    /* tslint:disable:no-bitwise */
-    const v = c === 'x' ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
 }

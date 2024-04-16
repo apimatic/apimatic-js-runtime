@@ -2,8 +2,8 @@ import { HttpRequest } from './httpRequest';
 import { HttpResponse } from './httpResponse';
 
 export interface ApiLoggerInterface {
-  logRequest(scopeId: string, request: HttpRequest): void;
-  logResponse(scopeId: string, response: HttpResponse): void;
+  logRequest(request: HttpRequest): void;
+  logResponse(response: HttpResponse): void;
 }
 
 export interface LoggerInterface {

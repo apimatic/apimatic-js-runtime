@@ -55,7 +55,6 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
-import { generateGUID } from '../logger/apiLogger';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -189,8 +188,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
 }
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
-  implements RequestBuilder<BaseUrlParamType, AuthParams>
-{
+  implements RequestBuilder<BaseUrlParamType, AuthParams> {
   protected _accept?: string;
   protected _contentType?: string;
   protected _headers: Record<string, string>;
@@ -217,8 +215,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _httpMethod: HttpMethod,
     protected _xmlSerializer: XmlSerializerInterface,
     protected _retryConfig: RetryConfiguration,
-    protected _path?: string,
-    protected _apiLogger?: ApiLoggerInterface
+    protected _apiLogger: ApiLoggerInterface,
+    protected _path?: string
   ) {
     this._headers = {};
     this._query = [];
@@ -457,12 +455,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       async (request, opt) => {
         // tslint:disable-next-line:no-shadowed-variable
         const response = await this._httpClient(request, opt);
-        if (this._apiLogger) {
-          const apiLogger = this._apiLogger;
-          const scopeId = generateGUID();
-          apiLogger.logRequest(scopeId, request);
-          apiLogger.logResponse(scopeId, response);
-        }
+        this._apiLogger.logRequest(request);
+        this._apiLogger.logResponse(response);
         return { request, response };
       }
     );
@@ -651,7 +645,7 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
   retryConfig: RetryConfiguration,
-  apiLogger?: ApiLoggerInterface,
+  apiLogger: ApiLoggerInterface,
   xmlSerializer: XmlSerializerInterface = new XmlSerialization()
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
@@ -663,8 +657,8 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       httpMethod,
       xmlSerializer,
       retryConfig,
-      path,
-      apiLogger
+      apiLogger,
+      path
     );
   };
 }
