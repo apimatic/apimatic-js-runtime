@@ -24,7 +24,9 @@ export class ApiLogger implements ApiLoggerInterface {
   }
 
   public logRequest(scopeId: string, request: HttpRequest): void {
-    if (!this._isConfigured) { return; }
+    if (!this._isConfigured) {
+      return;
+    }
 
     const localLogLevel = this._loggingOp.logLevel ?? Level.Info;
     const contentTypeHeader = this.getContentType(request.headers);
@@ -73,7 +75,9 @@ export class ApiLogger implements ApiLoggerInterface {
   }
 
   public logResponse(scopeId: string, response: HttpResponse): void {
-    if (!this._isConfigured) { return; }
+    if (!this._isConfigured) {
+      return;
+    }
 
     const localLogLevel = this._loggingOp.logLevel ?? Level.Info;
     const contentTypeHeader = this.getContentType(response.headers);
@@ -128,7 +132,9 @@ export class ApiLogger implements ApiLoggerInterface {
   }
 
   private parseQueryPath(url: string): string {
-    if (!url) { return url; }
+    if (!url) {
+      return url;
+    }
     const queryStringIndex: number = url.indexOf('?');
     return queryStringIndex !== -1 ? url.substring(0, queryStringIndex) : url;
   }
@@ -138,7 +144,9 @@ export class ApiLogger implements ApiLoggerInterface {
     headersToInclude?: string[],
     headersToExclude?: string[]
   ): Record<string, string> {
-    if (!headers) { return {}; }
+    if (!headers) {
+      return {};
+    }
 
     if (headersToInclude && headersToInclude.length > 0) {
       return headers;
