@@ -1,18 +1,19 @@
-import { Level } from '@apimatic/core-interfaces';
+import { Level, LoggerInterface } from '@apimatic/core-interfaces';
 
-export interface LoggingConfiguration {
-  isLoggingRequestInfo?: boolean;
-  isLoggingRequestHeaders?: boolean;
-  isLoggingRequestBody?: boolean;
-  isLoggingResponseInfo?: boolean;
-  isLoggingResponseHeaders?: boolean;
-  isLoggingResponseBody?: boolean;
-  headerFilters?: string[];
-  headerLoggingPolicy?: HeaderLoggingPolicy;
-  level?: Level;
+export interface LoggingOptions {
+  logger?: LoggerInterface;
+  logLevel?: Level;
+  logRequest?: LogRequestOptions;
+  logResponse?: LogBaseOptions;
 }
 
-export enum HeaderLoggingPolicy {
-  Include = 'include',
-  Exclude = 'exclude',
+export interface LogBaseOptions {
+  logBody?: boolean;
+  logHeaders?: boolean;
+  headerToExclude?: string[];
+  headerToInclude?: string[];
+}
+
+export interface LogRequestOptions extends LogBaseOptions {
+  includeQueryInPath?: boolean;
 }
