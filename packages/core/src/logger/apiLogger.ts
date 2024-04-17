@@ -46,7 +46,13 @@ export class ApiLogger implements ApiLoggerInterface {
         contentType: contentTypeHeader,
       }
     );
-    this.applyLogRequestOptions(
+    this.applyLogRequestHeaders(
+      logLevel,
+      request,
+      this._loggingOptions.logRequest
+    );
+
+    this.applyLogRequestBody(
       logLevel,
       request,
       this._loggingOptions.logRequest
@@ -72,25 +78,26 @@ export class ApiLogger implements ApiLoggerInterface {
       }
     );
 
-    this.applyLogResponseOptions(
+    this.applyLogResponseHeaders(
+      logLevel,
+      response,
+      this._loggingOptions.logResponse
+    );
+
+    this.applyLogResponseBody(
       logLevel,
       response,
       this._loggingOptions.logResponse
     );
   }
 
-  private applyLogRequestOptions(
+  private applyLogRequestHeaders(
     level: Level,
     request: HttpRequest,
     logRequest?: HttpRequestLoggingOptions
   ) {
     if (logRequest) {
-      const {
-        logBody,
-        logHeaders,
-        headerToInclude,
-        headerToExclude,
-      } = logRequest;
+      const { logHeaders, headerToInclude, headerToExclude } = logRequest;
 
       if (logHeaders) {
         const headersToLog = this.extractHeadersToLog(
@@ -107,31 +114,32 @@ export class ApiLogger implements ApiLoggerInterface {
           }
         );
       }
-
-      if (logBody) {
-        this._loggingOptions.logger?.log(
-          level,
-          `Request Body ${JSON.stringify(request.body)}`,
-          {
-            body: request.body,
-          }
-        );
-      }
     }
   }
 
-  private applyLogResponseOptions(
+  private applyLogRequestBody(
+    level: Level,
+    request: HttpRequest,
+    logRequest?: HttpRequestLoggingOptions
+  ) {
+    if (logRequest?.logBody) {
+      this._loggingOptions.logger?.log(
+        level,
+        `Request Body ${JSON.stringify(request.body)}`,
+        {
+          body: request.body,
+        }
+      );
+    }
+  }
+
+  private applyLogResponseHeaders(
     level: Level,
     response: HttpResponse,
     logResponse?: HttpMessageLoggingOptions
   ) {
     if (logResponse) {
-      const {
-        logBody,
-        logHeaders,
-        headerToInclude,
-        headerToExclude,
-      } = logResponse;
+      const { logHeaders, headerToInclude, headerToExclude } = logResponse;
 
       if (logHeaders) {
         const headersToLog = this.extractHeadersToLog(
@@ -148,16 +156,22 @@ export class ApiLogger implements ApiLoggerInterface {
           }
         );
       }
+    }
+  }
 
-      if (logBody) {
-        this._logger.log(
-          level,
-          `Response Body ${JSON.stringify(response.body)}`,
-          {
-            body: response.body,
-          }
-        );
-      }
+  private applyLogResponseBody(
+    level: Level,
+    response: HttpResponse,
+    logResponse?: HttpMessageLoggingOptions
+  ) {
+    if (logResponse?.logBody) {
+      this._logger.log(
+        level,
+        `Response Body ${JSON.stringify(response.body)}`,
+        {
+          body: response.body,
+        }
+      );
     }
   }
 

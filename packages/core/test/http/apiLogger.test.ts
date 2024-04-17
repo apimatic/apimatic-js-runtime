@@ -7,13 +7,11 @@ import {
 import { ConsoleLogger } from '../../src/logger/defaultLogger';
 import { ApiLogger } from '../../src/logger/apiLogger';
 import { callHttpInterceptors } from '../../src/http/httpInterceptor';
-import {
-  HttpInterceptorInterface,
-  RequestOptions,
-} from '@apimatic/core-interfaces/src';
 import { NullLogger } from '../../src/logger/nullLogger';
 
 describe('APILogger with ConsoleLogging', () => {
+  const request = mockRequest();
+  const response = mockResponse();
   let loggerSpy;
   beforeEach(() => {
     // Reset the spy on console.log() before each test
@@ -42,43 +40,13 @@ describe('APILogger with ConsoleLogging', () => {
         headerToExclude: ['test-header'],
       },
     };
-    const apiLogger = new ApiLogger(loggingOpts);
-
-    const request: HttpRequest = {
-      method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder?param1=test',
-      headers: {
-        'Content-type': 'content-type',
-        'Content-length': 'Content-length',
-        Authorization: '\'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga\'',
-      },
-      body: {
-        type: 'text',
-        content: 'some req content',
-      },
-    };
-    const response: HttpResponse = {
-      statusCode: 200,
-      body: 'testBody',
-      headers: {
-        'test-header': 'test-value',
-        'test-header1': 'test-value1',
-        'Content-type': 'content-type',
-        'Content-length': 'Content-length',
-      },
-    };
-    const interceptor: HttpInterceptorInterface<
-      RequestOptions | undefined
-    > = async (req, options, next) => {
-      apiLogger.logRequest(req);
-      const context = await next(req, options);
-      apiLogger.logResponse(context.response);
-      return { request: req, response: context.response };
-    };
     const client = async (req) => {
       return { request: req, response };
     };
-    const executor = callHttpInterceptors([interceptor], client);
+    const executor = callHttpInterceptors(
+      [mockInterceptor(loggingOpts)],
+      client
+    );
     await executor(request, undefined);
     const expectedConsoleLogs = [
       'debug: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder?param1=test ContentType: content-type',
@@ -113,42 +81,13 @@ describe('APILogger with ConsoleLogging', () => {
         headerToExclude: [],
       },
     };
-    const apiLogger = new ApiLogger(loggingOpts);
-    const request: HttpRequest = {
-      method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder?param1=test',
-      headers: {
-        'Content-type': 'content-type',
-        'Content-length': 'Content-length',
-        Authorization: '\'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga\'',
-      },
-      body: {
-        type: 'text',
-        content: 'some req content',
-      },
-    };
-    const response: HttpResponse = {
-      statusCode: 200,
-      body: 'testBody',
-      headers: {
-        'test-header': 'test-value',
-        'test-header1': 'test-value1',
-        'Content-type': 'content-type',
-        'Content-length': 'Content-length',
-      },
-    };
-    const interceptor: HttpInterceptorInterface<
-      RequestOptions | undefined
-    > = async (req, options, next) => {
-      apiLogger.logRequest(req);
-      const context = await next(req, options);
-      apiLogger.logResponse(context.response);
-      return { request: req, response: context.response };
-    };
     const client = async (req) => {
       return { request: req, response };
     };
-    const executor = callHttpInterceptors([interceptor], client);
+    const executor = callHttpInterceptors(
+      [mockInterceptor(loggingOpts)],
+      client
+    );
     await executor(request, undefined);
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
@@ -172,43 +111,13 @@ describe('APILogger with ConsoleLogging', () => {
         headerToExclude: ['test-header'],
       },
     };
-    const apiLogger = new ApiLogger(loggingOpts);
-
-    const request: HttpRequest = {
-      method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder?param1=test',
-      headers: {
-        'Content-type': 'content-type',
-        'Content-length': 'Content-length',
-        Authorization: '\'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga\'',
-      },
-      body: {
-        type: 'text',
-        content: 'some req content',
-      },
-    };
-    const response: HttpResponse = {
-      statusCode: 200,
-      body: 'testBody',
-      headers: {
-        'test-header': 'test-value',
-        'test-header1': 'test-value1',
-        'Content-type': 'content-type',
-        'Content-length': 'Content-length',
-      },
-    };
-    const interceptor: HttpInterceptorInterface<
-      RequestOptions | undefined
-    > = async (req, options, next) => {
-      apiLogger.logRequest(req);
-      const context = await next(req, options);
-      apiLogger.logResponse(context.response);
-      return { request: req, response: context.response };
-    };
     const client = async (req) => {
       return { request: req, response };
     };
-    const executor = callHttpInterceptors([interceptor], client);
+    const executor = callHttpInterceptors(
+      [mockInterceptor(loggingOpts)],
+      client
+    );
     await executor(request, undefined);
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
@@ -224,6 +133,8 @@ describe('APILogger with ConsoleLogging', () => {
 });
 
 describe('APILogger with NullLogging', () => {
+  const request = mockRequest();
+  const response = mockResponse();
   let loggerSpy;
   beforeEach(() => {
     // Reset the spy on console.log() before each test
@@ -238,49 +149,22 @@ describe('APILogger with NullLogging', () => {
     const loggingOpts: LoggingOptions = {
       logger: new NullLogger(),
     };
-    const apiLogger = new ApiLogger(loggingOpts);
 
-    const request: HttpRequest = {
-      method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder?param1=test',
-      headers: {
-        'Content-type': 'content-type',
-        'Content-length': 'Content-length',
-        Authorization: '\'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga\'',
-      },
-      body: {
-        type: 'text',
-        content: 'some req content',
-      },
-    };
-    const response: HttpResponse = {
-      statusCode: 200,
-      body: 'testBody',
-      headers: {
-        'test-header': 'test-value',
-        'test-header1': 'test-value1',
-        'Content-type': 'content-type',
-        'Content-length': 'Content-length',
-      },
-    };
-    const interceptor: HttpInterceptorInterface<
-      RequestOptions | undefined
-    > = async (req, options, next) => {
-      apiLogger.logRequest(req);
-      const context = await next(req, options);
-      apiLogger.logResponse(context.response);
-      return { request: req, response: context.response };
-    };
     const client = async (req) => {
       return { request: req, response };
     };
-    const executor = callHttpInterceptors([interceptor], client);
+    const executor = callHttpInterceptors(
+      [mockInterceptor(loggingOpts)],
+      client
+    );
     await executor(request, undefined);
     expect(loggerSpy).not.toHaveBeenCalled();
   });
 });
 
 describe('APILogger with no logger options', () => {
+  const request = mockRequest();
+  const response = mockResponse();
   let loggerSpy;
   beforeEach(() => {
     // Reset the spy on console.log() before each test
@@ -292,35 +176,50 @@ describe('APILogger with no logger options', () => {
     loggerSpy.mockRestore();
   });
   it('should not log anything', async () => {
-    const apiLogger = new ApiLogger({});
-
-    const request: HttpRequest = {
-      method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder?param1=test',
-    };
-    const response: HttpResponse = {
-      statusCode: 200,
-      body: 'testBody',
-      headers: {
-        'test-header': 'test-value',
-        'test-header1': 'test-value1',
-        'Content-type': 'content-type',
-        'Content-length': 'Content-length',
-      },
-    };
-    const interceptor: HttpInterceptorInterface<
-      RequestOptions | undefined
-    > = async (req, options, next) => {
-      apiLogger.logRequest(req);
-      const context = await next(req, options);
-      apiLogger.logResponse(context.response);
-      return { request: req, response: context.response };
-    };
     const client = async (req) => {
       return { request: req, response };
     };
-    const executor = callHttpInterceptors([interceptor], client);
+    const executor = callHttpInterceptors([mockInterceptor({})], client);
     await executor(request, undefined);
     expect(loggerSpy).not.toHaveBeenCalled();
   });
 });
+
+function mockInterceptor(loggingOpt: LoggingOptions) {
+  const apiLogger = new ApiLogger(loggingOpt);
+  return async (req, options, next) => {
+    apiLogger.logRequest(req);
+    const context = await next(req, options);
+    apiLogger.logResponse(context.response);
+    return { request: req, response: context.response };
+  };
+}
+
+function mockRequest(): HttpRequest {
+  return {
+    method: 'GET',
+    url: 'http://apimatic.hopto.org:3000/test/requestBuilder?param1=test',
+    headers: {
+      'Content-type': 'content-type',
+      'Content-length': 'Content-length',
+      Authorization: '\'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga\'',
+    },
+    body: {
+      type: 'text',
+      content: 'some req content',
+    },
+  };
+}
+
+function mockResponse(): HttpResponse {
+  return {
+    statusCode: 200,
+    body: 'testBody',
+    headers: {
+      'test-header': 'test-value',
+      'test-header1': 'test-value1',
+      'Content-type': 'content-type',
+      'Content-length': 'Content-length',
+    },
+  };
+}
