@@ -23,7 +23,7 @@ export class ApiLogger implements ApiLoggerInterface {
   constructor(loggingOpt: LoggingOptions) {
     this._loggingOptions = loggingOpt;
     this._logger = loggingOpt.logger ?? new NullLogger();
-    this._isConfigured = this._logger !== new NullLogger() ? true : false;
+    this._isConfigured = this._logger && this._logger !== new NullLogger();
   }
 
   public logRequest(request: HttpRequest): void {

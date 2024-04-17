@@ -39,7 +39,7 @@ describe('APILogger with ConsoleLogging', () => {
         headerToExclude: ['test-header'],
       },
     };
-    await mockClient(loggingOpts);
+
     const expectedConsoleLogs = [
       'debug: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder?param1=test ContentType: content-type',
       'debug: Request Headers {"Content-type":"content-type"}',
@@ -48,12 +48,9 @@ describe('APILogger with ConsoleLogging', () => {
       'debug: Response Headers {"Content-length":"Content-length"}',
       'debug: Response Body "testBody"',
     ];
-    expect(loggerSpy.mock.calls[0][0]).toEqual(expectedConsoleLogs[0]);
-    expect(loggerSpy.mock.calls[1][0]).toEqual(expectedConsoleLogs[1]);
-    expect(loggerSpy.mock.calls[2][0]).toEqual(expectedConsoleLogs[2]);
-    expect(loggerSpy.mock.calls[3][0]).toEqual(expectedConsoleLogs[3]);
-    expect(loggerSpy.mock.calls[4][0]).toEqual(expectedConsoleLogs[4]);
-    expect(loggerSpy.mock.calls[5][0]).toEqual(expectedConsoleLogs[5]);
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
   });
 
   it('should not log req and response body, headers ', async () => {
@@ -73,13 +70,14 @@ describe('APILogger with ConsoleLogging', () => {
         headerToExclude: [],
       },
     };
-    await mockClient(loggingOpts);
+
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
       'info: Response HttpStatusCode 200 Length Content-length ContentType content-type',
     ];
-    expect(loggerSpy.mock.calls[0][0]).toEqual(expectedConsoleLogs[0]);
-    expect(loggerSpy.mock.calls[1][0]).toEqual(expectedConsoleLogs[1]);
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
   });
 
   it('should log req and response headers with exclude header filters', async () => {
@@ -97,17 +95,15 @@ describe('APILogger with ConsoleLogging', () => {
       },
     };
 
-    await mockClient(loggingOpts);
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
       'info: Request Headers {"Content-type":"content-type","Content-length":"Content-length"}',
       'info: Response HttpStatusCode 200 Length Content-length ContentType content-type',
       'info: Response Headers {"test-header1":"test-value1","Content-type":"content-type","Content-length":"Content-length"}',
     ];
-    expect(loggerSpy.mock.calls[0][0]).toEqual(expectedConsoleLogs[0]);
-    expect(loggerSpy.mock.calls[1][0]).toEqual(expectedConsoleLogs[1]);
-    expect(loggerSpy.mock.calls[2][0]).toEqual(expectedConsoleLogs[2]);
-    expect(loggerSpy.mock.calls[3][0]).toEqual(expectedConsoleLogs[3]);
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
   });
 });
 
@@ -173,4 +169,10 @@ async function mockClient(loggingOpts: LoggingOptions = {}) {
   };
   const executor = callHttpInterceptors([mockInterceptor(loggingOpts)], client);
   return await executor(mockRequest(), undefined);
+}
+
+function expectLogsToBeLogged(logSpy, expectedConsoleLogs) {
+  for (let i = 0; i < expectedConsoleLogs.length; i++) {
+    expect(logSpy.mock.calls[i][0]).toEqual(expectedConsoleLogs[i]);
+  }
 }
