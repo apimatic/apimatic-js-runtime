@@ -13,7 +13,6 @@ export * from './http/httpInterceptor';
 export * from './http/requestBuilder';
 export * from './http/pathTemplate';
 export { RequestRetryOption } from './http/retryConfiguration';
-export * from './logger/loggerConfiguration';
 export * from './logger/apiLogger';
 export * from './logger/defaultLogger';
 export * from './logger/nullLogger';

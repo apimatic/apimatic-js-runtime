@@ -3,6 +3,9 @@ import {
   HttpResponse,
   ApiLoggerInterface,
   LoggerInterface,
+  LoggingOptions,
+  HttpRequestLoggingOptions,
+  HttpMessageLoggingOptions,
   Level,
 } from '../coreInterfaces';
 import {
@@ -10,11 +13,6 @@ import {
   CONTENT_TYPE_HEADER,
   getHeader,
 } from '../http/httpHeaders';
-import {
-  LogBaseOptions,
-  LoggingOptions,
-  LogRequestOptions,
-} from './loggerConfiguration';
 import { NullLogger } from './nullLogger';
 
 export class ApiLogger implements ApiLoggerInterface {
@@ -41,7 +39,7 @@ export class ApiLogger implements ApiLoggerInterface {
 
     this._logger.log(
       logLevel,
-      `$Request  HttpMethod: ${request.method} Url: ${url} ContentType: ${contentTypeHeader}`,
+      `Request  HttpMethod: ${request.method} Url: ${url} ContentType: ${contentTypeHeader}`,
       {
         method: request.method,
         url,
@@ -77,14 +75,14 @@ export class ApiLogger implements ApiLoggerInterface {
     this.applyLogResponseOptions(
       logLevel,
       response,
-      this._loggingOptions.logRequest
+      this._loggingOptions.logResponse
     );
   }
 
   private applyLogRequestOptions(
     level: Level,
     request: HttpRequest,
-    logRequest?: LogRequestOptions
+    logRequest?: HttpRequestLoggingOptions
   ) {
     if (logRequest) {
       const {
@@ -103,7 +101,7 @@ export class ApiLogger implements ApiLoggerInterface {
 
         this._loggingOptions.logger?.log(
           level,
-          `Request Headers ${headersToLog}`,
+          `Request Headers ${JSON.stringify(headersToLog)}`,
           {
             headers: headersToLog,
           }
@@ -113,7 +111,7 @@ export class ApiLogger implements ApiLoggerInterface {
       if (logBody) {
         this._loggingOptions.logger?.log(
           level,
-          `Request Body ${request.body}`,
+          `Request Body ${JSON.stringify(request.body)}`,
           {
             body: request.body,
           }
@@ -125,7 +123,7 @@ export class ApiLogger implements ApiLoggerInterface {
   private applyLogResponseOptions(
     level: Level,
     response: HttpResponse,
-    logResponse?: LogBaseOptions
+    logResponse?: HttpMessageLoggingOptions
   ) {
     if (logResponse) {
       const {
@@ -142,15 +140,23 @@ export class ApiLogger implements ApiLoggerInterface {
           headerToExclude
         );
 
-        this._logger.log(level, `Response Headers ${headersToLog}`, {
-          headers: headersToLog,
-        });
+        this._logger.log(
+          level,
+          `Response Headers ${JSON.stringify(headersToLog)}`,
+          {
+            headers: headersToLog,
+          }
+        );
       }
 
       if (logBody) {
-        this._logger.log(level, `Response Body ${response.body}`, {
-          body: response.body,
-        });
+        this._logger.log(
+          level,
+          `Response Body ${JSON.stringify(response.body)}`,
+          {
+            body: response.body,
+          }
+        );
       }
     }
   }
@@ -173,30 +179,34 @@ export class ApiLogger implements ApiLoggerInterface {
     headersToInclude?: string[],
     headersToExclude?: string[]
   ): Record<string, string> {
+    const filteredHeaders: Record<string, string> = {};
     if (!headers) {
       return {};
     }
 
     if (headersToInclude && headersToInclude.length > 0) {
       // Filter headers based on the keys specified in headersToInclude
-      const filteredHeaders = Object.entries(headers)
-        .filter(([key]) => headersToInclude.includes(key))
-        .reduce((acc, [key, value]) => {
-          acc[key] = value;
-          return acc;
-        }, {});
+      headersToInclude.forEach((name) => {
+        const val = getHeader(headers, name);
+        if (val !== null) {
+          filteredHeaders[name] = val;
+        }
+      });
 
       return filteredHeaders;
     }
 
     if (headersToExclude && headersToExclude.length > 0) {
       // Filter headers based on the keys specified in headersToExclude
-      const filteredHeaders = Object.entries(headers)
-        .filter(([key]) => !headersToExclude.includes(key))
-        .reduce((acc, [key, value]) => {
-          acc[key] = value;
-          return acc;
-        }, {});
+      for (const key of Object.keys(headers)) {
+        if (
+          !headersToExclude.some(
+            (excludedName) => excludedName.toLowerCase() === key.toLowerCase()
+          )
+        ) {
+          filteredHeaders[key] = headers[key];
+        }
+      }
 
       return filteredHeaders;
     }

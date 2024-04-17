@@ -8,6 +8,7 @@ import {
   HttpMethod,
   HttpRequest,
   HttpResponse,
+  LoggingOptions,
   passThroughInterceptor,
   RequestOptions,
   RetryConfiguration,
@@ -24,7 +25,8 @@ import { FileWrapper } from '../../src/fileWrapper';
 import fs from 'fs';
 import path from 'path';
 import { bossSchema } from '../../../schema/test/bossSchema';
-import { noneLoggerProvider } from '../../src/logger/nullLogger';
+import { ApiLogger } from '../../src/logger/apiLogger';
+import { NullLogger } from '../../src/logger/nullLogger';
 
 describe('test default request builder behavior with succesful responses', () => {
   const authParams = {
@@ -41,13 +43,14 @@ describe('test default request builder behavior with succesful responses', () =>
     httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
   };
   const basicAuth = mockBasicAuthenticationInterface(authParams);
+  const logger = mockLoggerInterface();
   const defaultRequestBuilder = createRequestBuilderFactory<string, boolean>(
     mockHttpClientAdapter(),
     (server) => mockBaseURIProvider(server),
     ApiError,
     basicAuth,
     retryConfig,
-    noneLoggerProvider
+    logger
   );
 
   it('should test request builder configured with text request body and text response body', async () => {
@@ -498,6 +501,13 @@ describe('test default request builder behavior with succesful responses', () =>
     };
   }
 
+  function mockLoggerInterface() {
+    const loggingOpts: LoggingOptions = {
+      logger: new NullLogger(),
+    };
+    return new ApiLogger(loggingOpts);
+  }
+
   function mockHttpClientAdapter(): HttpClientInterface {
     return async (request, requestOptions) => {
       const iserrorResponse = request.url.startsWith(
@@ -613,8 +623,7 @@ describe('test default request builder behavior to test retries', () => {
     (server) => mockBaseURIProvider(server),
     ApiError,
     noneAuthenticationProvider,
-    retryConfig,
-    noneLoggerProvider
+    retryConfig
   );
 
   it('should test request builder with retries and response returning 500 error code', async () => {

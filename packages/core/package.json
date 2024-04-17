@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/core",
   "author": "APIMatic Ltd.",
-  "version": "0.10.5",
+  "version": "0.10.6",
   "license": "MIT",
   "sideEffects": false,
   "main": "lib/index.js",
@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@apimatic/convert-to-stream": "^0.0.2",
-    "@apimatic/core-interfaces": "D:/gitRepos/apimatic-js-ts/apimatic-js-runtime/packages/core-interfaces",
+    "@apimatic/core-interfaces": "^0.2.0",
     "@apimatic/file-wrapper": "^0.3.0",
     "@apimatic/http-headers": "^0.3.0",
     "@apimatic/json-bigint": "^1.2.0",

@@ -5,4 +5,4 @@ export * from './httpInterceptor';
 export * from './httpRequest';
 export * from './httpResponse';
 export * from './retryConfiguration';
-export * from './loggingOptions';
+export * from './logging';
