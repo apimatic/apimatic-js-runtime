@@ -41,7 +41,7 @@ describe('APILogger with ConsoleLogging', () => {
     };
 
     const expectedConsoleLogs = [
-      'debug: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder?param1=test ContentType: content-type',
+      'debug: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder?param1=test ContentType: content-type',
       'debug: Request Headers {"Content-type":"content-type"}',
       'debug: Request Body {"type":"text","content":"some req content"}',
       'debug: Response HttpStatusCode 200 Length Content-length ContentType content-type',
@@ -72,7 +72,7 @@ describe('APILogger with ConsoleLogging', () => {
     };
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
       'info: Response HttpStatusCode 200 Length Content-length ContentType content-type',
     ];
 
@@ -96,7 +96,7 @@ describe('APILogger with ConsoleLogging', () => {
     };
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
       'info: Request Headers {"Content-type":"content-type","Content-length":"Content-length"}',
       'info: Response HttpStatusCode 200 Length Content-length ContentType content-type',
       'info: Response Headers {"test-header1":"test-value1","Content-type":"content-type","Content-length":"Content-length"}',
@@ -137,7 +137,7 @@ function mockInterceptor(loggingOpt: LoggingOptions) {
 function mockRequest(): HttpRequest {
   return {
     method: 'GET',
-    url: 'http://apimatic.hopto.org:3000/test/requestBuilder?param1=test',
+    url: 'https://apimatic.hopto.org:3000/test/requestBuilder?param1=test',
     headers: {
       'Content-type': 'content-type',
       'Content-length': 'Content-length',

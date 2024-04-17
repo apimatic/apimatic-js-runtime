@@ -204,32 +204,54 @@ export class ApiLogger implements ApiLoggerInterface {
     }
 
     if (headersToInclude && headersToInclude.length > 0) {
-      // Filter headers based on the keys specified in headersToInclude
-      headersToInclude.forEach((name) => {
-        const val = getHeader(headers, name);
-        if (val !== null) {
-          filteredHeaders[name] = val;
-        }
-      });
-
-      return filteredHeaders;
+      return this.includeHeadersToLog(
+        headers,
+        filteredHeaders,
+        headersToInclude
+      );
     }
 
     if (headersToExclude && headersToExclude.length > 0) {
-      // Filter headers based on the keys specified in headersToExclude
-      for (const key of Object.keys(headers)) {
-        if (
-          !headersToExclude.some(
-            (excludedName) => excludedName.toLowerCase() === key.toLowerCase()
-          )
-        ) {
-          filteredHeaders[key] = headers[key];
-        }
-      }
-
-      return filteredHeaders;
+      return this.excludeHeadersToLog(
+        headers,
+        filteredHeaders,
+        headersToExclude
+      );
     }
 
     return headers;
+  }
+
+  private includeHeadersToLog(
+    headers: Record<string, string>,
+    filteredHeaders: Record<string, string>,
+    headersToInclude?: string[]
+  ): Record<string, string> {
+    // Filter headers based on the keys specified in headersToInclude
+    headersToInclude?.forEach((name) => {
+      const val = getHeader(headers, name);
+      if (val !== null) {
+        filteredHeaders[name] = val;
+      }
+    });
+    return filteredHeaders;
+  }
+
+  private excludeHeadersToLog(
+    headers: Record<string, string>,
+    filteredHeaders: Record<string, string>,
+    headersToExclude?: string[]
+  ): Record<string, string> {
+    // Filter headers based on the keys specified in headersToExclude
+    for (const key of Object.keys(headers)) {
+      if (
+        !headersToExclude?.some(
+          (excludedName) => excludedName.toLowerCase() === key.toLowerCase()
+        )
+      ) {
+        filteredHeaders[key] = headers[key];
+      }
+    }
+    return filteredHeaders;
   }
 }
