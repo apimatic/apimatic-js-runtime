@@ -46,17 +46,8 @@ export class ApiLogger implements ApiLoggerInterface {
         contentType: contentTypeHeader,
       }
     );
-    this.applyLogRequestHeaders(
-      logLevel,
-      request,
-      this._loggingOptions.logRequest
-    );
 
-    this.applyLogRequestBody(
-      logLevel,
-      request,
-      this._loggingOptions.logRequest
-    );
+    this.applyLogRequestOptions(logLevel, request);
   }
 
   public logResponse(response: HttpResponse): void {
@@ -78,17 +69,17 @@ export class ApiLogger implements ApiLoggerInterface {
       }
     );
 
-    this.applyLogResponseHeaders(
-      logLevel,
-      response,
-      this._loggingOptions.logResponse
+    this.applyLogResponseOptions(logLevel, response);
+  }
+
+  private applyLogRequestOptions(level: Level, request: HttpRequest) {
+    this.applyLogRequestHeaders(
+      level,
+      request,
+      this._loggingOptions.logRequest
     );
 
-    this.applyLogResponseBody(
-      logLevel,
-      response,
-      this._loggingOptions.logResponse
-    );
+    this.applyLogRequestBody(level, request, this._loggingOptions.logRequest);
   }
 
   private applyLogRequestHeaders(
@@ -131,6 +122,20 @@ export class ApiLogger implements ApiLoggerInterface {
         }
       );
     }
+  }
+
+  private applyLogResponseOptions(level: Level, response: HttpResponse) {
+    this.applyLogResponseHeaders(
+      level,
+      response,
+      this._loggingOptions.logResponse
+    );
+
+    this.applyLogResponseBody(
+      level,
+      response,
+      this._loggingOptions.logResponse
+    );
   }
 
   private applyLogResponseHeaders(

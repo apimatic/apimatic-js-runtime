@@ -9,19 +9,18 @@ import { ApiLogger } from '../../src/logger/apiLogger';
 import { callHttpInterceptors } from '../../src/http/httpInterceptor';
 import { NullLogger } from '../../src/logger/nullLogger';
 
-describe('APILogger with ConsoleLogging', () => {
-  const request = mockRequest();
-  const response = mockResponse();
-  let loggerSpy;
-  beforeEach(() => {
-    // Reset the spy on console.log() before each test
-    loggerSpy = jest.spyOn(console, 'log').mockImplementation();
-  });
+let loggerSpy;
+beforeEach(() => {
+  // Reset the spy on console.log() before each test
+  loggerSpy = jest.spyOn(console, 'log').mockImplementation();
+});
 
-  afterEach(() => {
-    // Restore the original implementation of console.log() after each test
-    loggerSpy.mockRestore();
-  });
+afterEach(() => {
+  // Restore the original implementation of console.log() after each test
+  loggerSpy.mockRestore();
+});
+
+describe('APILogger with ConsoleLogging', () => {
   it('should log req and response body, headers with include header filters', async () => {
     const loggingOpts: LoggingOptions = {
       logger: new ConsoleLogger(),
@@ -40,14 +39,7 @@ describe('APILogger with ConsoleLogging', () => {
         headerToExclude: ['test-header'],
       },
     };
-    const client = async (req) => {
-      return { request: req, response };
-    };
-    const executor = callHttpInterceptors(
-      [mockInterceptor(loggingOpts)],
-      client
-    );
-    await executor(request, undefined);
+    await mockClient(loggingOpts);
     const expectedConsoleLogs = [
       'debug: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder?param1=test ContentType: content-type',
       'debug: Request Headers {"Content-type":"content-type"}',
@@ -81,14 +73,7 @@ describe('APILogger with ConsoleLogging', () => {
         headerToExclude: [],
       },
     };
-    const client = async (req) => {
-      return { request: req, response };
-    };
-    const executor = callHttpInterceptors(
-      [mockInterceptor(loggingOpts)],
-      client
-    );
-    await executor(request, undefined);
+    await mockClient(loggingOpts);
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
       'info: Response HttpStatusCode 200 Length Content-length ContentType content-type',
@@ -111,14 +96,8 @@ describe('APILogger with ConsoleLogging', () => {
         headerToExclude: ['test-header'],
       },
     };
-    const client = async (req) => {
-      return { request: req, response };
-    };
-    const executor = callHttpInterceptors(
-      [mockInterceptor(loggingOpts)],
-      client
-    );
-    await executor(request, undefined);
+
+    await mockClient(loggingOpts);
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: http://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
       'info: Request Headers {"Content-type":"content-type","Content-length":"Content-length"}',
@@ -133,54 +112,18 @@ describe('APILogger with ConsoleLogging', () => {
 });
 
 describe('APILogger with NullLogging', () => {
-  const request = mockRequest();
-  const response = mockResponse();
-  let loggerSpy;
-  beforeEach(() => {
-    // Reset the spy on console.log() before each test
-    loggerSpy = jest.spyOn(console, 'log').mockImplementation();
-  });
-
-  afterEach(() => {
-    // Restore the original implementation of console.log() after each test
-    loggerSpy.mockRestore();
-  });
   it('should not log anything', async () => {
     const loggingOpts: LoggingOptions = {
       logger: new NullLogger(),
     };
-
-    const client = async (req) => {
-      return { request: req, response };
-    };
-    const executor = callHttpInterceptors(
-      [mockInterceptor(loggingOpts)],
-      client
-    );
-    await executor(request, undefined);
+    await mockClient(loggingOpts);
     expect(loggerSpy).not.toHaveBeenCalled();
   });
 });
 
 describe('APILogger with no logger options', () => {
-  const request = mockRequest();
-  const response = mockResponse();
-  let loggerSpy;
-  beforeEach(() => {
-    // Reset the spy on console.log() before each test
-    loggerSpy = jest.spyOn(console, 'log').mockImplementation();
-  });
-
-  afterEach(() => {
-    // Restore the original implementation of console.log() after each test
-    loggerSpy.mockRestore();
-  });
   it('should not log anything', async () => {
-    const client = async (req) => {
-      return { request: req, response };
-    };
-    const executor = callHttpInterceptors([mockInterceptor({})], client);
-    await executor(request, undefined);
+    await mockClient();
     expect(loggerSpy).not.toHaveBeenCalled();
   });
 });
@@ -222,4 +165,12 @@ function mockResponse(): HttpResponse {
       'Content-length': 'Content-length',
     },
   };
+}
+
+async function mockClient(loggingOpts: LoggingOptions = {}) {
+  const client = async (req) => {
+    return { request: req, response: mockResponse() };
+  };
+  const executor = callHttpInterceptors([mockInterceptor(loggingOpts)], client);
+  return await executor(mockRequest(), undefined);
 }
