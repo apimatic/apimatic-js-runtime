@@ -39,7 +39,7 @@ export class ApiLogger implements ApiLoggerInterface {
 
     this._logger.log(
       logLevel,
-      `Request  HttpMethod: ${request.method} Url: ${url} ContentType: ${contentTypeHeader}`,
+      'Request  HttpMethod: ${method} Url: ${url} ContentType: ${contentType}',
       {
         method: request.method,
         url,
@@ -61,7 +61,7 @@ export class ApiLogger implements ApiLoggerInterface {
 
     this._logger.log(
       logLevel,
-      `Response HttpStatusCode ${response.statusCode} Length ${contentLengthHeader} ContentType ${contentTypeHeader}`,
+      'Response HttpStatusCode: ${statusCode} Length: ${contentLength} ContentType: ${contentType}',
       {
         statusCode: response.statusCode,
         contentLength: contentLengthHeader,
@@ -97,13 +97,9 @@ export class ApiLogger implements ApiLoggerInterface {
           headerToExclude
         );
 
-        this._loggingOptions.logger?.log(
-          level,
-          `Request Headers ${JSON.stringify(headersToLog)}`,
-          {
-            headers: headersToLog,
-          }
-        );
+        this._loggingOptions.logger?.log(level, 'Request Headers: ${headers}', {
+          headers: headersToLog,
+        });
       }
     }
   }
@@ -114,13 +110,9 @@ export class ApiLogger implements ApiLoggerInterface {
     logRequest?: HttpRequestLoggingOptions
   ) {
     if (logRequest?.logBody) {
-      this._loggingOptions.logger?.log(
-        level,
-        `Request Body ${JSON.stringify(request.body)}`,
-        {
-          body: request.body,
-        }
-      );
+      this._loggingOptions.logger?.log(level, 'Request Body: ${body}', {
+        body: request.body,
+      });
     }
   }
 
@@ -153,13 +145,9 @@ export class ApiLogger implements ApiLoggerInterface {
           headerToExclude
         );
 
-        this._logger.log(
-          level,
-          `Response Headers ${JSON.stringify(headersToLog)}`,
-          {
-            headers: headersToLog,
-          }
-        );
+        this._logger.log(level, 'Response Headers: ${headers}', {
+          headers: headersToLog,
+        });
       }
     }
   }
@@ -170,13 +158,9 @@ export class ApiLogger implements ApiLoggerInterface {
     logResponse?: HttpMessageLoggingOptions
   ) {
     if (logResponse?.logBody) {
-      this._logger.log(
-        level,
-        `Response Body ${JSON.stringify(response.body)}`,
-        {
-          body: response.body,
-        }
-      );
+      this._logger.log(level, 'Response Body: ${body}', {
+        body: response.body,
+      });
     }
   }
 
@@ -219,7 +203,7 @@ export class ApiLogger implements ApiLoggerInterface {
       );
     }
 
-    return headers;
+    return this.removeSenstiveHeaders(headers);
   }
 
   private includeHeadersToLog(
@@ -234,7 +218,7 @@ export class ApiLogger implements ApiLoggerInterface {
         filteredHeaders[name] = val;
       }
     });
-    return filteredHeaders;
+    return this.removeSenstiveHeaders(filteredHeaders);
   }
 
   private excludeHeadersToLog(
@@ -252,6 +236,25 @@ export class ApiLogger implements ApiLoggerInterface {
         filteredHeaders[key] = headers[key];
       }
     }
-    return filteredHeaders;
+    return this.removeSenstiveHeaders(filteredHeaders);
+  }
+
+  private removeSenstiveHeaders(
+    headers: Record<string, string>
+  ): Record<string, string> {
+    if (this._loggingOptions.maskSensitiveHeaders) {
+      const senstiveHeaders = [
+        'Authorization',
+        'WWW-Authenticate',
+        'Proxy-Authorization',
+        'Set-Cookie',
+      ];
+      for (const key of Object.keys(headers)) {
+        if (getHeader(headers, key) !== null && senstiveHeaders.includes(key)) {
+          headers[key] = '**Redacted**';
+        }
+      }
+    }
+    return headers;
   }
 }

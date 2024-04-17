@@ -15,6 +15,7 @@ export interface LoggingOptions {
   logLevel?: Level;
   logRequest?: HttpRequestLoggingOptions;
   logResponse?: HttpMessageLoggingOptions;
+  maskSensitiveHeaders?: boolean;
 }
 
 export interface HttpMessageLoggingOptions {

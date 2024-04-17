@@ -42,11 +42,11 @@ describe('APILogger with ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'debug: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder?param1=test ContentType: content-type',
-      'debug: Request Headers {"Content-type":"content-type"}',
-      'debug: Request Body {"type":"text","content":"some req content"}',
-      'debug: Response HttpStatusCode 200 Length Content-length ContentType content-type',
-      'debug: Response Headers {"Content-length":"Content-length"}',
-      'debug: Response Body "testBody"',
+      'debug: Request Headers: {"Content-type":"content-type"}',
+      'debug: Request Body: {"type":"text","content":"some req content"}',
+      'debug: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'debug: Response Headers: {"Content-length":"Content-length"}',
+      'debug: Response Body: testBody',
     ];
 
     await mockClient(loggingOpts);
@@ -73,7 +73,7 @@ describe('APILogger with ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Response HttpStatusCode 200 Length Content-length ContentType content-type',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
     ];
 
     await mockClient(loggingOpts);
@@ -97,9 +97,32 @@ describe('APILogger with ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Request Headers {"Content-type":"content-type","Content-length":"Content-length"}',
-      'info: Response HttpStatusCode 200 Length Content-length ContentType content-type',
-      'info: Response Headers {"test-header1":"test-value1","Content-type":"content-type","Content-length":"Content-length"}',
+      'info: Request Headers: {"Content-type":"content-type","Content-length":"Content-length"}',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Response Headers: {"test-header1":"test-value1","Content-type":"content-type","Content-length":"Content-length"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
+  });
+
+  it('should log req and response headers with enabled maskSensitiveHeaders', async () => {
+    const loggingOpts: LoggingOptions = {
+      logger: new ConsoleLogger(),
+      logRequest: {
+        logHeaders: true,
+      },
+      logResponse: {
+        logHeaders: true,
+      },
+      maskSensitiveHeaders: true,
+    };
+
+    const expectedConsoleLogs = [
+      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+      'info: Request Headers: {"Content-type":"content-type","Content-length":"Content-length","Authorization":"**Redacted**"}',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Response Headers: {"test-header":"test-value","test-header1":"test-value1","Content-type":"content-type","Content-length":"Content-length"}',
     ];
 
     await mockClient(loggingOpts);
