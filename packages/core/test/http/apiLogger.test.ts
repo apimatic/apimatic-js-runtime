@@ -164,7 +164,7 @@ function mockRequest(): HttpRequest {
     headers: {
       'Content-type': 'content-type',
       'Content-length': 'Content-length',
-      Authorization: '\'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga\'',
+      Authorization: "'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga'",
     },
     body: {
       type: 'text',
