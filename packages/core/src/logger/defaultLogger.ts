@@ -1,7 +1,11 @@
-import { Level, LoggerInterface } from '@apimatic/core-interfaces';
+import { LogLevel, LoggerInterface } from '@apimatic/core-interfaces';
 
 export class ConsoleLogger implements LoggerInterface {
-  public log(level: Level, message: string, params: Record<string, any>): void {
+  public log(
+    level: LogLevel,
+    message: string,
+    params: Record<string, any>
+  ): void {
     const formattedMessage = formatMessage(message, params);
     // tslint:disable-next-line:no-console
     console.log(level + ': ' + formattedMessage);

@@ -7,28 +7,37 @@ export interface ApiLoggerInterface {
 }
 
 export interface LoggerInterface {
-  log(level: Level, message: string, params: Record<string, any>): void;
+  log(level: LogLevel, message: string, params: Record<string, any>): void;
 }
 
 export interface LoggingOptions {
-  logger?: LoggerInterface;
-  logLevel?: Level;
-  logRequest?: HttpRequestLoggingOptions;
-  logResponse?: HttpMessageLoggingOptions;
-  maskSensitiveHeaders?: boolean;
+  logger: LoggerInterface;
+  logLevel: LogLevel;
+  logRequest: HttpRequestLoggingOptions;
+  logResponse: HttpMessageLoggingOptions;
+  maskSensitiveHeaders: boolean;
+}
+
+export interface SdkLoggingOptions {
+  logger: LoggerInterface;
+  logLevel: LogLevel;
+  logRequest: Partial<HttpRequestLoggingOptions>;
+  logResponse: Partial<HttpMessageLoggingOptions>;
+  maskSensitiveHeaders: boolean;
 }
 
 export interface HttpMessageLoggingOptions {
-  logBody?: boolean;
-  logHeaders?: boolean;
-  headerToExclude?: string[];
-  headerToInclude?: string[];
+  logBody: boolean;
+  logHeaders: boolean;
+  headerToExclude: string[];
+  headerToInclude: string[];
 }
 
 export interface HttpRequestLoggingOptions extends HttpMessageLoggingOptions {
-  includeQueryInPath?: boolean;
+  includeQueryInPath: boolean;
 }
-export enum Level {
+
+export enum LogLevel {
   Error = 'error',
   Warn = 'warn',
   Info = 'info',

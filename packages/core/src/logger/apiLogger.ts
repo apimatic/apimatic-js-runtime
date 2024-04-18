@@ -6,7 +6,7 @@ import {
   LoggingOptions,
   HttpRequestLoggingOptions,
   HttpMessageLoggingOptions,
-  Level,
+  LogLevel,
 } from '../coreInterfaces';
 import {
   CONTENT_LENGTH_HEADER,
@@ -17,25 +17,19 @@ import { NullLogger } from './nullLogger';
 
 export class ApiLogger implements ApiLoggerInterface {
   private readonly _loggingOptions: LoggingOptions;
-  private readonly _isConfigured: boolean;
   private readonly _logger: LoggerInterface;
 
   constructor(loggingOpt: LoggingOptions) {
     this._loggingOptions = loggingOpt;
     this._logger = loggingOpt.logger ?? new NullLogger();
-    this._isConfigured = this._logger && this._logger !== new NullLogger();
   }
 
   public logRequest(request: HttpRequest): void {
-    if (!this._isConfigured) {
-      return;
-    }
-
-    const logLevel = this._loggingOptions.logLevel ?? Level.Info;
-    const contentTypeHeader = this.getContentType(request.headers);
+    const logLevel = this._loggingOptions.logLevel ?? LogLevel.Info;
+    const contentTypeHeader = this._getContentType(request.headers);
     const url = this._loggingOptions.logRequest?.includeQueryInPath
       ? request.url
-      : this.removeQueryParams(request.url);
+      : this._removeQueryParams(request.url);
 
     this._logger.log(
       logLevel,
@@ -47,17 +41,13 @@ export class ApiLogger implements ApiLoggerInterface {
       }
     );
 
-    this.applyLogRequestOptions(logLevel, request);
+    this._applyLogRequestOptions(logLevel, request);
   }
 
   public logResponse(response: HttpResponse): void {
-    if (!this._isConfigured) {
-      return;
-    }
-
-    const logLevel = this._loggingOptions.logLevel ?? Level.Info;
-    const contentTypeHeader = this.getContentType(response.headers);
-    const contentLengthHeader = this.getContentLength(response.headers);
+    const logLevel = this._loggingOptions.logLevel ?? LogLevel.Info;
+    const contentTypeHeader = this._getContentType(response.headers);
+    const contentLengthHeader = this._getContentLength(response.headers);
 
     this._logger.log(
       logLevel,
@@ -69,115 +59,111 @@ export class ApiLogger implements ApiLoggerInterface {
       }
     );
 
-    this.applyLogResponseOptions(logLevel, response);
+    this._applyLogResponseOptions(logLevel, response);
   }
 
-  private applyLogRequestOptions(level: Level, request: HttpRequest) {
-    this.applyLogRequestHeaders(
+  private _applyLogRequestOptions(level: LogLevel, request: HttpRequest) {
+    this._applyLogRequestHeaders(
       level,
       request,
       this._loggingOptions.logRequest
     );
 
-    this.applyLogRequestBody(level, request, this._loggingOptions.logRequest);
+    this._applyLogRequestBody(level, request, this._loggingOptions.logRequest);
   }
 
-  private applyLogRequestHeaders(
-    level: Level,
+  private _applyLogRequestHeaders(
+    level: LogLevel,
     request: HttpRequest,
-    logRequest?: HttpRequestLoggingOptions
+    logRequest: HttpRequestLoggingOptions
   ) {
-    if (logRequest) {
-      const { logHeaders, headerToInclude, headerToExclude } = logRequest;
+    const { logHeaders, headerToInclude, headerToExclude } = logRequest;
 
-      if (logHeaders) {
-        const headersToLog = this.extractHeadersToLog(
-          request.headers,
-          headerToInclude,
-          headerToExclude
-        );
+    if (logHeaders) {
+      const headersToLog = this._extractHeadersToLog(
+        request.headers,
+        headerToInclude,
+        headerToExclude
+      );
 
-        this._loggingOptions.logger?.log(level, 'Request Headers: ${headers}', {
-          headers: headersToLog,
-        });
-      }
+      this._logger?.log(level, 'Request Headers: ${headers}', {
+        headers: headersToLog,
+      });
     }
   }
 
-  private applyLogRequestBody(
-    level: Level,
+  private _applyLogRequestBody(
+    level: LogLevel,
     request: HttpRequest,
-    logRequest?: HttpRequestLoggingOptions
+    logRequest: HttpRequestLoggingOptions
   ) {
-    if (logRequest?.logBody) {
-      this._loggingOptions.logger?.log(level, 'Request Body: ${body}', {
+    if (logRequest.logBody) {
+      this._logger?.log(level, 'Request Body: ${body}', {
         body: request.body,
       });
     }
   }
 
-  private applyLogResponseOptions(level: Level, response: HttpResponse) {
-    this.applyLogResponseHeaders(
+  private _applyLogResponseOptions(level: LogLevel, response: HttpResponse) {
+    this._applyLogResponseHeaders(
       level,
       response,
       this._loggingOptions.logResponse
     );
 
-    this.applyLogResponseBody(
+    this._applyLogResponseBody(
       level,
       response,
       this._loggingOptions.logResponse
     );
   }
 
-  private applyLogResponseHeaders(
-    level: Level,
+  private _applyLogResponseHeaders(
+    level: LogLevel,
     response: HttpResponse,
-    logResponse?: HttpMessageLoggingOptions
+    logResponse: HttpMessageLoggingOptions
   ) {
-    if (logResponse) {
-      const { logHeaders, headerToInclude, headerToExclude } = logResponse;
+    const { logHeaders, headerToInclude, headerToExclude } = logResponse;
 
-      if (logHeaders) {
-        const headersToLog = this.extractHeadersToLog(
-          response.headers,
-          headerToInclude,
-          headerToExclude
-        );
+    if (logHeaders) {
+      const headersToLog = this._extractHeadersToLog(
+        response.headers,
+        headerToInclude,
+        headerToExclude
+      );
 
-        this._logger.log(level, 'Response Headers: ${headers}', {
-          headers: headersToLog,
-        });
-      }
+      this._logger.log(level, 'Response Headers: ${headers}', {
+        headers: headersToLog,
+      });
     }
   }
 
-  private applyLogResponseBody(
-    level: Level,
+  private _applyLogResponseBody(
+    level: LogLevel,
     response: HttpResponse,
-    logResponse?: HttpMessageLoggingOptions
+    logResponse: HttpMessageLoggingOptions
   ) {
-    if (logResponse?.logBody) {
+    if (logResponse.logBody) {
       this._logger.log(level, 'Response Body: ${body}', {
         body: response.body,
       });
     }
   }
 
-  private getContentType(headers?: Record<string, string>): string {
+  private _getContentType(headers?: Record<string, string>): string {
     return headers ? getHeader(headers, CONTENT_TYPE_HEADER) ?? '' : '';
   }
 
-  private getContentLength(headers?: Record<string, string>): string {
+  private _getContentLength(headers?: Record<string, string>): string {
     return headers ? getHeader(headers, CONTENT_LENGTH_HEADER) ?? '' : '';
   }
 
-  private removeQueryParams(url: string): string {
+  private _removeQueryParams(url: string): string {
     const queryStringIndex: number = url.indexOf('?');
     return queryStringIndex !== -1 ? url.substring(0, queryStringIndex) : url;
   }
 
-  private extractHeadersToLog(
+  private _extractHeadersToLog(
     headers?: Record<string, string>,
     headersToInclude?: string[],
     headersToExclude?: string[]
@@ -188,7 +174,7 @@ export class ApiLogger implements ApiLoggerInterface {
     }
 
     if (headersToInclude && headersToInclude.length > 0) {
-      return this.includeHeadersToLog(
+      return this._includeHeadersToLog(
         headers,
         filteredHeaders,
         headersToInclude
@@ -196,17 +182,17 @@ export class ApiLogger implements ApiLoggerInterface {
     }
 
     if (headersToExclude && headersToExclude.length > 0) {
-      return this.excludeHeadersToLog(
+      return this._excludeHeadersToLog(
         headers,
         filteredHeaders,
         headersToExclude
       );
     }
 
-    return this.removeSenstiveHeaders(headers);
+    return this._filterSenstiveHeaders(headers);
   }
 
-  private includeHeadersToLog(
+  private _includeHeadersToLog(
     headers: Record<string, string>,
     filteredHeaders: Record<string, string>,
     headersToInclude?: string[]
@@ -218,10 +204,10 @@ export class ApiLogger implements ApiLoggerInterface {
         filteredHeaders[name] = val;
       }
     });
-    return this.removeSenstiveHeaders(filteredHeaders);
+    return this._filterSenstiveHeaders(filteredHeaders);
   }
 
-  private excludeHeadersToLog(
+  private _excludeHeadersToLog(
     headers: Record<string, string>,
     filteredHeaders: Record<string, string>,
     headersToExclude?: string[]
@@ -236,10 +222,10 @@ export class ApiLogger implements ApiLoggerInterface {
         filteredHeaders[key] = headers[key];
       }
     }
-    return this.removeSenstiveHeaders(filteredHeaders);
+    return this._filterSenstiveHeaders(filteredHeaders);
   }
 
-  private removeSenstiveHeaders(
+  private _filterSenstiveHeaders(
     headers: Record<string, string>
   ): Record<string, string> {
     if (this._loggingOptions.maskSensitiveHeaders) {
@@ -250,7 +236,10 @@ export class ApiLogger implements ApiLoggerInterface {
         'Set-Cookie',
       ];
       for (const key of Object.keys(headers)) {
-        if (getHeader(headers, key) !== null && senstiveHeaders.includes(key)) {
+        if (
+          getHeader(headers, key) !== null &&
+          senstiveHeaders.includes(key.toUpperCase())
+        ) {
           headers[key] = '**Redacted**';
         }
       }
