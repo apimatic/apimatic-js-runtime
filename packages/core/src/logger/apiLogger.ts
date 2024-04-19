@@ -16,15 +16,27 @@ import {
 } from '../http/httpHeaders';
 import { NullLogger } from './nullLogger';
 
+/**
+ * Represents a logger implementation for API logging.
+ * This logger provides methods to log HTTP requests and responses.
+ */
 export class ApiLogger implements ApiLoggerInterface {
   private readonly _loggingOptions: LoggingOptions;
   private readonly _logger: LoggerInterface;
 
+  /**
+   * Constructs a new instance of ApiLogger.
+   * @param loggingOpt The logging options for configuring the logger behavior.
+   */
   constructor(loggingOpt: LoggingOptions) {
     this._loggingOptions = loggingOpt;
     this._logger = loggingOpt.logger ?? new NullLogger();
   }
 
+  /**
+   * Logs an HTTP request.
+   * @param request The HTTP request to log.
+   */
   public logRequest(request: HttpRequest): void {
     const logLevel = this._loggingOptions.logLevel ?? LogLevel.Info;
     const contentTypeHeader = this._getContentType(request.headers);
@@ -45,6 +57,10 @@ export class ApiLogger implements ApiLoggerInterface {
     this._applyLogRequestOptions(logLevel, request);
   }
 
+  /**
+   * Logs an HTTP response.
+   * @param response The HTTP response to log.
+   */
   public logResponse(response: HttpResponse): void {
     const logLevel = this._loggingOptions.logLevel ?? LogLevel.Info;
     const contentTypeHeader = this._getContentType(response.headers);

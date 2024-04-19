@@ -1,6 +1,15 @@
 import { LogLevel, LoggerInterface } from '@apimatic/core-interfaces';
 
+/**
+ * Represents a logger implementation that logs messages to the console.
+ */
 export class ConsoleLogger implements LoggerInterface {
+  /**
+   * Logs a message to the console with the specified log level.
+   * @param level The log level of the message.
+   * @param message The message to log.
+   * @param params Additional parameters to include in the log message.
+   */
   public log(
     level: LogLevel,
     message: string,
@@ -12,23 +21,21 @@ export class ConsoleLogger implements LoggerInterface {
   }
 }
 
+/**
+ * Formats a message string by replacing placeholders with corresponding values from an object.
+ * @param msg The message string containing placeholders.
+ * @param obj The object containing values to replace placeholders.
+ * @returns The formatted message string.
+ */
 function formatMessage(msg: string, obj: Record<string, any>): string {
   // Use a regular expression to match placeholders in the message string
   const regex = /\${([^}]+)}/g;
 
-  // Use a function to perform the replacement safely
   const formattedMsg = msg.replace(regex, (match, key) => {
-    // Check if the key exists in the object
     if (obj.hasOwnProperty(key)) {
       const value = obj[key];
-      // If the value is an object, stringify it
-      if (typeof value === 'object') {
-        return JSON.stringify(value);
-      } else {
-        return String(value);
-      }
+      return typeof value === 'object' ? JSON.stringify(value) : String(value);
     }
-    // If the key doesn't exist, return the original placeholder
     return match;
   });
 
