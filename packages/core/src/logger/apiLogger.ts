@@ -12,6 +12,7 @@ import {
   CONTENT_LENGTH_HEADER,
   CONTENT_TYPE_HEADER,
   getHeader,
+  setHeader,
 } from '../http/httpHeaders';
 import { NullLogger } from './nullLogger';
 
@@ -27,7 +28,7 @@ export class ApiLogger implements ApiLoggerInterface {
   public logRequest(request: HttpRequest): void {
     const logLevel = this._loggingOptions.logLevel ?? LogLevel.Info;
     const contentTypeHeader = this._getContentType(request.headers);
-    const url = this._loggingOptions.logRequest?.includeQueryInPath
+    const url = this._loggingOptions.logRequest.includeQueryInPath
       ? request.url
       : this._removeQueryParams(request.url);
 
@@ -81,12 +82,12 @@ export class ApiLogger implements ApiLoggerInterface {
 
     if (logHeaders) {
       const headersToLog = this._extractHeadersToLog(
-        request.headers,
         headerToInclude,
-        headerToExclude
+        headerToExclude,
+        request.headers
       );
 
-      this._logger?.log(level, 'Request Headers: ${headers}', {
+      this._logger.log(level, 'Request Headers: ${headers}', {
         headers: headersToLog,
       });
     }
@@ -98,7 +99,7 @@ export class ApiLogger implements ApiLoggerInterface {
     logRequest: HttpRequestLoggingOptions
   ) {
     if (logRequest.logBody) {
-      this._logger?.log(level, 'Request Body: ${body}', {
+      this._logger.log(level, 'Request Body: ${body}', {
         body: request.body,
       });
     }
@@ -127,9 +128,9 @@ export class ApiLogger implements ApiLoggerInterface {
 
     if (logHeaders) {
       const headersToLog = this._extractHeadersToLog(
-        response.headers,
         headerToInclude,
-        headerToExclude
+        headerToExclude,
+        response.headers
       );
 
       this._logger.log(level, 'Response Headers: ${headers}', {
@@ -164,9 +165,9 @@ export class ApiLogger implements ApiLoggerInterface {
   }
 
   private _extractHeadersToLog(
-    headers?: Record<string, string>,
-    headersToInclude?: string[],
-    headersToExclude?: string[]
+    headersToInclude: string[],
+    headersToExclude: string[],
+    headers?: Record<string, string>
   ): Record<string, string> {
     const filteredHeaders: Record<string, string> = {};
     if (!headers) {
@@ -195,10 +196,10 @@ export class ApiLogger implements ApiLoggerInterface {
   private _includeHeadersToLog(
     headers: Record<string, string>,
     filteredHeaders: Record<string, string>,
-    headersToInclude?: string[]
+    headersToInclude: string[]
   ): Record<string, string> {
     // Filter headers based on the keys specified in headersToInclude
-    headersToInclude?.forEach((name) => {
+    headersToInclude.forEach((name) => {
       const val = getHeader(headers, name);
       if (val !== null) {
         filteredHeaders[name] = val;
@@ -210,16 +211,19 @@ export class ApiLogger implements ApiLoggerInterface {
   private _excludeHeadersToLog(
     headers: Record<string, string>,
     filteredHeaders: Record<string, string>,
-    headersToExclude?: string[]
+    headersToExclude: string[]
   ): Record<string, string> {
     // Filter headers based on the keys specified in headersToExclude
     for (const key of Object.keys(headers)) {
       if (
-        !headersToExclude?.some(
+        !headersToExclude.some(
           (excludedName) => excludedName.toLowerCase() === key.toLowerCase()
         )
       ) {
-        filteredHeaders[key] = headers[key];
+        const value = getHeader(headers, key);
+        if (value !== null) {
+          filteredHeaders[key] = value;
+        }
       }
     }
     return this._filterSenstiveHeaders(filteredHeaders);
@@ -236,11 +240,8 @@ export class ApiLogger implements ApiLoggerInterface {
         'Set-Cookie',
       ];
       for (const key of Object.keys(headers)) {
-        if (
-          getHeader(headers, key) !== null &&
-          senstiveHeaders.includes(key.toUpperCase())
-        ) {
-          headers[key] = '**Redacted**';
+        if (senstiveHeaders.includes(key.toUpperCase())) {
+          setHeader(headers, key, '**Redacted**');
         }
       }
     }

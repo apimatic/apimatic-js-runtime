@@ -1,7 +1,7 @@
 import {
   HttpRequest,
   HttpResponse,
-  Level,
+  LogLevel,
   LoggingOptions,
 } from '../../src/coreInterfaces';
 import { ConsoleLogger } from '../../src/logger/defaultLogger';
@@ -24,7 +24,7 @@ describe('APILogger with ConsoleLogging', () => {
   it('should log req and response body, headers with include header filters', async () => {
     const loggingOpts: LoggingOptions = {
       logger: new ConsoleLogger(),
-      logLevel: Level.Debug,
+      logLevel: LogLevel.Debug,
       logRequest: {
         logBody: true,
         logHeaders: true,
@@ -38,6 +38,7 @@ describe('APILogger with ConsoleLogging', () => {
         headerToInclude: ['Content-length'],
         headerToExclude: ['test-header'],
       },
+      maskSensitiveHeaders: false,
     };
 
     const expectedConsoleLogs = [
@@ -69,6 +70,8 @@ describe('APILogger with ConsoleLogging', () => {
         headerToInclude: [],
         headerToExclude: [],
       },
+      logLevel: LogLevel.Info,
+      maskSensitiveHeaders: false,
     };
 
     const expectedConsoleLogs = [
@@ -87,12 +90,17 @@ describe('APILogger with ConsoleLogging', () => {
         logHeaders: true,
         headerToInclude: [],
         headerToExclude: ['Authorization'],
+        includeQueryInPath: false,
+        logBody: false,
       },
       logResponse: {
         logHeaders: true,
         headerToInclude: [],
         headerToExclude: ['test-header'],
+        logBody: false,
       },
+      logLevel: LogLevel.Info,
+      maskSensitiveHeaders: false,
     };
 
     const expectedConsoleLogs = [
@@ -111,11 +119,19 @@ describe('APILogger with ConsoleLogging', () => {
       logger: new ConsoleLogger(),
       logRequest: {
         logHeaders: true,
+        includeQueryInPath: false,
+        logBody: false,
+        headerToExclude: [],
+        headerToInclude: [],
       },
       logResponse: {
         logHeaders: true,
+        logBody: false,
+        headerToExclude: [],
+        headerToInclude: [],
       },
       maskSensitiveHeaders: true,
+      logLevel: LogLevel.Info,
     };
 
     const expectedConsoleLogs = [
@@ -134,15 +150,23 @@ describe('APILogger with NullLogging', () => {
   it('should not log anything', async () => {
     const loggingOpts: LoggingOptions = {
       logger: new NullLogger(),
+      logRequest: {
+        logHeaders: false,
+        includeQueryInPath: false,
+        logBody: false,
+        headerToExclude: [],
+        headerToInclude: [],
+      },
+      logResponse: {
+        logHeaders: false,
+        logBody: false,
+        headerToExclude: [],
+        headerToInclude: [],
+      },
+      maskSensitiveHeaders: false,
+      logLevel: LogLevel.Info,
     };
     await mockClient(loggingOpts);
-    expect(loggerSpy).not.toHaveBeenCalled();
-  });
-});
-
-describe('APILogger with no logger options', () => {
-  it('should not log anything', async () => {
-    await mockClient();
     expect(loggerSpy).not.toHaveBeenCalled();
   });
 });
@@ -164,7 +188,7 @@ function mockRequest(): HttpRequest {
     headers: {
       'Content-type': 'content-type',
       'Content-length': 'Content-length',
-      Authorization: "'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga'",
+      Authorization: '\'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga\'',
     },
     body: {
       type: 'text',
@@ -186,7 +210,7 @@ function mockResponse(): HttpResponse {
   };
 }
 
-async function mockClient(loggingOpts: LoggingOptions = {}) {
+async function mockClient(loggingOpts: LoggingOptions) {
   const client = async (req) => {
     return { request: req, response: mockResponse() };
   };

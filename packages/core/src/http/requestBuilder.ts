@@ -456,10 +456,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       async (request, opt) => {
         // tslint:disable-next-line:no-shadowed-variable
         const response = await this._httpClient(request, opt);
-        if (this._apiLogger) {
-          this._apiLogger.logRequest(request);
-          this._apiLogger.logResponse(response);
-        }
         return { request, response };
       }
     );
@@ -597,7 +593,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         apiLogger.logRequest(request);
         const context = await next(request, options);
         apiLogger.logResponse(context.response);
-        return { request, response: context.response };
+        return context;
       });
     }
   }
@@ -662,8 +658,8 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
   retryConfig: RetryConfiguration,
-  apiLogger?: ApiLoggerInterface,
-  xmlSerializer: XmlSerializerInterface = new XmlSerialization()
+  xmlSerializer: XmlSerializerInterface = new XmlSerialization(),
+  apiLogger?: ApiLoggerInterface
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
     return new DefaultRequestBuilder(
