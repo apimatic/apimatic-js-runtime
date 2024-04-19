@@ -105,14 +105,19 @@ export interface HttpMessageLoggingOptions {
   logHeaders: boolean;
 
   /**
-   * List of headers to exclude from logging.
+   * Array of headers not to be displayed in logging.
    */
   headerToExclude: string[];
 
   /**
-   * List of headers to include in logging.
+   * Array of headers to be displayed in logging.
    */
   headerToInclude: string[];
+
+  /**
+   * Array of headers which values are non-senstive to display in logging.
+   */
+  headersToWhiteList: string[];
 }
 
 /**

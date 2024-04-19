@@ -8,7 +8,6 @@ import {
   HttpMethod,
   HttpRequest,
   HttpResponse,
-  LoggingOptions,
   passThroughInterceptor,
   RequestOptions,
   RetryConfiguration,
@@ -25,8 +24,6 @@ import { FileWrapper } from '../../src/fileWrapper';
 import fs from 'fs';
 import path from 'path';
 import { bossSchema } from '../../../schema/test/bossSchema';
-import { ApiLogger } from '../../src/logger/apiLogger';
-import { NullLogger } from '../../src/logger/nullLogger';
 
 describe('test default request builder behavior with succesful responses', () => {
   const authParams = {
@@ -43,14 +40,12 @@ describe('test default request builder behavior with succesful responses', () =>
     httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
   };
   const basicAuth = mockBasicAuthenticationInterface(authParams);
-  const logger = mockLoggerInterface();
   const defaultRequestBuilder = createRequestBuilderFactory<string, boolean>(
     mockHttpClientAdapter(),
     (server) => mockBaseURIProvider(server),
     ApiError,
     basicAuth,
-    retryConfig,
-    logger
+    retryConfig
   );
 
   it('should test request builder configured with text request body and text response body', async () => {
@@ -424,7 +419,7 @@ describe('test default request builder behavior with succesful responses', () =>
       await reqBuilder.callAsJson(employeeSchema);
     } catch (error) {
       const expectedResult =
-        "Could not parse body as JSON.\n\nExpected 'r' instead of 'e'";
+        'Could not parse body as JSON.\n\nExpected \'r\' instead of \'e\'';
       expect(error.message).toEqual(expectedResult);
     }
   });
@@ -499,13 +494,6 @@ describe('test default request builder behavior with succesful responses', () =>
         return next(request, options);
       };
     };
-  }
-
-  function mockLoggerInterface() {
-    const loggingOpts: LoggingOptions = {
-      logger: new NullLogger(),
-    };
-    return new ApiLogger(loggingOpts);
   }
 
   function mockHttpClientAdapter(): HttpClientInterface {

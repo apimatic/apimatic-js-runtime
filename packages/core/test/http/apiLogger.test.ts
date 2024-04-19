@@ -1,13 +1,13 @@
 import {
   HttpRequest,
   HttpResponse,
-  LogLevel,
   LoggingOptions,
+  LogLevel,
 } from '../../src/coreInterfaces';
-import { ConsoleLogger } from '../../src/logger/defaultLogger';
 import { ApiLogger } from '../../src/logger/apiLogger';
 import { callHttpInterceptors } from '../../src/http/httpInterceptor';
 import { NullLogger } from '../../src/logger/nullLogger';
+import { mergeLoggingOptions } from '../../src/logger/defaultLoggingConfiguration';
 
 let loggerSpy;
 beforeEach(() => {
@@ -20,125 +20,138 @@ afterEach(() => {
   loggerSpy.mockRestore();
 });
 
-describe('APILogger with ConsoleLogging', () => {
-  it('should log req and response body, headers with include header filters', async () => {
-    const loggingOpts: LoggingOptions = {
-      logger: new ConsoleLogger(),
+describe('Test APILogger with Request ConsoleLogging', () => {
+  it('should only log req defaults', async () => {
+    const loggingOpts = mergeLoggingOptions({});
+
+    const expectedConsoleLogs = [
+      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
+  });
+  it('should override log req default level', async () => {
+    const loggingOpts = mergeLoggingOptions({
       logLevel: LogLevel.Debug,
+    });
+
+    const expectedConsoleLogs = [
+      'debug: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
+  });
+  it('should only log req defaults including query params', async () => {
+    const loggingOpts = mergeLoggingOptions({
       logRequest: {
-        logBody: true,
-        logHeaders: true,
         includeQueryInPath: true,
-        headerToInclude: ['Content-type'],
-        headerToExclude: ['Authorization'],
       },
-      logResponse: {
+    });
+
+    const expectedConsoleLogs = [
+      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder?param1=test ContentType: content-type',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
+  });
+  it('should only log req body', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logRequest: {
         logBody: true,
-        logHeaders: true,
-        headerToInclude: ['Content-length'],
-        headerToExclude: ['test-header'],
       },
-      maskSensitiveHeaders: false,
-    };
-
-    const expectedConsoleLogs = [
-      'debug: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder?param1=test ContentType: content-type',
-      'debug: Request Headers: {"Content-type":"content-type"}',
-      'debug: Request Body: {"type":"text","content":"some req content"}',
-      'debug: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
-      'debug: Response Headers: {"Content-length":"Content-length"}',
-      'debug: Response Body: testBody',
-    ];
-
-    await mockClient(loggingOpts);
-    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
-  });
-
-  it('should not log req and response body, headers ', async () => {
-    const loggingOpts: LoggingOptions = {
-      logger: new ConsoleLogger(),
-      logRequest: {
-        logBody: false,
-        logHeaders: false,
-        includeQueryInPath: false,
-        headerToInclude: [],
-        headerToExclude: [],
-      },
-      logResponse: {
-        logBody: false,
-        logHeaders: false,
-        headerToInclude: [],
-        headerToExclude: [],
-      },
-      logLevel: LogLevel.Info,
-      maskSensitiveHeaders: false,
-    };
+    });
 
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Request Body: {"type":"text","content":"some req content"}',
     ];
 
     await mockClient(loggingOpts);
     expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
   });
-
-  it('should log req and response headers with exclude header filters', async () => {
-    const loggingOpts: LoggingOptions = {
-      logger: new ConsoleLogger(),
+  it('should only log req headers', async () => {
+    const loggingOpts = mergeLoggingOptions({
       logRequest: {
         logHeaders: true,
-        headerToInclude: [],
-        headerToExclude: ['Authorization'],
-        includeQueryInPath: false,
-        logBody: false,
       },
-      logResponse: {
-        logHeaders: true,
-        headerToInclude: [],
-        headerToExclude: ['test-header'],
-        logBody: false,
-      },
-      logLevel: LogLevel.Info,
-      maskSensitiveHeaders: false,
-    };
-
-    const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Request Headers: {"Content-type":"content-type","Content-length":"Content-length"}',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
-      'info: Response Headers: {"test-header1":"test-value1","Content-type":"content-type","Content-length":"Content-length"}',
-    ];
-
-    await mockClient(loggingOpts);
-    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
-  });
-
-  it('should log req and response headers with enabled maskSensitiveHeaders', async () => {
-    const loggingOpts: LoggingOptions = {
-      logger: new ConsoleLogger(),
-      logRequest: {
-        logHeaders: true,
-        includeQueryInPath: false,
-        logBody: false,
-        headerToExclude: [],
-        headerToInclude: [],
-      },
-      logResponse: {
-        logHeaders: true,
-        logBody: false,
-        headerToExclude: [],
-        headerToInclude: [],
-      },
-      maskSensitiveHeaders: true,
-      logLevel: LogLevel.Info,
-    };
+    });
 
     const expectedConsoleLogs = [
       'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
       'info: Request Headers: {"Content-type":"content-type","Content-length":"Content-length","Authorization":"**Redacted**"}',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
-      'info: Response Headers: {"test-header":"test-value","test-header1":"test-value1","Content-type":"content-type","Content-length":"Content-length"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
+  });
+
+  it('should only log req headers in the include test', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logRequest: {
+        logHeaders: true,
+        headerToInclude: ['content-type'],
+      },
+    });
+
+    const expectedConsoleLogs = [
+      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+      'info: Request Headers: {"Content-type":"content-type"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
+  });
+
+  it('should only log all req headers except the excluded', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logRequest: {
+        logHeaders: true,
+        headerToExclude: ['content-type'],
+      },
+    });
+
+    const expectedConsoleLogs = [
+      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+      'info: Request Headers: {"Content-length":"Content-length","Authorization":"**Redacted**"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
+  });
+
+  it('should redact req senstive headers with enabled maskSensitiveHeaders', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logRequest: {
+        logHeaders: true,
+        headersToWhiteList: ['authorization'],
+      },
+      maskSensitiveHeaders: true,
+    });
+
+    const expectedConsoleLogs = [
+      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+      'info: Request Headers: {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs);
+  });
+
+  it('should not log req senstive headers as redacted with disabled maskSensitiveHeaders', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logRequest: {
+        logHeaders: true,
+        headersToWhiteList: ['authorization'],
+      },
+      maskSensitiveHeaders: false,
+    });
+
+    const expectedConsoleLogs = [
+      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+      'info: Request Headers: {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga"}',
     ];
 
     await mockClient(loggingOpts);
@@ -146,26 +159,144 @@ describe('APILogger with ConsoleLogging', () => {
   });
 });
 
-describe('APILogger with NullLogging', () => {
-  it('should not log anything', async () => {
-    const loggingOpts: LoggingOptions = {
-      logger: new NullLogger(),
-      logRequest: {
-        logHeaders: false,
-        includeQueryInPath: false,
-        logBody: false,
-        headerToExclude: [],
-        headerToInclude: [],
-      },
+describe('Test APILogger with Response ConsoleLogging', () => {
+  it('should only log resp defaults', async () => {
+    const loggingOpts = mergeLoggingOptions({});
+
+    const expectedConsoleLogs = [
+      'value should not matter',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs, 1);
+  });
+  it('should override log resp default level', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logLevel: LogLevel.Debug,
+    });
+
+    const expectedConsoleLogs = [
+      'ignore value',
+      'debug: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs, 1);
+  });
+  it('should only log resp body', async () => {
+    const loggingOpts = mergeLoggingOptions({
       logResponse: {
-        logHeaders: false,
-        logBody: false,
-        headerToExclude: [],
-        headerToInclude: [],
+        logBody: true,
+      },
+    });
+
+    const expectedConsoleLogs = [
+      'ignore value',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Response Body: testBody',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs, 1);
+  });
+  it('should only log resp headers', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logResponse: {
+        logHeaders: true,
+      },
+    });
+
+    const expectedConsoleLogs = [
+      'ignore value',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Response Headers: {"Set-Cookies":"**Redacted**","Content-length":"Content-length","Content-Type":"content-type"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs, 1);
+  });
+
+  it('should only log resp headers in the include test', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logResponse: {
+        logHeaders: true,
+        headerToInclude: ['content-type'],
+      },
+    });
+
+    const expectedConsoleLogs = [
+      'ignore value',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Response Headers: {"Content-Type":"content-type"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs, 1);
+  });
+
+  it('should only log all resp headers except the excluded', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logResponse: {
+        logHeaders: true,
+        headerToExclude: ['content-type'],
+      },
+    });
+
+    const expectedConsoleLogs = [
+      'ignore value',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Response Headers: {"Set-Cookies":"**Redacted**","Content-length":"Content-length"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs, 1);
+  });
+
+  it('should redact resp senstive headers to log with enabled maskSensitiveHeaders', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logResponse: {
+        logHeaders: true,
+        headersToWhiteList: ['Set-Cookies'],
+      },
+      maskSensitiveHeaders: true,
+    });
+
+    const expectedConsoleLogs = [
+      'ignore value',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Response Headers: {"Set-Cookies":"some value","Content-length":"Content-length","Content-Type":"content-type"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs, 1);
+  });
+
+  it('should allow resp senstive headers to log with disabled maskSensitiveHeaders', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logResponse: {
+        logHeaders: true,
+        headersToWhiteList: ['Set-Cookies'],
       },
       maskSensitiveHeaders: false,
-      logLevel: LogLevel.Info,
-    };
+    });
+
+    const expectedConsoleLogs = [
+      'ignore value',
+      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Response Headers: {"Set-Cookies":"some value","Content-length":"Content-length","Content-Type":"content-type"}',
+    ];
+
+    await mockClient(loggingOpts);
+    expectLogsToBeLogged(loggerSpy, expectedConsoleLogs, 1);
+  });
+});
+
+describe('APILogger with NullLogging', () => {
+  it('should not log anything', async () => {
+    const loggingOpts = mergeLoggingOptions({
+      logger: new NullLogger(),
+    });
     await mockClient(loggingOpts);
     expect(loggerSpy).not.toHaveBeenCalled();
   });
@@ -188,7 +319,7 @@ function mockRequest(): HttpRequest {
     headers: {
       'Content-type': 'content-type',
       'Content-length': 'Content-length',
-      Authorization: '\'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga\'',
+      Authorization: 'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga',
     },
     body: {
       type: 'text',
@@ -202,10 +333,9 @@ function mockResponse(): HttpResponse {
     statusCode: 200,
     body: 'testBody',
     headers: {
-      'test-header': 'test-value',
-      'test-header1': 'test-value1',
-      'Content-type': 'content-type',
+      'Set-Cookies': 'some value',
       'Content-length': 'Content-length',
+      'Content-Type': 'content-type',
     },
   };
 }
@@ -218,8 +348,8 @@ async function mockClient(loggingOpts: LoggingOptions) {
   return await executor(mockRequest(), undefined);
 }
 
-function expectLogsToBeLogged(logSpy, expectedConsoleLogs) {
-  for (let i = 0; i < expectedConsoleLogs.length; i++) {
+function expectLogsToBeLogged(logSpy, expectedConsoleLogs, index = 0) {
+  for (let i = index; i < expectedConsoleLogs.length; i++) {
     expect(logSpy.mock.calls[i][0]).toEqual(expectedConsoleLogs[i]);
   }
 }

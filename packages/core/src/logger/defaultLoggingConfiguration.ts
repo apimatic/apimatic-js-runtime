@@ -13,14 +13,16 @@ export const DEFAULT_LOGGING_OPTIONS: LoggingOptions = {
     includeQueryInPath: false,
     logBody: false,
     logHeaders: false,
-    headerToExclude: ['Authorization'],
+    headerToExclude: [],
     headerToInclude: [],
+    headersToWhiteList: [],
   },
   logResponse: {
     logBody: false,
     logHeaders: false,
     headerToExclude: [],
     headerToInclude: [],
+    headersToWhiteList: [],
   },
   maskSensitiveHeaders: true,
 };

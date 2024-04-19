@@ -94,12 +94,18 @@ export class ApiLogger implements ApiLoggerInterface {
     request: HttpRequest,
     logRequest: HttpRequestLoggingOptions
   ) {
-    const { logHeaders, headerToInclude, headerToExclude } = logRequest;
+    const {
+      logHeaders,
+      headerToInclude,
+      headerToExclude,
+      headersToWhiteList,
+    } = logRequest;
 
     if (logHeaders) {
       const headersToLog = this._extractHeadersToLog(
         headerToInclude,
         headerToExclude,
+        headersToWhiteList,
         request.headers
       );
 
@@ -140,12 +146,18 @@ export class ApiLogger implements ApiLoggerInterface {
     response: HttpResponse,
     logResponse: HttpMessageLoggingOptions
   ) {
-    const { logHeaders, headerToInclude, headerToExclude } = logResponse;
+    const {
+      logHeaders,
+      headerToInclude,
+      headerToExclude,
+      headersToWhiteList,
+    } = logResponse;
 
     if (logHeaders) {
       const headersToLog = this._extractHeadersToLog(
         headerToInclude,
         headerToExclude,
+        headersToWhiteList,
         response.headers
       );
 
@@ -183,30 +195,31 @@ export class ApiLogger implements ApiLoggerInterface {
   private _extractHeadersToLog(
     headersToInclude: string[],
     headersToExclude: string[],
+    headersToWhiteList: string[],
     headers?: Record<string, string>
   ): Record<string, string> {
-    const filteredHeaders: Record<string, string> = {};
+    let filteredHeaders: Record<string, string> = {};
     if (!headers) {
       return {};
     }
 
-    if (headersToInclude && headersToInclude.length > 0) {
-      return this._includeHeadersToLog(
+    if (headersToInclude.length > 0) {
+      filteredHeaders = this._includeHeadersToLog(
         headers,
         filteredHeaders,
         headersToInclude
       );
-    }
-
-    if (headersToExclude && headersToExclude.length > 0) {
-      return this._excludeHeadersToLog(
+    } else if (headersToExclude.length > 0) {
+      filteredHeaders = this._excludeHeadersToLog(
         headers,
         filteredHeaders,
         headersToExclude
       );
+    } else {
+      filteredHeaders = headers;
     }
 
-    return this._filterSenstiveHeaders(headers);
+    return this._maskSenstiveHeaders(filteredHeaders, headersToWhiteList);
   }
 
   private _includeHeadersToLog(
@@ -216,12 +229,15 @@ export class ApiLogger implements ApiLoggerInterface {
   ): Record<string, string> {
     // Filter headers based on the keys specified in headersToInclude
     headersToInclude.forEach((name) => {
+      const key = Object.keys(headers).find(
+        (headerKey) => headerKey.toLowerCase() === name.toLowerCase()
+      );
       const val = getHeader(headers, name);
-      if (val !== null) {
-        filteredHeaders[name] = val;
+      if (val !== null && key) {
+        filteredHeaders[key] = val;
       }
     });
-    return this._filterSenstiveHeaders(filteredHeaders);
+    return filteredHeaders;
   }
 
   private _excludeHeadersToLog(
@@ -242,25 +258,83 @@ export class ApiLogger implements ApiLoggerInterface {
         }
       }
     }
-    return this._filterSenstiveHeaders(filteredHeaders);
+    return filteredHeaders;
   }
 
-  private _filterSenstiveHeaders(
-    headers: Record<string, string>
+  private _maskSenstiveHeaders(
+    headers: Record<string, string>,
+    headersToWhiteList: string[]
   ): Record<string, string> {
     if (this._loggingOptions.maskSensitiveHeaders) {
-      const senstiveHeaders = [
-        'Authorization',
-        'WWW-Authenticate',
-        'Proxy-Authorization',
-        'Set-Cookie',
-      ];
       for (const key of Object.keys(headers)) {
-        if (senstiveHeaders.includes(key.toUpperCase())) {
-          setHeader(headers, key, '**Redacted**');
-        }
+        const val = getHeader(headers, key) ?? '';
+        setHeader(
+          headers,
+          key,
+          this._maskIfSenstiveHeader(key, val, headersToWhiteList)
+        );
       }
     }
     return headers;
+  }
+
+  private _maskIfSenstiveHeader(
+    name: string,
+    value: string,
+    headersToWhiteList: string[]
+  ): string {
+    const nonSensitiveHeaders: string[] = [
+      'accept',
+      'accept-charset',
+      'accept-encoding',
+      'accept-language',
+      'cache-control',
+      'connection',
+      'content-encoding',
+      'content-language',
+      'content-length',
+      'content-location',
+      'content-md5',
+      'content-range',
+      'content-type',
+      'date',
+      'etag',
+      'expect',
+      'expires',
+      'from',
+      'host',
+      'if-match',
+      'if-modified-since',
+      'if-none-match',
+      'if-range',
+      'if-unmodified-since',
+      'keep-alive',
+      'last-modified',
+      'location',
+      'max-forwards',
+      'pragma',
+      'range',
+      'referer',
+      'retry-after',
+      'server',
+      'trailer',
+      'transfer-encoding',
+      'upgrade',
+      'user-agent',
+      'vary',
+      'via',
+      'warning',
+      'x-forwarded-for',
+      'x-requested-with',
+      'x-powered-by',
+    ];
+
+    const lowerCaseHeadersToWhiteList = headersToWhiteList.map((header) =>
+      header.toLowerCase()
+    );
+    return nonSensitiveHeaders.includes(name.toLowerCase()) ||
+      lowerCaseHeadersToWhiteList.includes(name.toLowerCase())
+      ? value
+      : '**Redacted**';
   }
 }
