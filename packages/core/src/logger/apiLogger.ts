@@ -45,7 +45,7 @@ export class ApiLogger implements ApiLoggerInterface {
 
     this._logger.log(
       logLevel,
-      'Request  HttpMethod: ${method} Url: ${url} ContentType: ${contentType}',
+      'Request method ${method} url ${url} contentType ${contentType}',
       {
         method: request.method,
         url,
@@ -67,7 +67,7 @@ export class ApiLogger implements ApiLoggerInterface {
 
     this._logger.log(
       logLevel,
-      'Response HttpStatusCode: ${statusCode} Length: ${contentLength} ContentType: ${contentType}',
+      'Response statusCode ${statusCode} contentLength ${contentLength} contentType ${contentType}',
       {
         statusCode: response.statusCode,
         contentLength: contentLengthHeader,
@@ -108,7 +108,7 @@ export class ApiLogger implements ApiLoggerInterface {
         request.headers
       );
 
-      this._logger.log(level, 'Request Headers: ${headers}', {
+      this._logger.log(level, 'Request headers ${headers}', {
         headers: headersToLog,
       });
     }
@@ -120,7 +120,7 @@ export class ApiLogger implements ApiLoggerInterface {
     logRequest: HttpRequestLoggingOptions
   ) {
     if (logRequest.logBody) {
-      this._logger.log(level, 'Request Body: ${body}', {
+      this._logger.log(level, 'Request body ${body}', {
         body: request.body,
       });
     }
@@ -160,7 +160,7 @@ export class ApiLogger implements ApiLoggerInterface {
         response.headers
       );
 
-      this._logger.log(level, 'Response Headers: ${headers}', {
+      this._logger.log(level, 'Response headers ${headers}', {
         headers: headersToLog,
       });
     }
@@ -172,7 +172,7 @@ export class ApiLogger implements ApiLoggerInterface {
     logResponse: HttpMessageLoggingOptions
   ) {
     if (logResponse.logBody) {
-      this._logger.log(level, 'Response Body: ${body}', {
+      this._logger.log(level, 'Response body ${body}', {
         body: response.body,
       });
     }

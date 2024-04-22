@@ -25,7 +25,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     const loggingOpts = mergeLoggingOptions({});
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+      'info: Request method GET url https://apimatic.hopto.org:3000/test/requestBuilder contentType content-type',
     ];
 
     await mockClient(loggingOpts);
@@ -37,7 +37,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     });
 
     const expectedConsoleLogs = [
-      'debug: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
+      'debug: Request method GET url https://apimatic.hopto.org:3000/test/requestBuilder contentType content-type',
     ];
 
     await mockClient(loggingOpts);
@@ -51,7 +51,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     });
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder?param1=test ContentType: content-type',
+      'info: Request method GET url https://apimatic.hopto.org:3000/test/requestBuilder?param1=test contentType content-type',
     ];
 
     await mockClient(loggingOpts);
@@ -65,8 +65,8 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     });
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Request Body: {"type":"text","content":"some req content"}',
+      'info: Request method GET url https://apimatic.hopto.org:3000/test/requestBuilder contentType content-type',
+      'info: Request body {"type":"text","content":"some req content"}',
     ];
 
     await mockClient(loggingOpts);
@@ -80,8 +80,8 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     });
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Request Headers: {"Content-type":"content-type","Content-length":"Content-length","Authorization":"**Redacted**"}',
+      'info: Request method GET url https://apimatic.hopto.org:3000/test/requestBuilder contentType content-type',
+      'info: Request headers {"Content-type":"content-type","Content-length":"Content-length","Authorization":"**Redacted**"}',
     ];
 
     await mockClient(loggingOpts);
@@ -97,8 +97,8 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     });
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Request Headers: {"Content-type":"content-type"}',
+      'info: Request method GET url https://apimatic.hopto.org:3000/test/requestBuilder contentType content-type',
+      'info: Request headers {"Content-type":"content-type"}',
     ];
 
     await mockClient(loggingOpts);
@@ -114,8 +114,8 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     });
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Request Headers: {"Content-length":"Content-length","Authorization":"**Redacted**"}',
+      'info: Request method GET url https://apimatic.hopto.org:3000/test/requestBuilder contentType content-type',
+      'info: Request headers {"Content-length":"Content-length","Authorization":"**Redacted**"}',
     ];
 
     await mockClient(loggingOpts);
@@ -132,8 +132,8 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     });
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Request Headers: {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga"}',
+      'info: Request method GET url https://apimatic.hopto.org:3000/test/requestBuilder contentType content-type',
+      'info: Request headers {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga"}',
     ];
 
     await mockClient(loggingOpts);
@@ -150,8 +150,8 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     });
 
     const expectedConsoleLogs = [
-      'info: Request  HttpMethod: GET Url: https://apimatic.hopto.org:3000/test/requestBuilder ContentType: content-type',
-      'info: Request Headers: {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga"}',
+      'info: Request method GET url https://apimatic.hopto.org:3000/test/requestBuilder contentType content-type',
+      'info: Request headers {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga"}',
     ];
 
     await mockClient(loggingOpts);
@@ -165,7 +165,7 @@ describe('Test APILogger with Response ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'value should not matter',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'info: Response statusCode 200 contentLength Content-length contentType content-type',
     ];
 
     await mockClient(loggingOpts);
@@ -178,7 +178,7 @@ describe('Test APILogger with Response ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'ignore value',
-      'debug: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
+      'debug: Response statusCode 200 contentLength Content-length contentType content-type',
     ];
 
     await mockClient(loggingOpts);
@@ -193,8 +193,8 @@ describe('Test APILogger with Response ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'ignore value',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
-      'info: Response Body: testBody',
+      'info: Response statusCode 200 contentLength Content-length contentType content-type',
+      'info: Response body testBody',
     ];
 
     await mockClient(loggingOpts);
@@ -209,8 +209,8 @@ describe('Test APILogger with Response ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'ignore value',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
-      'info: Response Headers: {"Set-Cookies":"**Redacted**","Content-length":"Content-length","Content-Type":"content-type"}',
+      'info: Response statusCode 200 contentLength Content-length contentType content-type',
+      'info: Response headers {"Set-Cookies":"**Redacted**","Content-length":"Content-length","Content-Type":"content-type"}',
     ];
 
     await mockClient(loggingOpts);
@@ -227,8 +227,8 @@ describe('Test APILogger with Response ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'ignore value',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
-      'info: Response Headers: {"Content-Type":"content-type"}',
+      'info: Response statusCode 200 contentLength Content-length contentType content-type',
+      'info: Response headers {"Content-Type":"content-type"}',
     ];
 
     await mockClient(loggingOpts);
@@ -245,8 +245,8 @@ describe('Test APILogger with Response ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'ignore value',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
-      'info: Response Headers: {"Set-Cookies":"**Redacted**","Content-length":"Content-length"}',
+      'info: Response statusCode 200 contentLength Content-length contentType content-type',
+      'info: Response headers {"Set-Cookies":"**Redacted**","Content-length":"Content-length"}',
     ];
 
     await mockClient(loggingOpts);
@@ -264,8 +264,8 @@ describe('Test APILogger with Response ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'ignore value',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
-      'info: Response Headers: {"Set-Cookies":"some value","Content-length":"Content-length","Content-Type":"content-type"}',
+      'info: Response statusCode 200 contentLength Content-length contentType content-type',
+      'info: Response headers {"Set-Cookies":"some value","Content-length":"Content-length","Content-Type":"content-type"}',
     ];
 
     await mockClient(loggingOpts);
@@ -283,8 +283,8 @@ describe('Test APILogger with Response ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'ignore value',
-      'info: Response HttpStatusCode: 200 Length: Content-length ContentType: content-type',
-      'info: Response Headers: {"Set-Cookies":"some value","Content-length":"Content-length","Content-Type":"content-type"}',
+      'info: Response statusCode 200 contentLength Content-length contentType content-type',
+      'info: Response headers {"Set-Cookies":"some value","Content-length":"Content-length","Content-Type":"content-type"}',
     ];
 
     await mockClient(loggingOpts);
