@@ -92,7 +92,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     const loggingOpts = mergeLoggingOptions({
       logRequest: {
         logHeaders: true,
-        headerToInclude: ['content-type'],
+        headersToInclude: ['content-type'],
       },
     });
 
@@ -109,7 +109,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     const loggingOpts = mergeLoggingOptions({
       logRequest: {
         logHeaders: true,
-        headerToExclude: ['content-type'],
+        headersToExclude: ['content-type'],
       },
     });
 
@@ -221,7 +221,7 @@ describe('Test APILogger with Response ConsoleLogging', () => {
     const loggingOpts = mergeLoggingOptions({
       logResponse: {
         logHeaders: true,
-        headerToInclude: ['content-type'],
+        headersToInclude: ['content-type'],
       },
     });
 
@@ -239,7 +239,7 @@ describe('Test APILogger with Response ConsoleLogging', () => {
     const loggingOpts = mergeLoggingOptions({
       logResponse: {
         logHeaders: true,
-        headerToExclude: ['content-type'],
+        headersToExclude: ['content-type'],
       },
     });
 

@@ -103,7 +103,7 @@ describe('Creating logging configuration with defaults', () => {
     it('should set array type options', () => {
       const options: PartialLoggingOptions = {
         logRequest: {
-          headerToInclude: ['X-Cache'],
+          headersToInclude: ['X-Cache'],
         },
       };
 
@@ -113,7 +113,7 @@ describe('Creating logging configuration with defaults', () => {
         ...DEFAULT_LOGGING_OPTIONS,
         logRequest: {
           ...DEFAULT_LOGGING_OPTIONS.logRequest,
-          headerToInclude: ['X-Cache'],
+          headersToInclude: ['X-Cache'],
         },
       });
     });

@@ -14,7 +14,6 @@ import {
   getHeader,
   setHeader,
 } from '../http/httpHeaders';
-import { NullLogger } from './nullLogger';
 
 /**
  * Represents a logger implementation for API logging.
@@ -30,7 +29,7 @@ export class ApiLogger implements ApiLoggerInterface {
    */
   constructor(loggingOpt: LoggingOptions) {
     this._loggingOptions = loggingOpt;
-    this._logger = loggingOpt.logger ?? new NullLogger();
+    this._logger = loggingOpt.logger;
   }
 
   /**
@@ -96,15 +95,15 @@ export class ApiLogger implements ApiLoggerInterface {
   ) {
     const {
       logHeaders,
-      headerToInclude,
-      headerToExclude,
+      headersToInclude,
+      headersToExclude,
       headersToWhiteList,
     } = logRequest;
 
     if (logHeaders) {
       const headersToLog = this._extractHeadersToLog(
-        headerToInclude,
-        headerToExclude,
+        headersToInclude,
+        headersToExclude,
         headersToWhiteList,
         request.headers
       );
@@ -148,15 +147,15 @@ export class ApiLogger implements ApiLoggerInterface {
   ) {
     const {
       logHeaders,
-      headerToInclude,
-      headerToExclude,
+      headersToInclude,
+      headersToExclude,
       headersToWhiteList,
     } = logResponse;
 
     if (logHeaders) {
       const headersToLog = this._extractHeadersToLog(
-        headerToInclude,
-        headerToExclude,
+        headersToInclude,
+        headersToExclude,
         headersToWhiteList,
         response.headers
       );
