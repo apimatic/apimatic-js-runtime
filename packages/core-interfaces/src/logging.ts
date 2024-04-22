@@ -61,36 +61,6 @@ export interface LoggingOptions {
 }
 
 /**
- * Represents options for configuring SDK logging behavior.
- */
-export interface SdkLoggingOptions {
-  /**
-   * The logger to use for logging messages.
-   */
-  logger: LoggerInterface;
-
-  /**
-   * The log level to determine which messages should be logged.
-   */
-  logLevel: LogLevel;
-
-  /**
-   * Partial options for logging HTTP requests.
-   */
-  logRequest: Partial<HttpRequestLoggingOptions>;
-
-  /**
-   * Partial options for logging HTTP responses.
-   */
-  logResponse: Partial<HttpMessageLoggingOptions>;
-
-  /**
-   * Indicates whether sensitive headers should be masked in logged messages.
-   */
-  maskSensitiveHeaders: boolean;
-}
-
-/**
  * Represents options for logging HTTP message details.
  */
 export interface HttpMessageLoggingOptions {
