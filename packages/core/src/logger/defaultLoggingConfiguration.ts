@@ -15,14 +15,14 @@ export const DEFAULT_LOGGING_OPTIONS: LoggingOptions = {
     logHeaders: false,
     headersToExclude: [],
     headersToInclude: [],
-    headersToWhiteList: [],
+    headersToWhitelist: [],
   },
   logResponse: {
     logBody: false,
     logHeaders: false,
     headersToExclude: [],
     headersToInclude: [],
-    headersToWhiteList: [],
+    headersToWhitelist: [],
   },
   maskSensitiveHeaders: true,
 };

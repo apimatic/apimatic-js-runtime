@@ -59,7 +59,7 @@ export interface PartialHttpMessageLoggingOptions {
   /**
    * Array of headers which values are non-senstive to display in logging.
    */
-  headersToWhiteList?: string[];
+  headersToWhitelist?: string[];
 }
 
 /**

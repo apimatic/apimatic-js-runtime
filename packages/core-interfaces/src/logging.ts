@@ -87,7 +87,7 @@ export interface HttpMessageLoggingOptions {
   /**
    * Array of headers which values are non-senstive to display in logging.
    */
-  headersToWhiteList: string[];
+  headersToWhitelist: string[];
 }
 
 /**

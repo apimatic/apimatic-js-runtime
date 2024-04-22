@@ -126,7 +126,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     const loggingOpts = mergeLoggingOptions({
       logRequest: {
         logHeaders: true,
-        headersToWhiteList: ['authorization'],
+        headersToWhitelist: ['authorization'],
       },
       maskSensitiveHeaders: true,
     });
@@ -144,7 +144,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
     const loggingOpts = mergeLoggingOptions({
       logRequest: {
         logHeaders: true,
-        headersToWhiteList: ['authorization'],
+        headersToWhitelist: ['authorization'],
       },
       maskSensitiveHeaders: false,
     });
@@ -257,7 +257,7 @@ describe('Test APILogger with Response ConsoleLogging', () => {
     const loggingOpts = mergeLoggingOptions({
       logResponse: {
         logHeaders: true,
-        headersToWhiteList: ['Set-Cookies'],
+        headersToWhitelist: ['Set-Cookies'],
       },
       maskSensitiveHeaders: true,
     });
@@ -276,7 +276,7 @@ describe('Test APILogger with Response ConsoleLogging', () => {
     const loggingOpts = mergeLoggingOptions({
       logResponse: {
         logHeaders: true,
-        headersToWhiteList: ['Set-Cookies'],
+        headersToWhitelist: ['Set-Cookies'],
       },
       maskSensitiveHeaders: false,
     });

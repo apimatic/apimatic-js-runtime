@@ -97,14 +97,14 @@ export class ApiLogger implements ApiLoggerInterface {
       logHeaders,
       headersToInclude,
       headersToExclude,
-      headersToWhiteList,
+      headersToWhitelist,
     } = logRequest;
 
     if (logHeaders) {
       const headersToLog = this._extractHeadersToLog(
         headersToInclude,
         headersToExclude,
-        headersToWhiteList,
+        headersToWhitelist,
         request.headers
       );
 
@@ -149,14 +149,14 @@ export class ApiLogger implements ApiLoggerInterface {
       logHeaders,
       headersToInclude,
       headersToExclude,
-      headersToWhiteList,
+      headersToWhitelist,
     } = logResponse;
 
     if (logHeaders) {
       const headersToLog = this._extractHeadersToLog(
         headersToInclude,
         headersToExclude,
-        headersToWhiteList,
+        headersToWhitelist,
         response.headers
       );
 
@@ -194,7 +194,7 @@ export class ApiLogger implements ApiLoggerInterface {
   private _extractHeadersToLog(
     headersToInclude: string[],
     headersToExclude: string[],
-    headersToWhiteList: string[],
+    headersToWhitelist: string[],
     headers?: Record<string, string>
   ): Record<string, string> {
     let filteredHeaders: Record<string, string> = {};
@@ -218,7 +218,7 @@ export class ApiLogger implements ApiLoggerInterface {
       filteredHeaders = headers;
     }
 
-    return this._maskSenstiveHeaders(filteredHeaders, headersToWhiteList);
+    return this._maskSenstiveHeaders(filteredHeaders, headersToWhitelist);
   }
 
   private _includeHeadersToLog(
@@ -262,7 +262,7 @@ export class ApiLogger implements ApiLoggerInterface {
 
   private _maskSenstiveHeaders(
     headers: Record<string, string>,
-    headersToWhiteList: string[]
+    headersToWhitelist: string[]
   ): Record<string, string> {
     if (this._loggingOptions.maskSensitiveHeaders) {
       for (const key of Object.keys(headers)) {
@@ -270,7 +270,7 @@ export class ApiLogger implements ApiLoggerInterface {
         setHeader(
           headers,
           key,
-          this._maskIfSenstiveHeader(key, val, headersToWhiteList)
+          this._maskIfSenstiveHeader(key, val, headersToWhitelist)
         );
       }
     }
