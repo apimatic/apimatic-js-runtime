@@ -91,6 +91,13 @@ export type ApiErrorConstructor = new (
   message: string
 ) => any;
 
+export type ErrorType<ErrorCtorArgs extends any[]> = {
+  statusCode: number | [number, number];
+  errorConstructor: new (response: HttpContext, ...args: ErrorCtorArgs) => any;
+  isTemplate?: boolean;
+  args: ErrorCtorArgs;
+};
+
 export interface ApiErrorFactory {
   apiErrorCtor: ApiErrorConstructor;
   message?: string | undefined;
@@ -205,6 +212,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   protected _authParams?: AuthParams;
   protected _retryOption: RequestRetryOption;
   protected _apiErrorFactory: ApiErrorFactory;
+  protected _errorTypes: Array<ErrorType<any>>;
   public prepareArgs: typeof prepareArgs;
 
   constructor(
@@ -221,12 +229,15 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._headers = {};
     this._query = [];
     this._interceptors = [];
+    this._errorTypes = [];
     this._validateResponse = true;
     this._apiErrorFactory = { apiErrorCtor: _apiErrorCtr };
     this._addResponseValidator();
-    this._addApiLoggerInterceptors();
     this._addAuthentication();
     this._addRetryInterceptor();
+    this._errorHandlingInterceptor();
+    this._addApiLoggerInterceptors();
+
     this._retryOption = RequestRetryOption.Default;
     this.prepareArgs = prepareArgs.bind(this);
   }
@@ -429,22 +440,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     isTemplate?: boolean,
     ...args: ErrorCtorArgs
   ): void {
-    this.interceptResponse((context) => {
-      const { response } = context;
-      if (isTemplate && args.length > 0) {
-        args[0] = updateErrorMessage(args[0], response);
-      }
-      if (
-        (typeof statusCode === 'number' &&
-          response.statusCode === statusCode) ||
-        (typeof statusCode !== 'number' &&
-          response.statusCode >= statusCode[0] &&
-          response.statusCode <= statusCode[1])
-      ) {
-        throw new errorConstructor(context, ...args);
-      }
-      return context;
-    });
+    this._errorTypes.push({ statusCode, errorConstructor, isTemplate, args });
   }
   public async call(
     requestOptions?: RequestOptions
@@ -648,6 +644,28 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         throw new Error('Response is undefined.');
       }
       return { request, response: context.response };
+    });
+  }
+
+  private _errorHandlingInterceptor() {
+    this.interceptResponse((context) => {
+      const { response } = context;
+      for (const { statusCode, errorConstructor, isTemplate, args } of this
+        ._errorTypes) {
+        if (
+          (typeof statusCode === 'number' &&
+            response.statusCode === statusCode) ||
+          (typeof statusCode !== 'number' &&
+            response.statusCode >= statusCode[0] &&
+            response.statusCode <= statusCode[1])
+        ) {
+          if (isTemplate && args.length > 0) {
+            args[0] = updateErrorMessage(args[0], response);
+          }
+          throw new errorConstructor(context, ...args);
+        }
+      }
+      return context;
     });
   }
 }
