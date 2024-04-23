@@ -38,6 +38,7 @@ checks:
     enabled: true
 exclude_patterns:
 - "scripts/"
+- "**/core/src/logger/"  
 - "**/**/test/"
 - "**/**/rollup.config.js"
 - "**/**/tsconfig.json"

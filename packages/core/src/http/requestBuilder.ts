@@ -13,6 +13,7 @@ import {
   HttpInterceptorInterface,
   RequestOptions,
   RetryConfiguration,
+  ApiLoggerInterface,
 } from '../coreInterfaces';
 import { ArgumentsValidationError } from '../errors/argumentsValidationError';
 import { ResponseValidationError } from '../errors/responseValidationError';
@@ -90,11 +91,17 @@ export type ApiErrorConstructor = new (
   message: string
 ) => any;
 
+export interface ErrorType<ErrorCtorArgs extends any[]> {
+  statusCode: number | [number, number];
+  errorConstructor: new (response: HttpContext, ...args: ErrorCtorArgs) => any;
+  isTemplate?: boolean;
+  args: ErrorCtorArgs;
+}
+
 export interface ApiErrorFactory {
   apiErrorCtor: ApiErrorConstructor;
   message?: string | undefined;
 }
-
 export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   deprecated(methodName: string, message?: string): void;
   prepareArgs: typeof prepareArgs;
@@ -205,6 +212,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   protected _authParams?: AuthParams;
   protected _retryOption: RequestRetryOption;
   protected _apiErrorFactory: ApiErrorFactory;
+  protected _errorTypes: Array<ErrorType<any>>;
   public prepareArgs: typeof prepareArgs;
 
   constructor(
@@ -215,16 +223,21 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _httpMethod: HttpMethod,
     protected _xmlSerializer: XmlSerializerInterface,
     protected _retryConfig: RetryConfiguration,
-    protected _path?: string
+    protected _path?: string,
+    protected _apiLogger?: ApiLoggerInterface
   ) {
     this._headers = {};
     this._query = [];
     this._interceptors = [];
+    this._errorTypes = [];
     this._validateResponse = true;
     this._apiErrorFactory = { apiErrorCtor: _apiErrorCtr };
     this._addResponseValidator();
     this._addAuthentication();
     this._addRetryInterceptor();
+    this._addErrorHandlingInterceptor();
+    this._addApiLoggerInterceptors();
+
     this._retryOption = RequestRetryOption.Default;
     this.prepareArgs = prepareArgs.bind(this);
   }
@@ -427,22 +440,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     isTemplate?: boolean,
     ...args: ErrorCtorArgs
   ): void {
-    this.interceptResponse((context) => {
-      const { response } = context;
-      if (isTemplate && args.length > 0) {
-        args[0] = updateErrorMessage(args[0], response);
-      }
-      if (
-        (typeof statusCode === 'number' &&
-          response.statusCode === statusCode) ||
-        (typeof statusCode !== 'number' &&
-          response.statusCode >= statusCode[0] &&
-          response.statusCode <= statusCode[1])
-      ) {
-        throw new errorConstructor(context, ...args);
-      }
-      return context;
-    });
+    this._errorTypes.push({ statusCode, errorConstructor, isTemplate, args });
   }
   public async call(
     requestOptions?: RequestOptions
@@ -582,12 +580,27 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return context;
     });
   }
+
+  private _addApiLoggerInterceptors(): void {
+    if (this._apiLogger) {
+      const apiLogger = this._apiLogger;
+
+      this.intercept(async (request, options, next) => {
+        apiLogger.logRequest(request);
+        const context = await next(request, options);
+        apiLogger.logResponse(context.response);
+        return context;
+      });
+    }
+  }
+
   private _addAuthentication() {
     this.intercept((...args) => {
       const handler = this._authenticationProvider(this._authParams);
       return handler(...args);
     });
   }
+
   private _addRetryInterceptor() {
     this.intercept(async (request, options, next) => {
       let context: HttpContext | undefined;
@@ -633,6 +646,28 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return { request, response: context.response };
     });
   }
+
+  private _addErrorHandlingInterceptor() {
+    this.interceptResponse((context) => {
+      const { response } = context;
+      for (const { statusCode, errorConstructor, isTemplate, args } of this
+        ._errorTypes) {
+        if (
+          (typeof statusCode === 'number' &&
+            response.statusCode === statusCode) ||
+          (typeof statusCode !== 'number' &&
+            response.statusCode >= statusCode[0] &&
+            response.statusCode <= statusCode[1])
+        ) {
+          if (isTemplate && args.length > 0) {
+            args[0] = updateErrorMessage(args[0], response);
+          }
+          throw new errorConstructor(context, ...args);
+        }
+      }
+      return context;
+    });
+  }
 }
 
 export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
@@ -641,7 +676,8 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
   retryConfig: RetryConfiguration,
-  xmlSerializer: XmlSerializerInterface = new XmlSerialization()
+  xmlSerializer: XmlSerializerInterface = new XmlSerialization(),
+  apiLogger?: ApiLoggerInterface
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
     return new DefaultRequestBuilder(
@@ -652,7 +688,8 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       httpMethod,
       xmlSerializer,
       retryConfig,
-      path
+      path,
+      apiLogger
     );
   };
 }
