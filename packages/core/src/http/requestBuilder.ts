@@ -91,12 +91,12 @@ export type ApiErrorConstructor = new (
   message: string
 ) => any;
 
-export type ErrorType<ErrorCtorArgs extends any[]> = {
+export interface ErrorType<ErrorCtorArgs extends any[]> {
   statusCode: number | [number, number];
   errorConstructor: new (response: HttpContext, ...args: ErrorCtorArgs) => any;
   isTemplate?: boolean;
   args: ErrorCtorArgs;
-};
+}
 
 export interface ApiErrorFactory {
   apiErrorCtor: ApiErrorConstructor;
@@ -235,7 +235,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._addResponseValidator();
     this._addAuthentication();
     this._addRetryInterceptor();
-    this._errorHandlingInterceptor();
+    this._addErrorHandlingInterceptor();
     this._addApiLoggerInterceptors();
 
     this._retryOption = RequestRetryOption.Default;
@@ -647,7 +647,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     });
   }
 
-  private _errorHandlingInterceptor() {
+  private _addErrorHandlingInterceptor() {
     this.interceptResponse((context) => {
       const { response } = context;
       for (const { statusCode, errorConstructor, isTemplate, args } of this
