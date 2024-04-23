@@ -37,21 +37,17 @@ export class ApiLogger implements ApiLoggerInterface {
    * @param request The HTTP request to log.
    */
   public logRequest(request: HttpRequest): void {
-    const logLevel = this._loggingOptions.logLevel ?? LogLevel.Info;
+    const logLevel = this._loggingOptions.logLevel;
     const contentTypeHeader = this._getContentType(request.headers);
     const url = this._loggingOptions.logRequest.includeQueryInPath
       ? request.url
       : this._removeQueryParams(request.url);
 
-    this._logger.log(
-      logLevel,
-      'Request method ${method} url ${url} contentType ${contentType}',
-      {
-        method: request.method,
-        url,
-        contentType: contentTypeHeader,
-      }
-    );
+    this._logger.log(logLevel, 'Request ${method} ${url} ${contentType}', {
+      method: request.method,
+      url,
+      contentType: contentTypeHeader,
+    });
 
     this._applyLogRequestOptions(logLevel, request);
   }
@@ -61,13 +57,13 @@ export class ApiLogger implements ApiLoggerInterface {
    * @param response The HTTP response to log.
    */
   public logResponse(response: HttpResponse): void {
-    const logLevel = this._loggingOptions.logLevel ?? LogLevel.Info;
+    const logLevel = this._loggingOptions.logLevel;
     const contentTypeHeader = this._getContentType(response.headers);
     const contentLengthHeader = this._getContentLength(response.headers);
 
     this._logger.log(
       logLevel,
-      'Response statusCode ${statusCode} contentLength ${contentLength} contentType ${contentType}',
+      'Response ${statusCode} ${contentLength} ${contentType}',
       {
         statusCode: response.statusCode,
         contentLength: contentLengthHeader,
@@ -287,6 +283,7 @@ export class ApiLogger implements ApiLoggerInterface {
       'accept-charset',
       'accept-encoding',
       'accept-language',
+      'access-control-allow-origin',
       'cache-control',
       'connection',
       'content-encoding',
