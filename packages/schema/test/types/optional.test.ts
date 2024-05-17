@@ -17,7 +17,7 @@ describe('Optional', () => {
       expect((output as any).result).toBeUndefined();
     });
 
-    it('should accept null', () => {
+    it('should accept null as undefined', () => {
       const schema = optional(string());
       const output = validateAndMap(null, schema);
       expect(output.errors).toBeFalsy();

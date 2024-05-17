@@ -153,5 +153,5 @@ export function objectKeyEncode(key: string): string {
 }
 
 export function isNullOrMissing(value: unknown): value is null | undefined {
-  return value === null || value === undefined;
+  return value === null || typeof value === 'undefined';
 }
