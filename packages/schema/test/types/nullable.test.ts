@@ -17,6 +17,13 @@ describe('Nullable', () => {
       expect((output as any).result).toBeNull();
     });
 
+    it('should accept undefined as null', () => {
+      const schema = nullable(string());
+      const output = validateAndMap(undefined, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBeNull();
+    });
+
     it('should fail on schema invalidation', () => {
       const input = 123;
       const schema = nullable(string());

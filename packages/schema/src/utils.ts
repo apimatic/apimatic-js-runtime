@@ -151,3 +151,7 @@ export function omitKeysFromObject(
 export function objectKeyEncode(key: string): string {
   return key.indexOf(' ') !== -1 ? literalToString(key) : key;
 }
+
+export function isNullOrMissing(value: unknown): value is null | undefined {
+  return value === null || typeof value === 'undefined';
+}
