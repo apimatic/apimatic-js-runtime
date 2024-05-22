@@ -55,6 +55,7 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
+import { util } from 'prettier';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -116,7 +117,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   acceptJson(): void;
   accept(acceptHeaderValue: string): void;
   contentType(contentTypeHeaderValue: string): void;
-  header(name: string, value?: string | boolean | number | bigint): void;
+  header(name: string, value?: string | boolean | number | bigint | null): void;
   headers(headersToMerge: Record<string, string>): void;
   query(
     name: string,
@@ -277,9 +278,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   public header(
     name: string,
-    value?: string | boolean | number | bigint
+    value?: string | boolean | number | bigint | null
   ): void {
-    if (value === undefined) {
+    if (value === null || typeof value === 'undefined') {
       return;
     }
     setHeader(this._headers, name, value.toString());

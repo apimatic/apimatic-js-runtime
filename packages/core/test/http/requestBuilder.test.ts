@@ -337,11 +337,12 @@ describe('test default request builder behavior with succesful responses', () =>
       body: 'testBody result',
     });
   });
-  it('should test request builder with undefined header, query, empty path', async () => {
+  it('should test request builder with undefined and null header, query, empty path', async () => {
     const reqBuilder = defaultRequestBuilder('GET', 'test/requestBuilder');
     reqBuilder.baseUrl('default');
     reqBuilder.appendPath('');
     reqBuilder.header('test-header');
+    reqBuilder.header('test-header', null);
     reqBuilder.query();
     reqBuilder.stream();
     const request = reqBuilder.toRequest();
