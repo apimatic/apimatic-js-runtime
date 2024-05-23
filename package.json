@@ -21,7 +21,11 @@
     "prerelease": "npm run build && npm run test"
   },
   "devDependencies": {
+    "@commitlint/cli": "^17.0.0",
+    "@commitlint/config-conventional": "^17.0.0",
     "@types/jest": "^24.0.23",
+    "conventional-changelog": "^6.0.0",
+    "conventional-changelog-conventionalcommits": "^4.6.3",
     "husky": "^4.3.0",
     "jest": "^26.4.2",
     "jest-watch-typeahead": "^0.6.1",
@@ -39,8 +43,14 @@
   },
   "husky": {
     "hooks": {
+      "commit-msg": "commitlint --edit $1",
       "pre-commit": "lint-staged"
     }
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ]
   },
   "lint-staged": {
     "packages/*/{src,test}/**/*.{ts,tsx,js,json}": [

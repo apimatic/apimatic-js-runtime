@@ -1,0 +1,92 @@
+name: Release
+run-name: Publishing Package Version ${{ github.event.inputs.version_type }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: |
+          Version type to bump:
+          - patch: for fixes with non-breaking changes (bumps 0.0.X)
+          - minor: for new features with breaking changes (bumps 0.X.0)
+          - major: for bumping major version with breaking changes (bumps X.0.0)
+        required: true
+        type: choice
+        options:
+          - patch (fixes with non-breaking changes 0.0.X)
+          - minor (features with breaking changes 0.X.0)
+          - major (major version bump for breaking changes X.0.0)
+        default: patch (fixes with non-breaking changes 0.0.X)
+
+jobs:
+  release:
+    name: Publish the npm package
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment: Production
+    steps:
+      - name: Determine version type
+        id: version_type
+        run: |
+          case "${{ github.event.inputs.version_type }}" in
+            "patch (fixes with non-breaking changes 0.0.X)")
+              echo "version=patch" >> $GITHUB_ENV
+              ;;
+            "minor (features with breaking changes 0.X.0)")
+              echo "version=minor" >> $GITHUB_ENV
+              ;;
+            "major (major version bump for breaking changes X.0.0)")
+              echo "version=major" >> $GITHUB_ENV
+              ;;
+          esac
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0  # Ensure the full history is fetched to push changes back
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '19'
+      
+      - name: Install dependencies and build
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Configure Git and create release branch for version update
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -b ci-version-update
+          git push origin ci-version-update
+      
+      - name: Configure NPM registry
+        run: npm config set registry 'https://registry.npmjs.org/'
+
+      - name: Authenticate with NPM
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Bump versions and publish packages
+        id: release
+        run: |
+          node_modules/.bin/lerna version ${{ env.version }} --yes --conventional-commits --changelog-preset conventionalcommits --create-release github --message 'chore(release): update version and publish package(s)'
+          node_modules/.bin/lerna publish from-package --yes
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push the version change
+        if: steps.release.conclusion == 'success'
+        uses: CasperWA/push-protected@v2
+        with:
+          token: ${{ secrets.PAT }}
+          branch: ${{ github.ref_name }}
+
+      - name: Delete the intermediate branch
+        if: steps.release.conclusion == 'success'
+        run: |
+           git branch -D ci-version-update &>/dev/null || true
+           git push origin :ci-version-update &>/dev/null || true
