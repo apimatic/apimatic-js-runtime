@@ -201,6 +201,7 @@ describe('isExpired', () => {
     const token: OAuthToken = {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
+      expiry: undefined,
     };
     expect(isExpired(token)).toBe(false);
   });
