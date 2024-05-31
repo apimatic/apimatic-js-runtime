@@ -69,11 +69,13 @@ function validateAuthorization(oAuthToken?: OAuthToken) {
   }
 }
 
-function isValid(oAuthToken: OAuthToken | undefined): oAuthToken is OAuthToken {
+export function isValid(
+  oAuthToken: OAuthToken | undefined
+): oAuthToken is OAuthToken {
   return typeof oAuthToken !== 'undefined';
 }
 
-function isExpired(oAuthToken: OAuthToken, clockSkew?: number) {
+export function isExpired(oAuthToken: OAuthToken, clockSkew?: number) {
   if (typeof oAuthToken.expiry === 'undefined') {
     return false; // Expiry is undefined, token cannot be expired
   }

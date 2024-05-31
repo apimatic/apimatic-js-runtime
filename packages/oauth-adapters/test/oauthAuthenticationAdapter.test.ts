@@ -8,7 +8,7 @@ import {
   RequestOptions,
 } from '../../core-interfaces/src';
 import { OAuthToken } from '../src/oAuthToken';
-import { OAuthConfiguration } from '../lib';
+import { isExpired, OAuthConfiguration } from '../lib';
 
 describe('test oauth request provider', () => {
   it('should pass with disabled authentication', async () => {
@@ -173,6 +173,42 @@ describe('test oauth request provider', () => {
 });
 
 describe('isExpired', () => {
+  it('should return false if expiry is undefined', () => {
+    const token: OAuthToken = {
+      accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+      tokenType: 'Bearer',
+    };
+    expect(isExpired(token)).toBe(false);
+  });
+
+  it('should return false if token is not expired', () => {
+    const token: OAuthToken = {
+      accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+      tokenType: 'Bearer',
+      expiry: BigInt(Math.floor(Date.now() / 1000) + 60),
+    }; // Expires in 60 seconds
+    expect(isExpired(token)).toBe(false);
+  });
+
+  it('should return true if token is expired', () => {
+    const token: OAuthToken = {
+      accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+      tokenType: 'Bearer',
+      expiry: BigInt(Math.floor(Date.now() / 1000) - 60),
+    }; // Expired 60 seconds ago
+    expect(isExpired(token)).toBe(true);
+  });
+
+  it('should correctly apply clock skew and return true if token is close to expiry', () => {
+    const token: OAuthToken = {
+      accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+      tokenType: 'Bearer',
+      expiry: BigInt(Math.floor(Date.now() / 1000) + 30),
+    }; // Expires in 30 seconds
+    expect(isExpired(token, 0)).toBe(false); // No clock skew
+    expect(isExpired(token, 40)).toBe(true); // Applying 40 seconds clock skew
+  });
+
   it('should pass with non expired token + authProvider + updateCallback', async () => {
     const oneMinOffset: number = 60;
     const oAuthToken = {
