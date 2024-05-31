@@ -36,7 +36,11 @@ export const requestAuthenticationProvider = (
           oAuthOnTokenUpdate(oAuthToken);
         }
       }
-      setOAuthTokenInRequest(oAuthToken, request);
+      setOAuthTokenInRequest(
+        oAuthToken,
+        request,
+        oAuthConfiguration?.clockSkew
+      );
       return next(request, options);
     };
   };
@@ -44,9 +48,10 @@ export const requestAuthenticationProvider = (
 
 function setOAuthTokenInRequest(
   oAuthToken: OAuthToken | undefined,
-  request: any
+  request: any,
+  clockSkew?: number
 ) {
-  validateAuthorization(oAuthToken);
+  validateAuthorization(oAuthToken, clockSkew);
   request.headers = request.headers ?? {};
   setHeader(
     request.headers,
@@ -55,14 +60,14 @@ function setOAuthTokenInRequest(
   );
 }
 
-function validateAuthorization(oAuthToken?: OAuthToken) {
+function validateAuthorization(oAuthToken?: OAuthToken, clockSkew?: number) {
   if (!isValid(oAuthToken)) {
     throw new Error(
       'Client is not authorized. An OAuth token is needed to make API calls.'
     );
   }
 
-  if (isExpired(oAuthToken)) {
+  if (isExpired(oAuthToken, clockSkew)) {
     throw new Error(
       'OAuth token is expired. A valid token is needed to make API calls.'
     );
