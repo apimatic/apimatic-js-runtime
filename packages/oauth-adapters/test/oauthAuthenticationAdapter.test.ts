@@ -8,7 +8,7 @@ import {
   RequestOptions,
 } from '../../core-interfaces/src';
 import { OAuthToken } from '../src/oAuthToken';
-import { isExpired, OAuthConfiguration } from '../lib';
+import { isExpired, isValid, OAuthConfiguration } from '../lib';
 
 describe('test oauth request provider', () => {
   it('should pass with disabled authentication', async () => {
@@ -169,6 +169,30 @@ describe('test oauth request provider', () => {
     expect(oAuthOnTokenUpdate.mock.calls[0][0].accessToken).toBe(
       '1f12495f1a1ad9066b51fb3b4e456aeeNEW'
     );
+  });
+});
+
+describe('isValid', () => {
+  it('should return false if oAuthToken is undefined', () => {
+    const token: OAuthToken | undefined = undefined;
+    expect(isValid(token)).toBe(false);
+  });
+
+  it('should return true if oAuthToken is defined', () => {
+    const token: OAuthToken = {
+      accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+      tokenType: 'Bearer',
+      expiry: BigInt(Math.floor(Date.now() / 1000) + 60),
+    };
+    expect(isValid(token)).toBe(true);
+  });
+
+  it('should return true if oAuthToken is defined with no expiry', () => {
+    const token: OAuthToken = {
+      accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
+      tokenType: 'Bearer',
+    };
+    expect(isValid(token)).toBe(true);
   });
 });
 
