@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.4.3](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/oauth-adapters@0.4.2...@apimatic/oauth-adapters@0.4.3) (2024-06-04)
+
+### Features
+
+- **oauth-expiry:** add clock skew support in oauth token expiry ([42eb67b](https://github.com/apimatic/apimatic-js-runtime/commit/42eb67bb591981ff8c110910959b842f77a6f52e))
+
+### Bug Fixes
+
+- add clock skew in new token expiry check ([8b9466a](https://github.com/apimatic/apimatic-js-runtime/commit/8b9466a1c9f9cfed87c246242c330c91a39f3f43))
+
 ### 0.4.2 (2024-05-28)
 
 ### Features
