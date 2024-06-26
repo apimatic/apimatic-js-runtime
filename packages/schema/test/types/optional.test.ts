@@ -1,4 +1,10 @@
-import { nullable, optional, string, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  nullable,
+  optional,
+  string,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
 
 describe('Optional', () => {
   describe('Mapping', () => {
