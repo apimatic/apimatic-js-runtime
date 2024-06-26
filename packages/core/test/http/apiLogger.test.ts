@@ -33,7 +33,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
   });
   it('should override log req default level', async () => {
     const loggingOpts = mergeLoggingOptions({
-      logLevel: LogLevel.Debug,
+      logLevel: 'info',
     });
 
     const expectedConsoleLogs = [

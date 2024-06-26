@@ -1,4 +1,4 @@
-import { nullable, string, validateAndMap, validateAndUnmap } from '../../src';
+import { nullable, optional, string, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Nullable', () => {
   describe('Mapping', () => {
@@ -22,6 +22,20 @@ describe('Nullable', () => {
       const output = validateAndMap(undefined, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toBeNull();
+    });
+
+    it('should accept null with nullable and optional', () => {
+      const schema = nullable(optional(string()));
+      const output = validateAndMap(null, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBeNull();
+    });
+
+    it('should accept undefined with nullable and optional', () => {
+      const schema = nullable(optional(string()));
+      const output = validateAndMap(undefined, schema);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toBeUndefined();
     });
 
     it('should fail on schema invalidation', () => {
