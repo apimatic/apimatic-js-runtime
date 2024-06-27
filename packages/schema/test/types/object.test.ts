@@ -16,7 +16,7 @@ describe('Object', () => {
     const userSchema = object({
       id: ['user_id', string()],
       age: ['user_age', number()],
-      work: ['user_work', optional(lazy(() => workSchema))],
+      work: ['user_work', optional(nullable(lazy(() => workSchema)))],
     });
 
     const workSchema = object({
@@ -41,6 +41,37 @@ describe('Object', () => {
         work: {
           id: null,
         },
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('should map valid object with missing lazy loaded sub object', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+        user_work: undefined,
+      };
+      const output = validateAndMap(input, userSchema);
+      const expected: SchemaType<typeof userSchema> = {
+        id: 'John Smith',
+        age: 50
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('should map valid object with null lazy loaded sub object', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+        user_work: null,
+      };
+      const output = validateAndMap(input, userSchema);
+      const expected: SchemaType<typeof userSchema> = {
+        id: 'John Smith',
+        age: 50,
+        work: null
       };
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(expected);
