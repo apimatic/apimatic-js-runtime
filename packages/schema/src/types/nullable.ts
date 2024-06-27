@@ -22,7 +22,7 @@ export function nullable<T, S>(
     validateBeforeMapXml: (value, ctxt) =>
       value === null ? [] : schema.validateBeforeMapXml(value, ctxt),
     mapXml: (value, ctxt) =>
-      isNullOrMissing(value) ? null : schema.mapXml(value, ctxt),
+      value === null ? null : schema.mapXml(value, ctxt),
     unmapXml: (value, ctxt) =>
       value === null ? null : schema.unmapXml(value, ctxt),
   };
