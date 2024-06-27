@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.7.11](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.10...@apimatic/schema@0.7.11) (2024-06-27)
+
+### Bug Fixes
+
+- **object-opt-null:** support for optional and nullable for inner obj fields ([#179](https://github.com/apimatic/apimatic-js-runtime/issues/179)) ([11f40e5](https://github.com/apimatic/apimatic-js-runtime/commit/11f40e5f707499fcec5da7e8733240139d1432c5))
+
 ### [0.7.10](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.9...@apimatic/schema@0.7.10) (2024-06-27)
 
 ### Features
