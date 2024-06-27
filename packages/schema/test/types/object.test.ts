@@ -25,10 +25,6 @@ describe('Object', () => {
       address: ['work_address', optional(nullable(string()))],
     });
 
-    // null => null
-    // undefined => missing
-    // missing => missing
-
     it('should map valid object with lazy loaded sub object', () => {
       const input = {
         user_id: 'John Smith',
