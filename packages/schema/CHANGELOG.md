@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.7.10](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.9...@apimatic/schema@0.7.10) (2024-06-27)
+
+### Features
+
+- **optional-nullable:** adds optional nullable support in schema lib ([#178](https://github.com/apimatic/apimatic-js-runtime/issues/178)) ([6973087](https://github.com/apimatic/apimatic-js-runtime/commit/69730870f2998bc30330a957ace47aff857c09c4))
+
 ### 0.7.9 (2024-05-28)
 
 ### Features
