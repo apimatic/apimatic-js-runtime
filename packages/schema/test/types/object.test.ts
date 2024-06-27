@@ -1,4 +1,6 @@
 import {
+  lazy,
+  nullable,
   number,
   object,
   optional,
@@ -14,6 +16,65 @@ describe('Object', () => {
     const userSchema = object({
       id: ['user_id', string()],
       age: ['user_age', number()],
+      work: ['user_work', optional(nullable(lazy(() => workSchema)))],
+    });
+
+    const workSchema = object({
+      id: ['work_id', optional(nullable(number()))],
+      name: ['work_name', optional(nullable(string()))],
+      address: ['work_address', optional(nullable(string()))],
+    });
+
+    it('should map valid object with lazy loaded sub object', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+        user_work: {
+          work_id: null,
+          work_name: undefined,
+        },
+      };
+      const output = validateAndMap(input, userSchema);
+      const expected: SchemaType<typeof userSchema> = {
+        id: 'John Smith',
+        age: 50,
+        work: {
+          id: null,
+        },
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('should map valid object with missing lazy loaded sub object', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+        user_work: undefined,
+      };
+      const output = validateAndMap(input, userSchema);
+      const expected: SchemaType<typeof userSchema> = {
+        id: 'John Smith',
+        age: 50,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('should map valid object with null lazy loaded sub object', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+        user_work: null,
+      };
+      const output = validateAndMap(input, userSchema);
+      const expected: SchemaType<typeof userSchema> = {
+        id: 'John Smith',
+        age: 50,
+        work: null,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
     });
 
     it('should map valid object', () => {
@@ -69,13 +130,13 @@ describe('Object', () => {
             "branch": Array [
               "not an object",
             ],
-            "message": "Expected value to be of type 'Object<{id,age}>' but found 'string'.
+            "message": "Expected value to be of type 'Object<{id,age,work}>' but found 'string'.
 
         Given value: \\"not an object\\"
         Type: 'string'
-        Expected type: 'Object<{id,age}>'",
+        Expected type: 'Object<{id,age,work}>'",
             "path": Array [],
-            "type": "Object<{id,age}>",
+            "type": "Object<{id,age,work}>",
             "value": "not an object",
           },
         ]
@@ -135,9 +196,9 @@ describe('Object', () => {
 
         Given value: {\\"user_id\\":\\"John Smith\\"}
         Type: 'object'
-        Expected type: 'Object<{id,age}>'",
+        Expected type: 'Object<{id,age,work}>'",
             "path": Array [],
-            "type": "Object<{id,age}>",
+            "type": "Object<{id,age,work}>",
             "value": Object {
               "user_id": "John Smith",
             },

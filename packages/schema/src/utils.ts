@@ -156,9 +156,14 @@ export function isNullOrMissing(value: unknown): value is null | undefined {
   return value === null || typeof value === 'undefined';
 }
 
-export function isOptionalNullable(type: string): boolean {
+export function isOptional(type: string, value: unknown): boolean {
+  return type.startsWith('Optional<') && typeof value === 'undefined';
+}
+
+export function isOptionalNullable(type: string, value: unknown): boolean {
   return (
-    type.startsWith('Optional<Nullable<') ||
-    type.startsWith('Nullable<Optional<')
+    (type.startsWith('Optional<Nullable<') ||
+      type.startsWith('Nullable<Optional<')) &&
+    isNullOrMissing(value)
   );
 }

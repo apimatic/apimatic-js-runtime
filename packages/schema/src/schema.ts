@@ -101,7 +101,7 @@ export function validateAndMap<T extends Schema<any, any>>(
   );
   const validationResult = schema.validateBeforeMap(value, contextCreator);
   if (validationResult.length === 0) {
-    if (isOptionalNullable(schema.type())) {
+    if (isOptionalNullable(schema.type(), value)) {
       return { errors: false, result: value };
     }
     return { errors: false, result: schema.map(value, contextCreator) };

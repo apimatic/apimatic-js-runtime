@@ -7,6 +7,8 @@ import {
 } from '../schema';
 import { OptionalizeObject } from '../typeUtils';
 import {
+  isOptional,
+  isOptionalNullable,
   literalToString,
   objectEntries,
   objectKeyEncode,
@@ -456,24 +458,33 @@ function mapObject<T extends AnyObjectSchema>(
 
     // Map known properties using the schema
     for (const key in objectSchema) {
-      /* istanbul ignore else */
-      if (Object.prototype.hasOwnProperty.call(objectSchema, key)) {
-        const element = objectSchema[key];
-        const propName = element[0];
-        const propValue = objectValue[propName];
-        unknownKeys.delete(propName);
-
-        // Skip mapping for optional properties to avoid creating properties with value 'undefined'
-        if (
-          element[1].type().indexOf('Optional<') !== 0 ||
-          propValue !== undefined
-        ) {
-          output[key] = element[1][mappingFn](
-            propValue,
-            ctxt.createChild(propName, propValue, element[1])
-          );
-        }
+      if (!Object.prototype.hasOwnProperty.call(objectSchema, key)) {
+        continue;
       }
+
+      const element = objectSchema[key];
+      const propName = element[0];
+      const propValue = objectValue[propName];
+      unknownKeys.delete(propName);
+
+      if (isOptionalNullable(element[1].type(), propValue)) {
+        if (typeof propValue === 'undefined') {
+          // Skip mapping to avoid creating properties with value 'undefined'
+          continue;
+        }
+        output[key] = null;
+        continue;
+      }
+
+      if (isOptional(element[1].type(), propValue)) {
+        // Skip mapping to avoid creating properties with value 'undefined'
+        continue;
+      }
+
+      output[key] = element[1][mappingFn](
+        propValue,
+        ctxt.createChild(propName, propValue, element[1])
+      );
     }
 
     // Copy unknown properties over if additional properties flag is set
