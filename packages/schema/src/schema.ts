@@ -1,4 +1,4 @@
-import { objectKeyEncode } from './utils';
+import { isOptionalNullable, objectKeyEncode } from './utils';
 
 /**
  * Schema defines a type and its validation and mapping functions.
@@ -101,6 +101,9 @@ export function validateAndMap<T extends Schema<any, any>>(
   );
   const validationResult = schema.validateBeforeMap(value, contextCreator);
   if (validationResult.length === 0) {
+    if (isOptionalNullable(schema.type())) {
+      return { errors: false, result: value };
+    }
     return { errors: false, result: schema.map(value, contextCreator) };
   } else {
     return { errors: validationResult };
