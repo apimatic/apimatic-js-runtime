@@ -20,8 +20,14 @@ describe('Object', () => {
     });
 
     const workSchema = object({
-      id: ['work_id', optional(nullable(string()))],
+      id: ['work_id', optional(nullable(number()))],
+      name: ['work_name', optional(nullable(string()))],
+      address: ['work_address', optional(nullable(string()))],
     });
+
+    // null => null
+    // undefined => missing
+    // missing => missing
 
     it('should map valid object with lazy loaded sub object', () => {
       const input = {
@@ -29,6 +35,7 @@ describe('Object', () => {
         user_age: 50,
         user_work: {
           work_id: null,
+          work_name: undefined,
         },
       };
       const output = validateAndMap(input, userSchema);

@@ -468,11 +468,11 @@ function mapObject<T extends AnyObjectSchema>(
       unknownKeys.delete(propName);
 
       if (isOptionalNullable(element[1].type(), propValue)) {
-        if (typeof value === 'undefined') {
+        if (typeof propValue === 'undefined') {
           // Skip mapping to avoid creating properties with value 'undefined'
           continue;
         }
-        output[key] = propValue;
+        output[key] = null;
         continue;
       }
 
