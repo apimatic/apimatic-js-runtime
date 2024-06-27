@@ -101,7 +101,7 @@ export function validateAndMap<T extends Schema<any, any>>(
   );
   const validationResult = schema.validateBeforeMap(value, contextCreator);
   if (validationResult.length === 0) {
-    if (isOptionalNullable(schema.type())) {
+    if (isOptionalNullable(schema.type(), value)) {
       return { errors: false, result: value };
     }
     return { errors: false, result: schema.map(value, contextCreator) };
@@ -142,7 +142,7 @@ export function validateAndUnmap<T extends Schema<any, any>>(
  * @param schema Schema for type
  */
 export function validateAndMapXml<T extends Schema<any, any>>(
-  value: unknown,
+  value: SchemaMappedType<T>,
   schema: T
 ): ValidationResult<SchemaType<T>> {
   const contextCreator = createSchemaContextCreator(
@@ -150,6 +150,9 @@ export function validateAndMapXml<T extends Schema<any, any>>(
   );
   const validationResult = schema.validateBeforeMapXml(value, contextCreator);
   if (validationResult.length === 0) {
+    if (isOptionalNullable(schema.type(), value)) {
+      return { errors: false, result: value };
+    }
     return { errors: false, result: schema.mapXml(value, contextCreator) };
   } else {
     return { errors: validationResult };

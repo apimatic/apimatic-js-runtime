@@ -27,7 +27,7 @@ export function optional<T, S>(
         ? []
         : schema.validateBeforeMapXml(value, ctxt),
     mapXml: (value, ctxt) =>
-      typeof value === 'undefined' ? undefined : schema.mapXml(value, ctxt),
+      isNullOrMissing(value) ? undefined : schema.mapXml(value, ctxt),
     unmapXml: (value, ctxt) =>
       typeof value === 'undefined' ? undefined : schema.unmapXml(value, ctxt),
   };
