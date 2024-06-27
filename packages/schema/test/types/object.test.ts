@@ -55,7 +55,7 @@ describe('Object', () => {
       const output = validateAndMap(input, userSchema);
       const expected: SchemaType<typeof userSchema> = {
         id: 'John Smith',
-        age: 50
+        age: 50,
       };
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(expected);
@@ -71,7 +71,7 @@ describe('Object', () => {
       const expected: SchemaType<typeof userSchema> = {
         id: 'John Smith',
         age: 50,
-        work: null
+        work: null,
       };
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(expected);
