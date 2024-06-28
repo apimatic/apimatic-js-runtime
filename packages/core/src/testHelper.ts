@@ -1,3 +1,23 @@
+import axios from 'axios';
+
+export function expectHeadersToMatch(
+  actualHeaders: Record<string, string>,
+  expectedHeaders: Record<string, (string | boolean)[]>
+) {
+  const lowerCasedHeaders = Object.keys(actualHeaders).reduce((acc, key) => {
+    acc[key.toLowerCase()] = actualHeaders[key];
+    return acc;
+  }, {} as Record<string, string>);
+
+  Object.entries(expectedHeaders).forEach(([expectedKey, expectedValue]) => {
+    const lowerCasedKey = expectedKey.toLowerCase();
+    expect(lowerCasedHeaders).toHaveProperty(lowerCasedKey);
+    if (expectedValue[1]) {
+      expect(lowerCasedHeaders[lowerCasedKey]).toBe(expectedValue[0]);
+    }
+  });
+}
+
 export function expectArrayToBeOrderedSuperSetOf<T>(
   actual: T[],
   expected: T[],
@@ -73,4 +93,14 @@ export function expectObjectToMatchKeys<T>(actual: T[], expected: T[]): void {
   for (let i = 0; i < actualKeys.length; i++) {
     expect(actualKeys[i]).toEqual(expectedKeys[i]);
   }
+}
+
+export async function createReadableStreamFromUrl(
+  url: string
+) {
+  const res = await axios({ url, method: 'GET', responseType: 'stream' });
+  if (res.status !== 200) {
+    throw new Error(`Unable to retrieve data from ${url}`);
+  }
+  return res.data;
 }

@@ -1,10 +1,12 @@
 import {
+  createReadableStreamFromUrl,
   expectArrayToBeOrderedSuperSetOf,
   expectArrayToBeSuperSetOf,
+  expectHeadersToMatch,
   expectObjectToMatchKeys,
-} from '../src/testHelper'; // Adjust the path as per your file structure
+} from '../src/testHelper';
 
-describe('Array Utility Functions', () => {
+describe('Assertion Utility Functions', () => {
   describe('expectArrayToBeOrderedSuperSetOf', () => {
     it('should match arrays in the same order with the same size', () => {
       const actual = [1, 2, 3];
@@ -63,6 +65,7 @@ describe('Array Utility Functions', () => {
       ).toThrowError('Expected arrays to contain 4');
     });
   });
+
   describe('expectObjectToMatchKeys', () => {
     it('should pass for objects with same keys in same order', () => {
       const actual = [
@@ -77,4 +80,80 @@ describe('Array Utility Functions', () => {
       expect(() => expectObjectToMatchKeys(actual, expected)).not.toThrow();
     });
   });
+
+  describe('expectHeadersToMatch', () => {
+    it('should pass for headers with case insensitively different keys', () => {
+      const actual = {
+        id: '1',
+        NAME: 'Alice',
+      };
+      const expected = {
+        ID: ['1', false],
+        name: ['Alice', false],
+      };
+  
+      expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
+    });
+
+    it('should pass for headers with same keys but different values', () => {
+      const actual = {
+        id: '1',
+        name: 'Alice',
+      };
+      const expected = {
+        id: ['2', false],
+        name: ['Bob', false],
+      };
+  
+      expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
+    });
+
+    it('should fail for headers with missing keys', () => {
+      const actual = {
+        id: '1',
+      };
+      const expected = {
+        id: ['1', false],
+        name: ['Bob', false],
+      };
+  
+      expect(() => expectHeadersToMatch(actual, expected)).toThrow();
+    });
+
+    it('should pass for headers with by checking values ', () => {
+      const actual = {
+        id: '1',
+        name: 'Alice',
+      };
+      const expected = {
+        name: ['Alice', true],
+      };
+  
+      expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
+    });
+
+    it('should fail for headers with different values', () => {
+      const actual = {
+        id: '1',
+        name: 'Alice',
+      };
+      const expected = {
+        name: ['Bob', true],
+      };
+  
+      expect(() => expectHeadersToMatch(actual, expected)).toThrow();
+    });
+  });
+});
+describe('Other Utility Functions', () => {
+
+  it('should pass retrieving data from createReadableStreamFromUrl', async () => {
+    const actual = await createReadableStreamFromUrl(
+      'https://raw.githubusercontent.com/apimatic/apimatic-js-runtime/master/packages/core/test/dummy_file.txt'
+    );
+    const expected = 'The text contains dummy data.';
+
+    expect(actual).toEqual(expected);
+  });
+
 });
