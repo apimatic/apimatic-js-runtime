@@ -91,7 +91,7 @@ describe('Assertion Utility Functions', () => {
         ID: ['1', false],
         name: ['Alice', false],
       };
-  
+
       expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
     });
 
@@ -104,7 +104,7 @@ describe('Assertion Utility Functions', () => {
         id: ['2', false],
         name: ['Bob', false],
       };
-  
+
       expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
     });
 
@@ -116,7 +116,7 @@ describe('Assertion Utility Functions', () => {
         id: ['1', false],
         name: ['Bob', false],
       };
-  
+
       expect(() => expectHeadersToMatch(actual, expected)).toThrow();
     });
 
@@ -128,7 +128,7 @@ describe('Assertion Utility Functions', () => {
       const expected = {
         name: ['Alice', true],
       };
-  
+
       expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
     });
 
@@ -140,13 +140,12 @@ describe('Assertion Utility Functions', () => {
       const expected = {
         name: ['Bob', true],
       };
-  
+
       expect(() => expectHeadersToMatch(actual, expected)).toThrow();
     });
   });
 });
 describe('Other Utility Functions', () => {
-
   it('should pass retrieving data from createReadableStreamFromUrl', async () => {
     const actual = await createReadableStreamFromUrl(
       'https://raw.githubusercontent.com/apimatic/apimatic-js-runtime/master/packages/core/test/dummy_file.txt'
@@ -155,5 +154,4 @@ describe('Other Utility Functions', () => {
 
     expect(actual).toEqual(expected);
   });
-
 });

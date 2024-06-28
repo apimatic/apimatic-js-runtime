@@ -13,7 +13,8 @@ import {
  */
 export class ApiError<T = {}>
   extends Error
-  implements ApiResponse<T | undefined> {
+  implements ApiResponse<T | undefined>
+{
   public request: HttpRequest;
   public statusCode: number;
   public headers: Record<string, string>;

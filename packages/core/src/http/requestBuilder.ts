@@ -135,7 +135,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
-  text(body: string): void;
+  text(body: string | number | bigint | boolean | null | undefined): void;
   json(data: unknown): void;
   requestRetryOption(option: RequestRetryOption): void;
   xml<T>(
@@ -195,7 +195,8 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
 }
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
-  implements RequestBuilder<BaseUrlParamType, AuthParams> {
+  implements RequestBuilder<BaseUrlParamType, AuthParams>
+{
   protected _accept?: string;
   protected _contentType?: string;
   protected _headers: Record<string, string>;
@@ -317,8 +318,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._query.push(queryString);
     }
   }
-  public text(body: string): void {
-    this._body = body;
+  public text(
+    body: string | number | bigint | boolean | null | undefined
+  ): void {
+    this._body = body?.toString() ?? undefined;
     this._setContentTypeIfNotSet(TEXT_CONTENT_TYPE);
   }
   public json(data: unknown): void {

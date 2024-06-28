@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export function expectHeadersToMatch(
   actualHeaders: Record<string, string>,
-  expectedHeaders: Record<string, (string | boolean)[]>
+  expectedHeaders: Record<string, Array<string | boolean>>
 ) {
   const lowerCasedHeaders = Object.keys(actualHeaders).reduce((acc, key) => {
     acc[key.toLowerCase()] = actualHeaders[key];
@@ -95,9 +95,7 @@ export function expectObjectToMatchKeys<T>(actual: T[], expected: T[]): void {
   }
 }
 
-export async function createReadableStreamFromUrl(
-  url: string
-) {
+export async function createReadableStreamFromUrl(url: string) {
   const res = await axios({ url, method: 'GET', responseType: 'stream' });
   if (res.status !== 200) {
     throw new Error(`Unable to retrieve data from ${url}`);

@@ -208,8 +208,7 @@ describe('test default request builder behavior with succesful responses', () =>
   it('should test request builder with form-data request body and json response body', async () => {
     const expectedRequest: HttpRequest = {
       method: 'GET',
-      url:
-        'http://apimatic.hopto.org:3000/auth/basic/test/requestBuilder?form-data=true',
+      url: 'http://apimatic.hopto.org:3000/auth/basic/test/requestBuilder?form-data=true',
       headers: {
         'test-header': 'test-value',
         accept: 'application/json',
@@ -420,7 +419,7 @@ describe('test default request builder behavior with succesful responses', () =>
       await reqBuilder.callAsJson(employeeSchema);
     } catch (error) {
       const expectedResult =
-        "Could not parse body as JSON.\n\nExpected 'r' instead of 'e'";
+        'Could not parse body as JSON.\n\nExpected \'r\' instead of \'e\'';
       expect(error.message).toEqual(expectedResult);
     }
   });
