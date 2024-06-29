@@ -13,8 +13,9 @@ export const requestAuthenticationProvider = (
   oAuthConfiguration?: OAuthConfiguration
 ): AuthenticatorInterface<boolean> => {
   // This token is shared between all API calls for a client instance.
-  let lastOAuthToken: Promise<OAuthToken | undefined> =
-    Promise.resolve(initialOAuthToken);
+  let lastOAuthToken: Promise<OAuthToken | undefined> = Promise.resolve(
+    initialOAuthToken
+  );
 
   return (requiresAuth?: boolean) => {
     if (!requiresAuth) {

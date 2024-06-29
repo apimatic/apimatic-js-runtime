@@ -195,8 +195,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
 }
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
-  implements RequestBuilder<BaseUrlParamType, AuthParams>
-{
+  implements RequestBuilder<BaseUrlParamType, AuthParams> {
   protected _accept?: string;
   protected _contentType?: string;
   protected _headers: Record<string, string>;
