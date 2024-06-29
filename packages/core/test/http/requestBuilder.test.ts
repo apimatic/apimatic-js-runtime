@@ -420,7 +420,7 @@ describe('test default request builder behavior with succesful responses', () =>
       await reqBuilder.callAsJson(employeeSchema);
     } catch (error) {
       const expectedResult =
-        'Could not parse body as JSON.\n\nExpected \'r\' instead of \'e\'';
+        "Could not parse body as JSON.\n\nExpected 'r' instead of 'e'";
       expect(error.message).toEqual(expectedResult);
     }
   });
