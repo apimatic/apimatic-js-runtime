@@ -504,7 +504,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         'Could not parse body as JSON. The response body is not a string.'
       );
     }
-    if (result.body.toString().trim() === '') {
+    if (result.body.trim() === '') {
       // Try mapping the missing body as null
       const nullMappingResult = validateAndMap(null, schema);
       if (nullMappingResult.errors) {
