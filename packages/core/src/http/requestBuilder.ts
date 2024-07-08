@@ -499,7 +499,12 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return { ...request, headers };
     });
     const result = await this.call(requestOptions);
-    if (result.body === '') {
+    if (typeof result.body !== 'string') {
+      throw new Error(
+        'Could not parse body as JSON. The response body is not a string.'
+      );
+    }
+    if (result.body.toString().trim() === '') {
       // Try mapping the missing body as null
       const nullMappingResult = validateAndMap(null, schema);
       if (nullMappingResult.errors) {
@@ -508,11 +513,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         );
       }
       return { ...result, result: nullMappingResult.result };
-    }
-    if (typeof result.body !== 'string') {
-      throw new Error(
-        'Could not parse body as JSON. The response body is not a string.'
-      );
     }
     let parsed: unknown;
     try {

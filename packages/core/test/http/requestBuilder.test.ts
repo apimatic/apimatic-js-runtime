@@ -496,10 +496,31 @@ describe('test default request builder behavior with succesful responses', () =>
     const { result } = await reqBuilder.callAsText();
     expect(result).toEqual('');
   });
+  it('should test response with whitespace content textual types', async () => {
+    const reqBuilder = customRequestBuilder({
+      statusCode: 204,
+      body: '  ',
+      headers: {},
+    });
+    const { result } = await reqBuilder.callAsText();
+    expect(result).toEqual('  ');
+  });
   it('should test response with no content string cases', async () => {
     const reqBuilder = customRequestBuilder({
       statusCode: 204,
       body: '',
+      headers: {},
+    });
+    const nullableString = await reqBuilder.callAsJson(nullable(string()));
+    expect(nullableString.result).toEqual(null);
+
+    const optionalString = await reqBuilder.callAsJson(optional(string()));
+    expect(optionalString.result).toEqual(undefined);
+  });
+  it('should test response with whitespace content string cases', async () => {
+    const reqBuilder = customRequestBuilder({
+      statusCode: 204,
+      body: '  ',
       headers: {},
     });
     const nullableString = await reqBuilder.callAsJson(nullable(string()));
@@ -520,10 +541,38 @@ describe('test default request builder behavior with succesful responses', () =>
     const optionalString = await reqBuilder.callAsJson(optional(boolean()));
     expect(optionalString.result).toEqual(undefined);
   });
+  it('should test response with whitespace content boolean cases', async () => {
+    const reqBuilder = customRequestBuilder({
+      statusCode: 204,
+      body: '  ',
+      headers: {},
+    });
+    const nullableString = await reqBuilder.callAsJson(nullable(boolean()));
+    expect(nullableString.result).toEqual(null);
+
+    const optionalString = await reqBuilder.callAsJson(optional(boolean()));
+    expect(optionalString.result).toEqual(undefined);
+  });
   it('should test response with no content object cases', async () => {
     const reqBuilder = customRequestBuilder({
       statusCode: 204,
       body: '',
+      headers: {},
+    });
+    const nullableString = await reqBuilder.callAsJson(
+      nullable(employeeSchema)
+    );
+    expect(nullableString.result).toEqual(null);
+
+    const optionalString = await reqBuilder.callAsJson(
+      optional(employeeSchema)
+    );
+    expect(optionalString.result).toEqual(undefined);
+  });
+  it('should test response with whitespace content object cases', async () => {
+    const reqBuilder = customRequestBuilder({
+      statusCode: 204,
+      body: '  ',
       headers: {},
     });
     const nullableString = await reqBuilder.callAsJson(
