@@ -506,13 +506,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     if (result.body.trim() === '') {
       // Try mapping the missing body as null
-      const nullMappingResult = validateAndMap(null, schema);
-      if (nullMappingResult.errors) {
-        throw new Error(
-          'Could not parse body as JSON. The response body is empty.'
-        );
-      }
-      return { ...result, result: nullMappingResult.result };
+      return this.tryMappingAsNull<T>(schema, result);
     }
     let parsed: unknown;
     try {
@@ -526,6 +520,20 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     return { ...result, result: mappingResult.result };
   }
+
+  private tryMappingAsNull<T>(
+    schema: Schema<T, any>,
+    result: ApiResponse<void>
+  ) {
+    const nullMappingResult = validateAndMap(null, schema);
+    if (nullMappingResult.errors) {
+      throw new Error(
+        'Could not parse body as JSON. The response body is empty.'
+      );
+    }
+    return { ...result, result: nullMappingResult.result };
+  }
+
   public async callAsXml<T>(
     rootName: string,
     schema: Schema<T, any>,
