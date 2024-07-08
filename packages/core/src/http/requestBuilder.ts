@@ -500,9 +500,14 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     });
     const result = await this.call(requestOptions);
     if (result.body === '') {
-      throw new Error(
-        'Could not parse body as JSON. The response body is empty.'
-      );
+      // Try mapping the missing body as null
+      const nullMappingResult = validateAndMap(null, schema);
+      if (nullMappingResult.errors) {
+        throw new Error(
+          'Could not parse body as JSON. The response body is empty.'
+        );
+      }
+      return { ...result, result: nullMappingResult.result };
     }
     if (typeof result.body !== 'string') {
       throw new Error(

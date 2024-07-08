@@ -1,5 +1,6 @@
 import {
   HttpClientInterface,
+  RequestBuilder,
   createRequestBuilderFactory,
   skipEncode,
 } from '../../src/http/requestBuilder';
@@ -24,6 +25,7 @@ import { FileWrapper } from '../../src/fileWrapper';
 import fs from 'fs';
 import path from 'path';
 import { bossSchema } from '../../../schema/test/bossSchema';
+import { boolean, nullable, optional } from '@apimatic/schema/src';
 
 describe('test default request builder behavior with succesful responses', () => {
   const authParams = {
@@ -420,7 +422,7 @@ describe('test default request builder behavior with succesful responses', () =>
       await reqBuilder.callAsJson(employeeSchema);
     } catch (error) {
       const expectedResult =
-        "Could not parse body as JSON.\n\nExpected 'r' instead of 'e'";
+        'Could not parse body as JSON.\n\nExpected \'r\' instead of \'e\'';
       expect(error.message).toEqual(expectedResult);
     }
   });
@@ -473,6 +475,81 @@ describe('test default request builder behavior with succesful responses', () =>
       expect(error.message).toEqual(`Response status code was not ok: 400.`);
     }
   });
+  it('should test request builder with 400 response code', async () => {
+    try {
+      const reqBuilder = defaultRequestBuilder(
+        'GET',
+        '/test/requestBuilder/errorResponse'
+      );
+      reqBuilder.baseUrl('default');
+      await reqBuilder.callAsText();
+    } catch (error) {
+      expect(error.message).toEqual(`Response status code was not ok: 400.`);
+    }
+  });
+  it('should test response with no content textual types', async () => {
+    const reqBuilder = customRequestBuilder({
+      statusCode: 204,
+      body: '',
+      headers: {},
+    });
+    const { result } = await reqBuilder.callAsText();
+    expect(result).toEqual('');
+  });
+  it('should test response with no content string cases', async () => {
+    const reqBuilder = customRequestBuilder({
+      statusCode: 204,
+      body: '',
+      headers: {},
+    });
+    const nullableString = await reqBuilder.callAsJson(nullable(string()));
+    expect(nullableString.result).toEqual(null);
+
+    const optionalString = await reqBuilder.callAsJson(optional(string()));
+    expect(optionalString.result).toEqual(undefined);
+  });
+  it('should test response with no content boolean cases', async () => {
+    const reqBuilder = customRequestBuilder({
+      statusCode: 204,
+      body: '',
+      headers: {},
+    });
+    const nullableString = await reqBuilder.callAsJson(nullable(boolean()));
+    expect(nullableString.result).toEqual(null);
+
+    const optionalString = await reqBuilder.callAsJson(optional(boolean()));
+    expect(optionalString.result).toEqual(undefined);
+  });
+  it('should test response with no content object cases', async () => {
+    const reqBuilder = customRequestBuilder({
+      statusCode: 204,
+      body: '',
+      headers: {},
+    });
+    const nullableString = await reqBuilder.callAsJson(
+      nullable(employeeSchema)
+    );
+    expect(nullableString.result).toEqual(null);
+
+    const optionalString = await reqBuilder.callAsJson(
+      optional(employeeSchema)
+    );
+    expect(optionalString.result).toEqual(undefined);
+  });
+
+  function customRequestBuilder(
+    response: HttpResponse
+  ): RequestBuilder<string, boolean> {
+    const reqBuilder = createRequestBuilderFactory<string, boolean>(
+      mockHttpClientAdapter(response),
+      (server) => mockBaseURIProvider(server),
+      ApiError,
+      basicAuth,
+      retryConfig
+    )('GET', '/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    return reqBuilder;
+  }
 
   function mockBasicAuthenticationInterface({
     username,
@@ -497,16 +574,21 @@ describe('test default request builder behavior with succesful responses', () =>
     };
   }
 
-  function mockHttpClientAdapter(): HttpClientInterface {
+  function mockHttpClientAdapter(
+    customResponse?: HttpResponse
+  ): HttpClientInterface {
     return async (request, requestOptions) => {
+      if (typeof customResponse !== 'undefined') {
+        return customResponse;
+      }
       const iserrorResponse = request.url.startsWith(
         'http://apimatic.hopto.org:3000/test/requestBuilder/errorResponse'
       );
 
       if (iserrorResponse) {
-        return await mockErrorResponse(request, requestOptions);
+        return mockErrorResponse(request, requestOptions);
       }
-      return await mockResponse(request, requestOptions);
+      return mockResponse(request, requestOptions);
     };
   }
 
