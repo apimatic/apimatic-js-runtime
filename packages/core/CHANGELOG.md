@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.11](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.10...@apimatic/core@0.10.11) (2024-07-09)
+
+### Features
+
+- added support for handling empty responses with nullable types ([#181](https://github.com/apimatic/apimatic-js-runtime/issues/181)) ([7609254](https://github.com/apimatic/apimatic-js-runtime/commit/7609254693425f489e03b4202fe18794d1871b8d))
+
 ### [0.10.10](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.9...@apimatic/core@0.10.10) (2024-06-27)
 
 **Note:** Version bump only for package @apimatic/core
