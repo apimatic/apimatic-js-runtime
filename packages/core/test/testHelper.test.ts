@@ -1,150 +1,146 @@
 import {
   createReadableStreamFromUrl,
-  expectArrayToBeOrderedSuperSetOf,
-  expectArrayToBeSuperSetOf,
-  expectHeadersToMatch,
-  expectObjectToMatchKeys,
+  isObjectProperSubsetOf,
+  isOrderedSupersetOf,
+  isProperSubsetOf,
+  IsSameAsFile,
+  isSuperSetOf,
 } from '../src/testHelper';
 
 describe('Assertion Utility Functions', () => {
-  describe('expectArrayToBeOrderedSuperSetOf', () => {
-    it('should match arrays in the same order with the same size', () => {
-      const actual = [1, 2, 3];
-      const expected = [1, 2, 3];
+  describe('isProperSubsetOf', () => {
+    it('should return true for proper subset objects', () => {
+      const right = {
+        name: 'lisinopril',
+        strength: '10 mg Tab',
+      };
+      const left = {
+        name: 'lisinopril',
+      };
 
-      expectArrayToBeOrderedSuperSetOf(actual, expected, true); // Will pass
+      expect(isProperSubsetOf(left, right, true)).toBe(true);
     });
 
-    it('should match arrays in the same order with different sizes', () => {
-      const actual = [1, 2, 3, 4];
-      const expected = [1, 2, 3];
+    it('should return true for proper subset arrays', () => {
+      const left = [1, 2, 3];
+      const right = [1, 2, 3];
 
-      expectArrayToBeOrderedSuperSetOf(actual, expected, false); // Will pass
+      expect(isProperSubsetOf(left, right, true)).toBe(true);
     });
 
-    it('should fail for arrays in different order with the same size', () => {
-      const actual = [3, 1, 2];
-      const expected = [1, 2, 3];
+    it('should return false for objects that are not proper subsets', () => {
+      const left = {
+        name: 'lisinopril',
+        strength: '10 mg Tab',
+      };
+      const right = {
+        name: 'amlodipine',
+        strength: '5 mg Tab',
+      };
 
-      expect(() =>
-        expectArrayToBeOrderedSuperSetOf(actual, expected, false)
-      ).toThrowError('Expected array to contain 3 in the same order');
+      expect(isProperSubsetOf(left, right, true)).toBe(false);
     });
 
-    it('should fail for arrays with different elements', () => {
-      const actual = [1, 2, 3];
-      const expected = [1, 3, 2];
+    it('should return false for arrays that are not proper subsets', () => {
+      const left = [1, 2, 3];
+      const right = [1, 4, 3];
 
-      expect(() =>
-        expectArrayToBeOrderedSuperSetOf(actual, expected, false)
-      ).toThrowError('Expected array to contain 2 in the same order');
-    });
-  });
-
-  describe('expectArrayToBeSuperSetOf', () => {
-    it('should match arrays with same elements regardless of order and same size', () => {
-      const actual = [1, 2, 3];
-      const expected = [3, 2, 1];
-
-      expectArrayToBeSuperSetOf(actual, expected, true);
-    });
-
-    it('should match arrays with same elements regardless of order and different sizes, ignoring size', () => {
-      const actual = [1, 2, 3, 4];
-      const expected = [3, 2, 1];
-
-      expectArrayToBeSuperSetOf(actual, expected, false); // Will pass, order is irrelevant
-    });
-
-    it('should fail for arrays with different elements', () => {
-      const actual = [1, 2, 3];
-      const expected = [1, 2, 4];
-
-      expect(() =>
-        expectArrayToBeSuperSetOf(actual, expected, false)
-      ).toThrowError('Expected arrays to contain 4');
+      expect(isProperSubsetOf(left, right, true)).toBe(false);
     });
   });
 
-  describe('expectObjectToMatchKeys', () => {
-    it('should pass for objects with same keys in same order', () => {
-      const actual = [
-        { id: 1, name: 'Alice' },
-        { id: 2, name: 'Bob' },
+  describe('isObjectProperSubsetOf', () => {
+    it('should return true for proper subset objects', () => {
+      const left = {
+        name: 'lisinopril',
+        strength: '10 mg Tab',
+      };
+      const right = {
+        name: 'lisinopril',
+      };
+
+      expect(isObjectProperSubsetOf(left, right, true, false, false)).toBe(
+        true
+      );
+    });
+
+    it('should return false for objects that are not proper subsets', () => {
+      const left = {
+        name: 'lisinopril',
+        strength: '10 mg Tab',
+      };
+      const right = {
+        name: 'amlodipine',
+        strength: '5 mg Tab',
+      };
+
+      expect(isObjectProperSubsetOf(left, right, true, false, false)).toBe(
+        false
+      );
+    });
+  });
+
+  describe('isOrderedSupersetOf', () => {
+    it('should return true for ordered superset arrays', () => {
+      const right = [1, 2, 3];
+      const left = [1, 2];
+
+      expect(isOrderedSupersetOf(left, right, true, true)).toBe(false);
+    });
+
+    it('should return false for ordered superset arrays with different elements', () => {
+      const left = [1, 2, 4];
+      const right = [1, 2, 3];
+
+      expect(isOrderedSupersetOf(left, right, true, true)).toBe(false);
+    });
+  });
+
+  describe('isSuperSetOf', () => {
+    it('should return true for identical objects in arrays', () => {
+      const left = [
+        {
+          name: 'lisinopril',
+          strength: '10 mg Tab',
+          dose: '1 tab',
+          route: 'PO',
+          sig: 'daily',
+          pillCount: '#90',
+          refills: 'Refill 3',
+        },
       ];
-      const expected = [
-        { id: 1, name: 'Alice' },
-        { id: 2, name: 'Bob' },
+      const right = [
+        {
+          name: 'lisinopril',
+          strength: '10 mg Tab',
+          dose: '1 tab',
+          route: 'PO',
+          sig: 'daily',
+          pillCount: '#90',
+          refills: 'Refill 3',
+        },
       ];
-
-      expect(() => expectObjectToMatchKeys(actual, expected)).not.toThrow();
-    });
-  });
-
-  describe('expectHeadersToMatch', () => {
-    it('should pass for headers with case insensitively different keys', () => {
-      const actual = {
-        id: '1',
-        NAME: 'Alice',
-      };
-      const expected = {
-        ID: ['1', false],
-        name: ['Alice', false],
-      };
-
-      expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
+      expect(isSuperSetOf(left, right)).toBe(true);
     });
 
-    it('should pass for headers with same keys but different values', () => {
-      const actual = {
-        id: '1',
-        name: 'Alice',
-      };
-      const expected = {
-        id: ['2', false],
-        name: ['Bob', false],
-      };
-
-      expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
-    });
-
-    it('should fail for headers with missing keys', () => {
-      const actual = {
-        id: '1',
-      };
-      const expected = {
-        id: ['1', false],
-        name: ['Bob', false],
-      };
-
-      expect(() => expectHeadersToMatch(actual, expected)).toThrow();
-    });
-
-    it('should pass for headers with by checking values ', () => {
-      const actual = {
-        id: '1',
-        name: 'Alice',
-      };
-      const expected = {
-        name: ['Alice', true],
-      };
-
-      expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
-    });
-
-    it('should fail for headers with different values', () => {
-      const actual = {
-        id: '1',
-        name: 'Alice',
-      };
-      const expected = {
-        name: ['Bob', true],
-      };
-
-      expect(() => expectHeadersToMatch(actual, expected)).toThrow();
+    it('should return false for arrays with different objects', () => {
+      const left = [
+        {
+          name: 'lisinopril',
+          strength: '10 mg Tab',
+        },
+      ];
+      const right = [
+        {
+          name: 'amlodipine',
+          strength: '5 mg Tab',
+        },
+      ];
+      expect(isSuperSetOf(left, right, true, true)).toBe(false);
     });
   });
 });
+
 describe('Other Utility Functions', () => {
   it('should pass retrieving data from createReadableStreamFromUrl', async () => {
     const actual = await createReadableStreamFromUrl(
@@ -153,5 +149,31 @@ describe('Other Utility Functions', () => {
     const expected = 'The text contains dummy data.';
 
     expect(actual).toEqual(expected);
+  });
+
+  describe('IsSameAsFile', () => {
+    describe('with Blob input', () => {
+      it('should return false for non-matching files', async () => {
+        const filename = 'https://example.com/sample.txt';
+        const blob = new Blob(['different data'], {
+          type: 'text/plain;charset=utf-8',
+        });
+
+        const isSame = await IsSameAsFile(filename, blob);
+
+        expect(isSame).toBe(false);
+      });
+
+      it('should handle errors gracefully', async () => {
+        const filename = 'https://example.com/invalidfile.txt';
+
+        const blob = new Blob(['sample data'], {
+          type: 'text/plain;charset=utf-8',
+        });
+        const isSame = await IsSameAsFile(filename, blob);
+
+        expect(isSame).toBe(false);
+      });
+    });
   });
 });

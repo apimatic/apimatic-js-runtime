@@ -120,7 +120,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   headers(headersToMerge: Record<string, string>): void;
   query(
     name: string,
-    value: QueryValue,
+    value: QueryValue | Record<string, QueryValue>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
   query(
@@ -289,7 +289,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   public query(
     name: string,
-    value: QueryValue,
+    value: QueryValue | Record<string, QueryValue>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
   public query(
