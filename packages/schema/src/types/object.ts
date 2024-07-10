@@ -377,7 +377,10 @@ function validateValueObject({
             ctxt.createChild(propTypePrefix + key, valueObject[key], schema)
           )
         );
-      } else if (schema.type().indexOf('Optional<') !== 0) {
+      } else if (
+        !schema.type().startsWith('Optional<') &&
+        !schema.type().startsWith('Nullable<')
+      ) {
         // Add to missing keys if it is not an optional property
         missingProps.add(key);
       }

@@ -2,6 +2,7 @@ import {
   boolean,
   discriminatedObject,
   extendStrictObject,
+  nullable,
   number,
   optional,
   strictObject,
@@ -26,7 +27,7 @@ describe('Discriminated Object', () => {
     child2Field: ['child2 field', boolean()],
   });
 
-  const schema = discriminatedObject(
+  const discriminatedSchema = discriminatedObject(
     'type',
     'type mapped',
     {
@@ -37,6 +38,10 @@ describe('Discriminated Object', () => {
     'base'
   );
 
+  const nestedDiscriminatedObject = strictObject({
+    innerType: ['inner type', nullable(discriminatedSchema)],
+  });
+
   describe('Mapping', () => {
     it('should map to child type on discriminator match', () => {
       const input = {
@@ -44,7 +49,7 @@ describe('Discriminated Object', () => {
         'base field': 123123,
         'child1 field': true,
       };
-      const output = validateAndMap(input, schema);
+      const output = validateAndMap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         type: 'child1',
@@ -59,7 +64,7 @@ describe('Discriminated Object', () => {
         'base field': 123123,
         'child1 field': true,
       };
-      const output = validateAndMap(input, schema);
+      const output = validateAndMap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         type: 'hello world',
@@ -73,7 +78,7 @@ describe('Discriminated Object', () => {
         'base field': 123123,
         'child1 field': true,
       };
-      const output = validateAndMap(input, schema);
+      const output = validateAndMap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         baseField: 123123,
@@ -86,7 +91,7 @@ describe('Discriminated Object', () => {
         'type mapped': 'base',
         'base field': 123123,
       };
-      const output = validateAndMap(input, schema);
+      const output = validateAndMap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         type: 'base',
@@ -99,7 +104,7 @@ describe('Discriminated Object', () => {
         'type mapped': 'hello world',
         'base field': 123123,
       };
-      const output = validateAndMap(input, schema);
+      const output = validateAndMap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         type: 'hello world',
@@ -113,7 +118,7 @@ describe('Discriminated Object', () => {
         'base field': 123123,
         'child1 field': 101,
       };
-      const output = validateAndMap(input, schema);
+      const output = validateAndMap(input, discriminatedSchema);
       expect(output.errors).toBeTruthy();
       expect(output.errors).toMatchInlineSnapshot(`
         Array [
@@ -141,6 +146,15 @@ describe('Discriminated Object', () => {
         ]
       `);
     });
+
+    it('should map to nestedDiscriminatedObject with null', () => {
+      const input = {};
+      const output = validateAndMap(input, nestedDiscriminatedObject);
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual({
+        innerType: null,
+      });
+    });
   });
   describe('Unmapping', () => {
     it('should unmap child type on discriminator match', () => {
@@ -149,7 +163,7 @@ describe('Discriminated Object', () => {
         baseField: 123123,
         child1Field: true,
       };
-      const output = validateAndUnmap(input, schema);
+      const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         'type mapped': 'child1',
@@ -164,7 +178,7 @@ describe('Discriminated Object', () => {
         baseField: 123123,
         child1Field: true,
       };
-      const output = validateAndUnmap(input, schema);
+      const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         'type mapped': 'hello world',
@@ -178,7 +192,7 @@ describe('Discriminated Object', () => {
         baseField: 123123,
         child1Field: true,
       };
-      const output = validateAndUnmap(input, schema);
+      const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         'base field': 123123,
@@ -191,7 +205,7 @@ describe('Discriminated Object', () => {
         type: 'base',
         baseField: 123123,
       };
-      const output = validateAndUnmap(input, schema);
+      const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         'type mapped': 'base',
@@ -204,7 +218,7 @@ describe('Discriminated Object', () => {
         type: 'hello world',
         baseField: 123123,
       };
-      const output = validateAndUnmap(input, schema);
+      const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         'type mapped': 'hello world',
@@ -216,7 +230,7 @@ describe('Discriminated Object', () => {
       const input = {
         baseField: 123123,
       };
-      const output = validateAndUnmap(input, schema);
+      const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
         'base field': 123123,
@@ -229,7 +243,7 @@ describe('Discriminated Object', () => {
         baseField: 123123,
         child1Field: 101,
       };
-      const output = validateAndUnmap(input, schema);
+      const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeTruthy();
       expect(output.errors).toMatchInlineSnapshot(`
         Array [
