@@ -19,6 +19,7 @@ import { ArgumentsValidationError } from '../errors/argumentsValidationError';
 import { ResponseValidationError } from '../errors/responseValidationError';
 import {
   Schema,
+  SchemaValidationError,
   validateAndMap,
   validateAndMapXml,
   validateAndUnmapXml,
@@ -501,55 +502,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return { ...request, headers };
     });
     const result = await this.call(requestOptions);
-    if (typeof result.body !== 'string') {
-      throw new Error(
-        'Could not parse body as JSON. The response body is not a string.'
-      );
-    }
 
-    if (result.body.trim() === '') {
-      // Try mapping the missing body as null
-      return this.tryMappingAsNull<T>(schema, result);
-    }
-
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(result.body);
-    } catch (error) {
-      return this.tryMappingWithoutParsing<T>(schema, result, error);
-    }
-    const mappingResult = validateAndMap(parsed, schema);
-    if (mappingResult.errors) {
-      throw new ResponseValidationError(result, mappingResult.errors);
-    }
-    return { ...result, result: mappingResult.result };
+    return { ...result, result: parseJsonResult(schema, result) };
   }
-
-  private tryMappingAsNull<T>(
-    schema: Schema<T, any>,
-    result: ApiResponse<void>
-  ) {
-    const nullMappingResult = validateAndMap(null, schema);
-    if (nullMappingResult.errors) {
-      throw new Error(
-        'Could not parse body as JSON. The response body is empty.'
-      );
-    }
-    return { ...result, result: nullMappingResult.result };
-  }
-
-  private tryMappingWithoutParsing<T>(
-    schema: Schema<T, any>,
-    result: ApiResponse<void>,
-    errorMessage: string
-  ) {
-    const mappingResult = validateAndMap(result.body, schema);
-    if (mappingResult.errors) {
-      throw new Error(`Could not parse body as JSON.\n\n${errorMessage}`);
-    }
-    return { ...result, result: mappingResult.result };
-  }
-
   public async callAsXml<T>(
     rootName: string,
     schema: Schema<T, any>,
@@ -595,7 +550,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this.interceptResponse((context) => {
       const { response } = context;
       if (
-        this._validateResponse &&
+        this._validate &&
         (response.statusCode < 200 || response.statusCode >= 300)
       ) {
         if (typeof this._apiErrorFactory?.message === 'undefined') {
@@ -609,7 +564,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return context;
     });
   }
-
   private _addApiLoggerInterceptors(): void {
     if (this._apiLogger) {
       const apiLogger = this._apiLogger;
@@ -622,14 +576,12 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       });
     }
   }
-
   private _addAuthentication() {
     this.intercept((...args) => {
       const handler = this._authenticationProvider(this._authParams);
       return handler(...args);
     });
   }
-
   private _addRetryInterceptor() {
     this.intercept(async (request, options, next) => {
       let context: HttpContext | undefined;
@@ -675,7 +627,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return { request, response: context.response };
     });
   }
-
   private _addErrorHandlingInterceptor() {
     this.interceptResponse((context) => {
       const { response } = context;
@@ -735,4 +686,40 @@ function mergePath(left: string, right?: string): string {
   } else {
     return `${left}/${right}`;
   }
+}
+function parseJsonResult<T>(schema: Schema<T, any>, res: ApiResponse<void>): T {
+  if (typeof res.body !== 'string') {
+    throw new Error(
+      'Could not parse body as JSON. The response body is not a string.'
+    );
+  }
+  if (res.body.trim() === '') {
+    const resEmptyErr = new Error(
+      'Could not parse body as JSON. The response body is empty.'
+    );
+    return validateJson(schema, null, (_) => resEmptyErr);
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(res.body);
+  } catch (error) {
+    const resUnParseErr = new Error(
+      `Could not parse body as JSON.\n\n${error}`
+    );
+    return validateJson(schema, res.body, (_) => resUnParseErr);
+  }
+  const resInvalidErr = (errors: SchemaValidationError[]) =>
+    new ResponseValidationError(res, errors);
+  return validateJson(schema, parsed, (errors) => resInvalidErr(errors));
+}
+function validateJson<T>(
+  schema: Schema<T, any>,
+  value: any,
+  errorCreater: (errors: SchemaValidationError[]) => Error
+): T {
+  const mappingResult = validateAndMap(value, schema);
+  if (mappingResult.errors) {
+    throw errorCreater(mappingResult.errors);
+  }
+  return mappingResult.result;
 }
