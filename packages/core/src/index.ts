@@ -2,7 +2,7 @@
 /// <reference path='./shim/index.ts' />
 
 export * from './apiHelper';
-export * from './testHelper';
+export * from '../../test-helper/src/testHelper';
 export * from './coreInterfaces';
 export * from './fileWrapper';
 export * from './errors/abortError';
