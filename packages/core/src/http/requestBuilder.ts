@@ -550,7 +550,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this.interceptResponse((context) => {
       const { response } = context;
       if (
-        this._validate &&
+        this._validateResponse &&
         (response.statusCode < 200 || response.statusCode >= 300)
       ) {
         if (typeof this._apiErrorFactory?.message === 'undefined') {
