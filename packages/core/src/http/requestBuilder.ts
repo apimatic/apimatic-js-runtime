@@ -506,15 +506,17 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         'Could not parse body as JSON. The response body is not a string.'
       );
     }
+
     if (result.body.trim() === '') {
       // Try mapping the missing body as null
       return this.tryMappingAsNull<T>(schema, result);
     }
+
     let parsed: unknown;
     try {
       parsed = JSON.parse(result.body);
     } catch (error) {
-      throw new Error(`Could not parse body as JSON.\n\n${error.message}`);
+      return this.tryMappingWithoutParsing<T>(schema, result, error);
     }
     const mappingResult = validateAndMap(parsed, schema);
     if (mappingResult.errors) {
@@ -534,6 +536,18 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       );
     }
     return { ...result, result: nullMappingResult.result };
+  }
+
+  private tryMappingWithoutParsing<T>(
+    schema: Schema<T, any>,
+    result: ApiResponse<void>,
+    errorMessage: string
+  ) {
+    const mappingResult = validateAndMap(result.body, schema);
+    if (mappingResult.errors) {
+      throw new Error(`Could not parse body as JSON.\n\n${errorMessage}`);
+    }
+    return { ...result, result: mappingResult.result };
   }
 
   public async callAsXml<T>(
