@@ -44,11 +44,10 @@ export async function createReadableStreamFromUrl(url: string) {
  * @returns Promise resolving to true if input matches file contents, otherwise false.
  */
 export async function isSameAsFile(
-  filename: string,
+  fileStream: NodeJS.ReadableStream,
   input: NodeJS.ReadableStream | Blob | undefined
 ): Promise<boolean> {
   try {
-    const fileStream = await createReadableStreamFromUrl(filename);
     let fileBuffer: Buffer | ArrayBuffer;
 
     if (typeof input === 'undefined') {

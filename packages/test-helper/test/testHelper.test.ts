@@ -282,7 +282,10 @@ describe('isSameAsFile', () => {
       type: 'text/plain;charset=utf-8',
     });
 
-    const isSame = await isSameAsFile(filename, blob);
+    const isSame = await isSameAsFile(
+      await createReadableStreamFromUrl(filename),
+      blob
+    );
 
     expect(isSame).toBe(false);
   });
@@ -291,7 +294,10 @@ describe('isSameAsFile', () => {
     const filename =
       'https://raw.githubusercontent.com/apimatic/apimatic-js-runtime/master/packages/core/test/dummy_file.txt';
 
-    const isSame = await isSameAsFile(filename, undefined);
+    const isSame = await isSameAsFile(
+      await createReadableStreamFromUrl(filename),
+      undefined
+    );
 
     expect(isSame).toBe(false);
   });
