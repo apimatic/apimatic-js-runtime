@@ -699,7 +699,7 @@ function parseJsonResult<T>(schema: Schema<T, any>, res: ApiResponse<void>): T {
     parsed = JSON.parse(res.body);
   } catch (error) {
     const resUnParseErr = new Error(
-      `Could not parse body as JSON.\n\n${error}`
+      `Could not parse body as JSON.\n\n${error.message}`
     );
     return validateJson(schema, res.body, (_) => resUnParseErr);
   }
