@@ -1,6 +1,6 @@
 {
   "extends": "../../tsconfig.base.json",
-  "include": ["src/**/*", "../test-helper/src/testHelper.ts"],
+  "include": ["src/**/*"],
   "compilerOptions": {
     "outDir": "./lib",
     "rootDir": "./src",

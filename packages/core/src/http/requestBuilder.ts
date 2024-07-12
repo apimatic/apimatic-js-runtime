@@ -9,11 +9,11 @@ import {
   HttpRequest,
   HttpRequestMultipartFormBody,
   HttpRequestUrlEncodedFormBody,
-  HttpResponse,
   HttpInterceptorInterface,
   RequestOptions,
   RetryConfiguration,
   ApiLoggerInterface,
+  HttpClientInterface,
 } from '../coreInterfaces';
 import { ArgumentsValidationError } from '../errors/argumentsValidationError';
 import { ResponseValidationError } from '../errors/responseValidationError';
@@ -81,11 +81,6 @@ export function skipEncode<T extends PathTemplatePrimitiveTypes>(
 ): SkipEncode<T> {
   return new SkipEncode(value);
 }
-
-export type HttpClientInterface = (
-  request: HttpRequest,
-  requestOptions?: RequestOptions
-) => Promise<HttpResponse>;
 
 export type ApiErrorConstructor = new (
   response: HttpContext,

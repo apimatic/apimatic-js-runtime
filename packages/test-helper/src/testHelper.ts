@@ -1,5 +1,10 @@
 import axios from 'axios';
 
+/**
+ * Compare actual headers with expected headers, ignoring case sensitivity.
+ * @param actualHeaders Actual headers received from the request.
+ * @param expectedHeaders Expected headers with values to match against actual headers.
+ */
 export function expectHeadersToMatch(
   actualHeaders: Record<string, string>,
   expectedHeaders: Record<string, Array<string | boolean>>
@@ -18,6 +23,12 @@ export function expectHeadersToMatch(
   });
 }
 
+/**
+ * Create a readable stream from a given URL using axios.
+ * @param url URL from which to create the readable stream.
+ * @returns Readable stream of the data fetched from the URL.
+ * @throws Error if unable to retrieve data from the URL.
+ */
 export async function createReadableStreamFromUrl(url: string) {
   const res = await axios({ url, method: 'GET', responseType: 'stream' });
   if (res.status !== 200) {
@@ -30,51 +41,48 @@ interface JObject {
   [key: string]: any;
 }
 
+interface SubsetOptions {
+  checkValues?: boolean;
+  allowExtra?: boolean;
+  isOrdered?: boolean;
+}
+
 /**
  * Recursively check whether the left object or array is a proper subset of the right object or array.
  * @param left Left object or array.
  * @param right Right object or array.
- * @param checkValues Check primitive values for equality.
- * @param allowExtra Are extra elements allowed in right object or array.
- * @param isOrdered Should elements in right be compared in order to left (only applicable to arrays).
- * @returns Boolean.
+ * @param options Options for subset comparison.
+ * @returns Boolean indicating if left is a proper subset of right.
  */
 export function isProperSubsetOf(
   left: any,
   right?: any,
-  checkValues: boolean = false,
-  allowExtra: boolean = false,
-  isOrdered: boolean = false
+  options: SubsetOptions = {}
 ): boolean {
   if (Array.isArray(left) && Array.isArray(right)) {
-    return isArrayProperSubsetOf(
-      left,
-      right,
-      checkValues,
-      allowExtra,
-      isOrdered
-    );
+    return isArrayProperSubsetOf(left, right, options);
   } else if (typeof left === 'object' && typeof right === 'object') {
-    return isObjectProperSubsetOf(
-      left,
-      right,
-      checkValues,
-      allowExtra,
-      isOrdered
-    );
+    return isObjectProperSubsetOf(left, right, options);
   } else {
     // If types do not match (e.g., one is object and the other is array), they cannot be proper subsets
     return false;
   }
 }
 
+/**
+ * Check if one object is a proper subset of another object.
+ * @param left Left object to check.
+ * @param right Right object to check against.
+ * @param options Options for subset comparison.
+ * @returns Boolean indicating if left is a proper subset of right.
+ */
 export function isObjectProperSubsetOf(
   left: JObject,
   right: JObject,
-  checkValues: boolean,
-  allowExtra: boolean,
-  isOrdered: boolean
+  options: SubsetOptions = {}
 ): boolean {
+  const { checkValues = false, allowExtra = false } = options;
+
   for (const key in left) {
     if (Object.prototype.hasOwnProperty.call(left, key)) {
       if (!Object.prototype.hasOwnProperty.call(right, key)) {
@@ -86,26 +94,11 @@ export function isObjectProperSubsetOf(
 
       if (typeof leftVal === 'object') {
         // Recursive call for nested objects
-        if (
-          !isProperSubsetOf(
-            leftVal,
-            rightVal,
-            checkValues,
-            allowExtra,
-            isOrdered
-          )
-        ) {
+        if (!isProperSubsetOf(leftVal, rightVal, options)) {
           return false;
         }
       } else if (checkValues) {
-        if (
-          !CheckValuesAreSameOnBothSides(
-            allowExtra,
-            isOrdered,
-            leftVal,
-            rightVal
-          )
-        ) {
+        if (!CheckValuesAreSameOnBothSides(leftVal, rightVal, options)) {
           return false;
         }
       }
@@ -126,30 +119,44 @@ export function isObjectProperSubsetOf(
   return true;
 }
 
+/**
+ * Check if one array is a proper subset of another array.
+ * @param left Left array to check.
+ * @param right Right array to check against.
+ * @param options Options for subset comparison.
+ * @returns Boolean indicating if left is a proper subset of right.
+ */
 export function isArrayProperSubsetOf(
   left: any[],
   right: any[],
-  checkValues: boolean,
-  allowExtra: boolean,
-  isOrdered: boolean
+  options: SubsetOptions = {}
 ): boolean {
+  const { allowExtra = false, isOrdered = false } = options;
   if (isDifferentSizeListNotAllowed(left, right, !allowExtra)) {
     return false;
   }
 
   if (isOrdered) {
-    return isOrderedSupersetOf(left, right, !allowExtra, checkValues);
+    return isOrderedSupersetOf(left, right, options);
   } else {
-    return isSuperSetOf(left, right, !allowExtra);
+    return isSuperSetOf(left, right, options);
   }
 }
 
+/**
+ * Check if one ordered array is a superset of another ordered array.
+ * @param left Left array to check.
+ * @param right Right array to check against.
+ * @param options Options for subset comparison.
+ * @returns Boolean indicating if left is an ordered superset of right.
+ */
 export function isOrderedSupersetOf(
   left: any[],
   right?: any[],
-  checkSize: boolean = true,
-  checkValues: boolean = true
+  options: SubsetOptions = {}
 ): boolean {
+  const checkSize = !options.allowExtra;
+  const checkValues = options.checkValues;
   let leftIndex = 0;
   let rightIndex = 0;
 
@@ -166,7 +173,7 @@ export function isOrderedSupersetOf(
     const leftVal = left[leftIndex];
 
     if (typeof rightVal === 'object' && typeof leftVal === 'object') {
-      if (!isProperSubsetOf(leftVal, rightVal, checkValues, false, false)) {
+      if (!isProperSubsetOf(leftVal, rightVal, options)) {
         return false;
       }
     } else if (checkValues && rightVal !== leftVal) {
@@ -184,12 +191,19 @@ export function isOrderedSupersetOf(
   return true;
 }
 
+/**
+ * Check if one array is a superset of another array.
+ * @param left Left array to check.
+ * @param right Right array to check against.
+ * @param options Options for subset comparison.
+ * @returns Boolean indicating if left is a superset of right.
+ */
 export function isSuperSetOf(
   left: any[],
   right?: any[],
-  checkSize: boolean = false,
-  checkValues: boolean = false
+  options: SubsetOptions = {}
 ): boolean {
+  const checkSize = !options.allowExtra;
   if (
     typeof right === 'undefined' ||
     isDifferentSizeListNotAllowed(right, left, checkSize)
@@ -207,9 +221,7 @@ export function isSuperSetOf(
   // Check if every element in right has enough occurrences in left
   for (const item of right) {
     if (typeof item === 'object') {
-      const leftItem = left.find((l) =>
-        isProperSubsetOf(l, item, checkValues, false, false)
-      );
+      const leftItem = left.find((l) => isProperSubsetOf(l, item, options));
       if (!leftItem) {
         return false;
       }
@@ -223,6 +235,13 @@ export function isSuperSetOf(
   return true;
 }
 
+/**
+ * Check if lists have different sizes when size checking is enabled.
+ * @param rightList Right list to compare size.
+ * @param leftList Left list to compare size.
+ * @param checkSize Boolean indicating whether size checking is enabled.
+ * @returns Boolean indicating if different size lists are not allowed.
+ */
 function isDifferentSizeListNotAllowed(
   rightList: any[],
   leftList: any[],
@@ -234,24 +253,28 @@ function isDifferentSizeListNotAllowed(
   return false; // Lists have the same size or size checking is disabled
 }
 
+/**
+ * Check if values are the same on both sides for primitive value comparison.
+ * @param leftVal Left value to compare.
+ * @param rightVal Right value to compare.
+ * @param options Options for subset comparison.
+ * @returns Boolean indicating if values are the same on both sides.
+ */
 function CheckValuesAreSameOnBothSides(
-  allowExtra: boolean,
-  isOrdered: boolean,
   leftVal: any,
-  rightVal: any
+  rightVal: any,
+  options: SubsetOptions = {}
 ): boolean {
   let isSame = true;
 
   // Check if left value is an array
   if (Array.isArray(leftVal)) {
-    if (
-      !DoesRightValContainsSameItems(leftVal, rightVal, allowExtra, isOrdered)
-    ) {
+    if (!DoesRightValContainsSameItems(leftVal, rightVal, options)) {
       isSame = false;
     }
   } else if (typeof leftVal === 'object' && typeof rightVal === 'object') {
     // If both leftVal and rightVal are objects, recursively check subset
-    if (!isProperSubsetOf(leftVal, rightVal, true, allowExtra, isOrdered)) {
+    if (!isProperSubsetOf(leftVal, rightVal, options)) {
       isSame = false;
     }
   } else {
@@ -264,11 +287,17 @@ function CheckValuesAreSameOnBothSides(
   return isSame;
 }
 
+/**
+ * Check if right value contains the same items as left value for array comparison.
+ * @param leftJArray Left array to compare.
+ * @param rightVal Right value to compare.
+ * @param options Options for subset comparison.
+ * @returns Boolean indicating if right value contains the same items as left array.
+ */
 function DoesRightValContainsSameItems(
   leftJArray: any[],
   rightVal: any,
-  allowExtra: boolean,
-  isOrdered: boolean
+  options: SubsetOptions = {}
 ): boolean {
   if (!Array.isArray(rightVal)) {
     return false;
@@ -288,9 +317,7 @@ function DoesRightValContainsSameItems(
     const rightArray = rightToken as any[];
 
     // Check if arrays of objects
-    if (
-      !isArrayProperSubsetOf(leftArray, rightArray, true, allowExtra, isOrdered)
-    ) {
+    if (!isArrayProperSubsetOf(leftArray, rightArray, options)) {
       return false;
     }
 
@@ -306,20 +333,11 @@ function DoesRightValContainsSameItems(
     return DoesRightValContainsSameItems(
       remainingLeftList,
       remainingRightList,
-      allowExtra,
-      isOrdered
+      options
     );
   } else if (typeof leftJArray[0] === 'object' && bothArrayContainsJObject) {
     // Arrays of objects comparison
-    if (
-      !isArrayProperSubsetOf(
-        leftJArray,
-        rightJArray,
-        true,
-        allowExtra,
-        isOrdered
-      )
-    ) {
+    if (!isArrayProperSubsetOf(leftJArray, rightJArray, options)) {
       return false;
     }
   }
@@ -327,14 +345,29 @@ function DoesRightValContainsSameItems(
   return true;
 }
 
+/**
+ * Check if an array contains objects.
+ * @param jArray Array to check.
+ * @returns Boolean indicating if array contains objects.
+ */
 function IsArrayOfJObject(jArray: any[]): boolean {
   return jArray.every((item) => typeof item === 'object');
 }
 
+/**
+ * Check if an array contains at least one object.
+ * @param jArray Array to check.
+ * @returns Boolean indicating if array contains at least one object.
+ */
 function ListContainsJObject(jArray: any[]): boolean {
   return jArray.some((item) => typeof item === 'object');
 }
 
+/**
+ * Convert a NodeJS ReadableStream to a Buffer.
+ * @param stream Readable stream to convert.
+ * @returns Promise resolving to a Buffer containing stream data.
+ */
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
   return new Promise<Buffer>((resolve, reject) => {
     const chunks: Uint8Array[] = [];
@@ -344,6 +377,11 @@ async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
   });
 }
 
+/**
+ * Convert a Blob to an ArrayBuffer.
+ * @param blob Blob to convert.
+ * @returns Promise resolving to an ArrayBuffer containing blob data.
+ */
 async function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
@@ -359,12 +397,18 @@ async function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
   });
 }
 
+/**
+ * Check if input matches the contents of a file by comparing stream data or Blob data.
+ * @param filename Name of the file to compare against.
+ * @param input Input data to compare against file contents (NodeJS ReadableStream or Blob).
+ * @returns Promise resolving to true if input matches file contents, otherwise false.
+ */
 export async function IsSameAsFile(
   filename: string,
   input: NodeJS.ReadableStream | Blob | undefined
 ): Promise<boolean> {
   try {
-    const fileStream = await createReadableStreamFromUrl(filename); // Assuming this function fetches the file as a readable stream
+    const fileStream = await createReadableStreamFromUrl(filename);
     let fileBuffer: Buffer | ArrayBuffer;
 
     if (typeof input === 'undefined') {
