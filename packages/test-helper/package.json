@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/test-helper",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "description": "provides the assertion utilities",
   "main": "lib/index.js",
   "module": "lib/index.js",
