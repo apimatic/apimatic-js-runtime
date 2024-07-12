@@ -37,6 +37,42 @@ export async function createReadableStreamFromUrl(url: string) {
   return res.data;
 }
 
+/**
+ * Check if input matches the contents of a file by comparing stream data or Blob data.
+ * @param filename Name of the file to compare against.
+ * @param input Input data to compare against file contents (NodeJS ReadableStream or Blob).
+ * @returns Promise resolving to true if input matches file contents, otherwise false.
+ */
+export async function isSameAsFile(
+  filename: string,
+  input: NodeJS.ReadableStream | Blob | undefined
+): Promise<boolean> {
+  try {
+    const fileStream = await createReadableStreamFromUrl(filename);
+    let fileBuffer: Buffer | ArrayBuffer;
+
+    if (typeof input === 'undefined') {
+      return false;
+    }
+
+    if (input instanceof Blob) {
+      const inputBuffer = await blobToArrayBuffer(input);
+      fileBuffer = await streamToBuffer(fileStream);
+      // Compare ArrayBuffer directly for Blobs
+      return (
+        Buffer.compare(Buffer.from(inputBuffer), Buffer.from(fileBuffer)) === 0
+      );
+    } else {
+      const inputFileBuffer = await streamToBuffer(input);
+      fileBuffer = await streamToBuffer(fileStream);
+      // Compare Buffer for NodeJS ReadableStream
+      return Buffer.compare(inputFileBuffer, fileBuffer as Buffer) === 0;
+    }
+  } catch (error) {
+    return false;
+  }
+}
+
 interface JObject {
   [key: string]: any;
 }
@@ -98,7 +134,7 @@ export function isObjectProperSubsetOf(
           return false;
         }
       } else if (checkValues) {
-        if (!CheckValuesAreSameOnBothSides(leftVal, rightVal, options)) {
+        if (!checkValuesAreSameOnBothSides(leftVal, rightVal, options)) {
           return false;
         }
       }
@@ -260,7 +296,7 @@ function isDifferentSizeListNotAllowed(
  * @param options Options for subset comparison.
  * @returns Boolean indicating if values are the same on both sides.
  */
-function CheckValuesAreSameOnBothSides(
+function checkValuesAreSameOnBothSides(
   leftVal: any,
   rightVal: any,
   options: SubsetOptions = {}
@@ -269,7 +305,7 @@ function CheckValuesAreSameOnBothSides(
 
   // Check if left value is an array
   if (Array.isArray(leftVal)) {
-    if (!DoesRightValContainsSameItems(leftVal, rightVal, options)) {
+    if (!doesRightValContainsSameItems(leftVal, rightVal, options)) {
       isSame = false;
     }
   } else if (typeof leftVal === 'object' && typeof rightVal === 'object') {
@@ -294,7 +330,7 @@ function CheckValuesAreSameOnBothSides(
  * @param options Options for subset comparison.
  * @returns Boolean indicating if right value contains the same items as left array.
  */
-function DoesRightValContainsSameItems(
+function doesRightValContainsSameItems(
   leftJArray: any[],
   rightVal: any,
   options: SubsetOptions = {}
@@ -306,9 +342,9 @@ function DoesRightValContainsSameItems(
   const rightJArray = rightVal as any[];
 
   const bothArrayContainsJObject =
-    IsArrayOfJObject(leftJArray) && IsArrayOfJObject(rightJArray);
+    isArrayOfJObject(leftJArray) && isArrayOfJObject(rightJArray);
   const containsJObject =
-    ListContainsJObject(leftJArray) && ListContainsJObject(rightJArray);
+    listContainsJObject(leftJArray) && listContainsJObject(rightJArray);
 
   if (!bothArrayContainsJObject && containsJObject) {
     const leftJToken = leftJArray.filter((x) => typeof x === 'object');
@@ -330,7 +366,7 @@ function DoesRightValContainsSameItems(
     );
     const remainingRightList = remainingRightListToken as any[];
 
-    return DoesRightValContainsSameItems(
+    return doesRightValContainsSameItems(
       remainingLeftList,
       remainingRightList,
       options
@@ -350,7 +386,7 @@ function DoesRightValContainsSameItems(
  * @param jArray Array to check.
  * @returns Boolean indicating if array contains objects.
  */
-function IsArrayOfJObject(jArray: any[]): boolean {
+function isArrayOfJObject(jArray: any[]): boolean {
   return jArray.every((item) => typeof item === 'object');
 }
 
@@ -359,7 +395,7 @@ function IsArrayOfJObject(jArray: any[]): boolean {
  * @param jArray Array to check.
  * @returns Boolean indicating if array contains at least one object.
  */
-function ListContainsJObject(jArray: any[]): boolean {
+function listContainsJObject(jArray: any[]): boolean {
   return jArray.some((item) => typeof item === 'object');
 }
 
@@ -395,40 +431,4 @@ async function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
     reader.onerror = reject;
     reader.readAsArrayBuffer(blob);
   });
-}
-
-/**
- * Check if input matches the contents of a file by comparing stream data or Blob data.
- * @param filename Name of the file to compare against.
- * @param input Input data to compare against file contents (NodeJS ReadableStream or Blob).
- * @returns Promise resolving to true if input matches file contents, otherwise false.
- */
-export async function IsSameAsFile(
-  filename: string,
-  input: NodeJS.ReadableStream | Blob | undefined
-): Promise<boolean> {
-  try {
-    const fileStream = await createReadableStreamFromUrl(filename);
-    let fileBuffer: Buffer | ArrayBuffer;
-
-    if (typeof input === 'undefined') {
-      return false;
-    }
-
-    if (input instanceof Blob) {
-      const inputBuffer = await blobToArrayBuffer(input);
-      fileBuffer = await streamToBuffer(fileStream);
-      // Compare ArrayBuffer directly for Blobs
-      return (
-        Buffer.compare(Buffer.from(inputBuffer), Buffer.from(fileBuffer)) === 0
-      );
-    } else {
-      const inputFileBuffer = await streamToBuffer(input);
-      fileBuffer = await streamToBuffer(fileStream);
-      // Compare Buffer for NodeJS ReadableStream
-      return Buffer.compare(inputFileBuffer, fileBuffer as Buffer) === 0;
-    }
-  } catch (error) {
-    return false;
-  }
 }
