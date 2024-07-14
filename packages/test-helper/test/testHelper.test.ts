@@ -1,12 +1,17 @@
 import {
-  createReadableStreamFromUrl,
+  HttpClientInterface,
+  HttpRequest,
+  HttpResponse,
+} from '@apimatic/core-interfaces';
+import {
+  areStreamsMatching,
   expectHeadersToMatch,
-  isObjectProperSubsetOf,
+  getStreamData,
   isOrderedSupersetOf,
   isProperSubsetOf,
-  isSameAsFile,
   isSuperSetOf,
 } from '../src/testHelper';
+import { Readable } from 'stream';
 
 describe('isProperSubsetOf', () => {
   it('should return true for proper subset objects', () => {
@@ -21,13 +26,6 @@ describe('isProperSubsetOf', () => {
     expect(isProperSubsetOf(left, right, { checkValues: true })).toBe(false);
   });
 
-  it('should return true for proper subset arrays', () => {
-    const left = [1, 2, 3];
-    const right = [1, 2, 3];
-
-    expect(isProperSubsetOf(left, right, { checkValues: true })).toBe(true);
-  });
-
   it('should return false for objects that are not proper subsets', () => {
     const left = {
       name: 'lisinopril',
@@ -39,6 +37,20 @@ describe('isProperSubsetOf', () => {
     };
 
     expect(isProperSubsetOf(left, right, { checkValues: true })).toBe(false);
+  });
+
+  it('should return true for empty objects', () => {
+    const left = {};
+    const right = { key: 'value' };
+
+    expect(isProperSubsetOf(left, right, { checkValues: true })).toBe(false);
+  });
+
+  it('should return true for proper subset arrays', () => {
+    const left = [1, 2, 3];
+    const right = [1, 2, 3];
+
+    expect(isProperSubsetOf(left, right, { checkValues: true })).toBe(true);
   });
 
   it('should return false for arrays that are not proper subsets', () => {
@@ -53,46 +65,6 @@ describe('isProperSubsetOf', () => {
     const right: any[] = [];
 
     expect(isProperSubsetOf(left, right, { checkValues: true })).toBe(true);
-  });
-});
-
-describe('isObjectProperSubsetOf', () => {
-  it('should return true for proper subset objects', () => {
-    const left = {
-      name: 'lisinopril',
-      strength: '10 mg Tab',
-    };
-    const right = {
-      name: 'lisinopril',
-    };
-
-    expect(isObjectProperSubsetOf(left, right, { checkValues: true })).toBe(
-      false
-    );
-  });
-
-  it('should return false for objects that are not proper subsets', () => {
-    const left = {
-      name: 'lisinopril',
-      strength: '10 mg Tab',
-    };
-    const right = {
-      name: 'amlodipine',
-      strength: '5 mg Tab',
-    };
-
-    expect(isObjectProperSubsetOf(left, right, { checkValues: true })).toBe(
-      false
-    );
-  });
-
-  it('should return true for empty objects', () => {
-    const left = {};
-    const right = { key: 'value' };
-
-    expect(isObjectProperSubsetOf(left, right, { checkValues: true })).toBe(
-      false
-    );
   });
 });
 
@@ -209,7 +181,7 @@ describe('expectHeadersToMatch', () => {
       name: ['Alice', false],
     };
 
-    expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
+    expectHeadersToMatch(actual, expected);
   });
 
   it('should pass for headers with same keys but different values', () => {
@@ -222,7 +194,7 @@ describe('expectHeadersToMatch', () => {
       name: ['Bob', false],
     };
 
-    expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
+    expectHeadersToMatch(actual, expected);
   });
 
   it('should fail for headers with missing keys', () => {
@@ -246,7 +218,7 @@ describe('expectHeadersToMatch', () => {
       name: ['Alice', true],
     };
 
-    expect(() => expectHeadersToMatch(actual, expected)).not.toThrow();
+    expectHeadersToMatch(actual, expected);
   });
 
   it('should fail for headers with different values', () => {
@@ -261,7 +233,7 @@ describe('expectHeadersToMatch', () => {
     expect(() => expectHeadersToMatch(actual, expected)).toThrow();
   });
 
-  it('should pass for headers with undefined actual values', () => {
+  it('should fail for headers with undefined actual values', () => {
     const actual = {
       id: '1',
     };
@@ -274,42 +246,98 @@ describe('expectHeadersToMatch', () => {
   });
 });
 
-describe('isSameAsFile', () => {
-  it('should return false for non-matching files', async () => {
-    const filename =
-      'https://raw.githubusercontent.com/apimatic/apimatic-js-runtime/master/packages/core/test/dummy_file.txt';
-    const blob = new Blob(['different data'], {
+describe('areStreamsMatching with getStreamData', () => {
+  it('should throw error for invalid stream data', async () => {
+    await expect(
+      getStreamData(mockHttpClientInterface, 'invalid/stream')
+    ).rejects.toThrow('Unable to retrieve streaming data from invalid/stream');
+  });
+
+  it('should pass with same data', async () => {
+    const expected = new Blob(['This is example data'], {
+      type: 'text/plain;charset=utf-8',
+    });
+    const actualBlob = await getStreamData(
+      mockHttpClientInterface,
+      'example/getBlob'
+    );
+    const actualStream = await getStreamData(
+      mockHttpClientInterface,
+      'example/getStream'
+    );
+
+    expect(await areStreamsMatching(expected, actualBlob)).toBeTruthy();
+    expect(await areStreamsMatching(expected, actualStream)).toBeTruthy();
+  });
+
+  it('should pass with same data and different types', async () => {
+    const expected = new Blob(['This is example data'], {
+      type: 'text/plain',
+    });
+    const actualBlob = await getStreamData(
+      mockHttpClientInterface,
+      'example/getBlob'
+    );
+    const actualStream = await getStreamData(
+      mockHttpClientInterface,
+      'example/getStream'
+    );
+
+    expect(await areStreamsMatching(expected, actualBlob)).toBeTruthy();
+    expect(await areStreamsMatching(expected, actualStream)).toBeTruthy();
+  });
+
+  it('should fail with different data', async () => {
+    const expected = new Blob(['different data'], {
+      type: 'text/plain;charset=utf-8',
+    });
+    const actualBlob = await getStreamData(
+      mockHttpClientInterface,
+      'example/getBlob'
+    );
+    const actualStream = await getStreamData(
+      mockHttpClientInterface,
+      'example/getStream'
+    );
+
+    expect(await areStreamsMatching(expected, actualBlob)).not.toBeTruthy();
+    expect(await areStreamsMatching(expected, actualStream)).not.toBeTruthy();
+  });
+
+  it('should fail when actual value is undefined', async () => {
+    const expected = new Blob(['different data'], {
       type: 'text/plain;charset=utf-8',
     });
 
-    const isSame = await isSameAsFile(
-      await createReadableStreamFromUrl(filename),
-      blob
-    );
-
-    expect(isSame).toBe(false);
-  });
-
-  it('should return false for undefined stream input', async () => {
-    const filename =
-      'https://raw.githubusercontent.com/apimatic/apimatic-js-runtime/master/packages/core/test/dummy_file.txt';
-
-    const isSame = await isSameAsFile(
-      await createReadableStreamFromUrl(filename),
-      undefined
-    );
-
-    expect(isSame).toBe(false);
+    expect(await areStreamsMatching(expected, undefined)).not.toBeTruthy();
   });
 });
 
-describe('createReadableStreamFromUrl', () => {
-  it('should pass retrieving data from createReadableStreamFromUrl', async () => {
-    const actual = await createReadableStreamFromUrl(
-      'https://raw.githubusercontent.com/apimatic/apimatic-js-runtime/master/packages/core/test/dummy_file.txt'
-    );
-    const expected = 'The text contains dummy data.';
+const mockHttpClientInterface: HttpClientInterface = (
+  request: HttpRequest,
+  _?: any
+): Promise<HttpResponse> => {
+  if (request.url === 'example/getBlob') {
+    return Promise.resolve({
+      statusCode: 200,
+      body: new Blob(['This is example data'], {
+        type: 'text/plain;charset=utf-8',
+      }),
+      headers: {},
+    });
+  }
 
-    expect(actual).toEqual(expected);
+  if (request.url === 'example/getStream') {
+    return Promise.resolve({
+      statusCode: 200,
+      body: Readable.from('This is example data'),
+      headers: {},
+    });
+  }
+
+  return Promise.resolve({
+    statusCode: 200,
+    body: 'Invalid response as string',
+    headers: {},
   });
-});
+};

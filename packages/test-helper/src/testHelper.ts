@@ -1,4 +1,55 @@
-import axios from 'axios';
+import { HttpClientInterface } from '@apimatic/core-interfaces';
+
+/**
+ * Get streaming data from a given URL.
+ * @param client Instance of HttpClient to be used.
+ * @param url URL from which to create the readable stream.
+ * @returns Readable stream or Blob of data fetched from the URL.
+ * @throws Error if unable to retrieve data from the URL.
+ */
+export async function getStreamData(
+  client: HttpClientInterface,
+  url: string
+): Promise<NodeJS.ReadableStream | Blob> {
+  const res = await client({
+    method: 'GET',
+    url,
+    responseType: 'stream',
+  });
+  if (res.statusCode !== 200 || typeof res.body === 'string') {
+    throw new Error(`Unable to retrieve streaming data from ${url}`);
+  }
+  return res.body;
+}
+
+/**
+ * Check if input matches the contents of a file by comparing stream data or Blob data.
+ * @param expected Expected data (NodeJS ReadableStream or Blob).
+ * @param actual Input data to compare against file contents (NodeJS ReadableStream or Blob).
+ * @returns Promise resolving to true if input matches file contents, otherwise false.
+ */
+export async function areStreamsMatching(
+  expected: NodeJS.ReadableStream | Blob,
+  actual: NodeJS.ReadableStream | Blob | undefined
+): Promise<boolean> {
+  if (typeof actual === 'undefined') {
+    return false;
+  }
+  try {
+    const expectedBuffer =
+      expected instanceof Blob
+        ? await blobToBuffer(expected)
+        : await streamToBuffer(expected);
+    const actualBuffer =
+      actual instanceof Blob
+        ? await blobToBuffer(actual)
+        : await streamToBuffer(actual);
+
+    return Buffer.compare(actualBuffer, expectedBuffer) === 0;
+  } catch (error) {
+    return false;
+  }
+}
 
 /**
  * Compare actual headers with expected headers, ignoring case sensitivity.
@@ -24,65 +75,6 @@ export function expectHeadersToMatch(
 }
 
 /**
- * Create a readable stream from a given URL using axios.
- * @param url URL from which to create the readable stream.
- * @returns Readable stream of the data fetched from the URL.
- * @throws Error if unable to retrieve data from the URL.
- */
-export async function createReadableStreamFromUrl(url: string) {
-  const res = await axios({ url, method: 'GET', responseType: 'stream' });
-  if (res.status !== 200) {
-    throw new Error(`Unable to retrieve data from ${url}`);
-  }
-  return res.data;
-}
-
-/**
- * Check if input matches the contents of a file by comparing stream data or Blob data.
- * @param filename Name of the file to compare against.
- * @param input Input data to compare against file contents (NodeJS ReadableStream or Blob).
- * @returns Promise resolving to true if input matches file contents, otherwise false.
- */
-export async function isSameAsFile(
-  fileStream: NodeJS.ReadableStream,
-  input: NodeJS.ReadableStream | Blob | undefined
-): Promise<boolean> {
-  try {
-    let fileBuffer: Buffer | ArrayBuffer;
-
-    if (typeof input === 'undefined') {
-      return false;
-    }
-
-    if (input instanceof Blob) {
-      const inputBuffer = await blobToArrayBuffer(input);
-      fileBuffer = await streamToBuffer(fileStream);
-      // Compare ArrayBuffer directly for Blobs
-      return (
-        Buffer.compare(Buffer.from(inputBuffer), Buffer.from(fileBuffer)) === 0
-      );
-    } else {
-      const inputFileBuffer = await streamToBuffer(input);
-      fileBuffer = await streamToBuffer(fileStream);
-      // Compare Buffer for NodeJS ReadableStream
-      return Buffer.compare(inputFileBuffer, fileBuffer as Buffer) === 0;
-    }
-  } catch (error) {
-    return false;
-  }
-}
-
-interface JObject {
-  [key: string]: any;
-}
-
-interface SubsetOptions {
-  checkValues?: boolean;
-  allowExtra?: boolean;
-  isOrdered?: boolean;
-}
-
-/**
  * Recursively check whether the left object or array is a proper subset of the right object or array.
  * @param left Left object or array.
  * @param right Right object or array.
@@ -101,80 +93,6 @@ export function isProperSubsetOf(
   } else {
     // If types do not match (e.g., one is object and the other is array), they cannot be proper subsets
     return false;
-  }
-}
-
-/**
- * Check if one object is a proper subset of another object.
- * @param left Left object to check.
- * @param right Right object to check against.
- * @param options Options for subset comparison.
- * @returns Boolean indicating if left is a proper subset of right.
- */
-export function isObjectProperSubsetOf(
-  left: JObject,
-  right: JObject,
-  options: SubsetOptions = {}
-): boolean {
-  const { checkValues = false, allowExtra = false } = options;
-
-  for (const key in left) {
-    if (Object.prototype.hasOwnProperty.call(left, key)) {
-      if (!Object.prototype.hasOwnProperty.call(right, key)) {
-        return false;
-      }
-
-      const leftVal = left[key];
-      const rightVal = right[key];
-
-      if (typeof leftVal === 'object') {
-        // Recursive call for nested objects
-        if (!isProperSubsetOf(leftVal, rightVal, options)) {
-          return false;
-        }
-      } else if (checkValues) {
-        if (!checkValuesAreSameOnBothSides(leftVal, rightVal, options)) {
-          return false;
-        }
-      }
-    }
-  }
-
-  if (!allowExtra) {
-    // Check if right object has extra keys not present in left object
-    for (const key in right) {
-      if (Object.prototype.hasOwnProperty.call(right, key)) {
-        if (!left.hasOwnProperty(key)) {
-          return false;
-        }
-      }
-    }
-  }
-
-  return true;
-}
-
-/**
- * Check if one array is a proper subset of another array.
- * @param left Left array to check.
- * @param right Right array to check against.
- * @param options Options for subset comparison.
- * @returns Boolean indicating if left is a proper subset of right.
- */
-export function isArrayProperSubsetOf(
-  left: any[],
-  right: any[],
-  options: SubsetOptions = {}
-): boolean {
-  const { allowExtra = false, isOrdered = false } = options;
-  if (isDifferentSizeListNotAllowed(left, right, !allowExtra)) {
-    return false;
-  }
-
-  if (isOrdered) {
-    return isOrderedSupersetOf(left, right, options);
-  } else {
-    return isSuperSetOf(left, right, options);
   }
 }
 
@@ -268,6 +186,84 @@ export function isSuperSetOf(
   }
 
   return true;
+}
+
+interface JObject {
+  [key: string]: any;
+}
+
+/**
+ * Check if one object is a proper subset of another object.
+ * @param left Left object to check.
+ * @param right Right object to check against.
+ * @param options Options for subset comparison.
+ * @returns Boolean indicating if left is a proper subset of right.
+ */
+function isObjectProperSubsetOf(
+  left: JObject,
+  right: JObject,
+  options: SubsetOptions = {}
+): boolean {
+  const { checkValues = false, allowExtra = false } = options;
+
+  for (const key in left) {
+    if (Object.prototype.hasOwnProperty.call(left, key)) {
+      if (!Object.prototype.hasOwnProperty.call(right, key)) {
+        return false;
+      }
+
+      const leftVal = left[key];
+      const rightVal = right[key];
+
+      if (typeof leftVal === 'object') {
+        // Recursive call for nested objects
+        if (!isProperSubsetOf(leftVal, rightVal, options)) {
+          return false;
+        }
+      } else if (checkValues) {
+        if (!checkValuesAreSameOnBothSides(leftVal, rightVal, options)) {
+          return false;
+        }
+      }
+    }
+  }
+
+  if (!allowExtra) {
+    // Check if right object has extra keys not present in left object
+    for (const key in right) {
+      if (Object.prototype.hasOwnProperty.call(right, key)) {
+        if (!left.hasOwnProperty(key)) {
+          return false;
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+/**
+ * Check if one array is a proper subset of another array.
+ * @param left Left array to check.
+ * @param right Right array to check against.
+ * @param options Options for subset comparison.
+ * @returns Boolean indicating if left is a proper subset of right.
+ */
+function isArrayProperSubsetOf(
+  left: any[],
+  right: any[],
+  options: SubsetOptions = {}
+): boolean {
+  const { allowExtra = false, isOrdered = false } = options;
+  if (isDifferentSizeListNotAllowed(left, right, !allowExtra)) {
+    return false;
+  }
+
+  if (isOrdered) {
+    return isOrderedSupersetOf(left, right, options);
+  } else {
+    return isSuperSetOf(left, right, options);
+  }
 }
 
 /**
@@ -404,21 +400,20 @@ function listContainsJObject(jArray: any[]): boolean {
  * @returns Promise resolving to a Buffer containing stream data.
  */
 async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
-  return new Promise<Buffer>((resolve, reject) => {
-    const chunks: Uint8Array[] = [];
-    stream.on('data', (chunk: Uint8Array) => chunks.push(chunk));
-    stream.on('end', () => resolve(Buffer.concat(chunks)));
-    stream.on('error', reject);
-  });
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of stream) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+  }
+  return Buffer.concat(chunks);
 }
 
 /**
- * Convert a Blob to an ArrayBuffer.
+ * Convert a Blob to a Buffer.
  * @param blob Blob to convert.
- * @returns Promise resolving to an ArrayBuffer containing blob data.
+ * @returns Promise resolving to an Buffer containing blob data.
  */
-async function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
-  return new Promise<ArrayBuffer>((resolve, reject) => {
+async function blobToBuffer(blob: Blob): Promise<Buffer> {
+  const arrayBuffer = new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = () => {
       if (reader.result instanceof ArrayBuffer) {
@@ -430,4 +425,5 @@ async function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
     reader.onerror = reject;
     reader.readAsArrayBuffer(blob);
   });
+  return Buffer.from(await arrayBuffer);
 }
