@@ -1,5 +1,6 @@
 import {
   Schema,
+  SchemaContextCreator,
   SchemaMappedType,
   SchemaType,
   SchemaValidationError,
@@ -19,12 +20,10 @@ export function discriminatedObject<
   defaultDiscriminator: keyof TDiscrimMap,
   xmlOptions?: ObjectXmlOptions
 ): Schema<any, any> {
-  const allSchemas = Object.values(discriminatorMap).reverse();
-  const selectSchema = (
+  const selectSchemaWithDisc = (
     value: unknown,
     discriminatorProp: string | TDiscrimProp | TDiscrimMappedProp,
-    checker: (schema: TSchema) => SchemaValidationError[],
-    isAttr: boolean = false
+    isAttr: boolean
   ) => {
     if (
       typeof value === 'object' &&
@@ -46,13 +45,46 @@ export function discriminatedObject<
         return discriminatorMap[discriminatorValue];
       }
     }
+    return undefined;
+  };
+  const allSchemas = Object.values(discriminatorMap).reverse();
+  const selectSchema = (
+    value: unknown,
+    discriminatorProp: string | TDiscrimProp | TDiscrimMappedProp,
+    checker: (schema: TSchema) => SchemaValidationError[],
+    isAttr: boolean = false
+  ) => {
+    const schema = selectSchemaWithDisc(value, discriminatorProp, isAttr);
+    if (typeof schema !== 'undefined') {
+      return schema;
+    }
+    // Try checking with discriminator matching
     for (const key in allSchemas) {
       if (checker(allSchemas[key]).length === 0) {
         return allSchemas[key];
       }
     }
+    // Fallback to default schema
     return discriminatorMap[defaultDiscriminator];
   };
+
+  const mapJsonSchema = (value: unknown, ctxt: SchemaContextCreator) =>
+    selectSchema(value, discriminatorPropName, (schema) =>
+      schema.validateBeforeMap(value, ctxt)
+    );
+
+  const mapXmlSchema = (value: unknown, ctxt: SchemaContextCreator) =>
+    selectSchema(
+      value,
+      xmlOptions?.xmlName ?? discriminatorPropName,
+      (schema) => schema.validateBeforeMapXml(value, ctxt),
+      xmlOptions?.isAttr
+    );
+
+  const unmapSchema = (value: unknown, ctxt: SchemaContextCreator) =>
+    selectSchema(value, discriminatorMappedPropName, (schema) =>
+      schema.validateBeforeUnmap(value, ctxt)
+    );
 
   return {
     type: () =>
@@ -61,40 +93,16 @@ export function discriminatedObject<
       )
         .map(([_, v]) => v.type)
         .join(',')}]>`,
-    map: (value, ctxt) =>
-      selectSchema(value, discriminatorPropName, (schema) =>
-        schema.validateBeforeMap(value, ctxt)
-      ).map(value, ctxt),
-    unmap: (value, ctxt) =>
-      selectSchema(value, discriminatorMappedPropName, (schema) =>
-        schema.validateBeforeUnmap(value, ctxt)
-      ).unmap(value, ctxt),
+    map: (value, ctxt) => mapJsonSchema(value, ctxt).map(value, ctxt),
+    unmap: (value, ctxt) => unmapSchema(value, ctxt).unmap(value, ctxt),
     validateBeforeMap: (value, ctxt) =>
-      selectSchema(value, discriminatorPropName, (schema) =>
-        schema.validateBeforeMap(value, ctxt)
-      ).validateBeforeMap(value, ctxt),
+      mapJsonSchema(value, ctxt).validateBeforeMap(value, ctxt),
     validateBeforeUnmap: (value, ctxt) =>
-      selectSchema(value, discriminatorMappedPropName, (schema) =>
-        schema.validateBeforeUnmap(value, ctxt)
-      ).validateBeforeUnmap(value, ctxt),
-    mapXml: (value, ctxt) =>
-      selectSchema(
-        value,
-        xmlOptions?.xmlName ?? discriminatorPropName,
-        (schema) => schema.validateBeforeMapXml(value, ctxt),
-        xmlOptions?.isAttr
-      ).mapXml(value, ctxt),
-    unmapXml: (value, ctxt) =>
-      selectSchema(value, discriminatorMappedPropName, (schema) =>
-        schema.validateBeforeUnmap(value, ctxt)
-      ).unmapXml(value, ctxt),
+      unmapSchema(value, ctxt).validateBeforeUnmap(value, ctxt),
+    mapXml: (value, ctxt) => mapXmlSchema(value, ctxt).mapXml(value, ctxt),
+    unmapXml: (value, ctxt) => unmapSchema(value, ctxt).unmapXml(value, ctxt),
     validateBeforeMapXml: (value, ctxt) =>
-      selectSchema(
-        value,
-        xmlOptions?.xmlName ?? discriminatorPropName,
-        (schema) => schema.validateBeforeMapXml(value, ctxt),
-        xmlOptions?.isAttr
-      ).validateBeforeMapXml(value, ctxt),
+      mapXmlSchema(value, ctxt).validateBeforeMapXml(value, ctxt),
   };
 }
 
