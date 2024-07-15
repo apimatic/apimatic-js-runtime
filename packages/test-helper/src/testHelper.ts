@@ -1,16 +1,14 @@
 import { HttpClientInterface } from '@apimatic/core-interfaces';
+import { Readable } from 'stream';
 
 /**
  * Get streaming data from a given URL.
  * @param client Instance of HttpClient to be used.
  * @param url URL from which to create the readable stream.
- * @returns Readable stream or Blob of data fetched from the URL.
+ * @returns Stream of data fetched from the URL.
  * @throws Error if unable to retrieve data from the URL.
  */
-export async function getStreamData(
-  client: HttpClientInterface,
-  url: string
-): Promise<NodeJS.ReadableStream | Blob> {
+export async function getStreamData(client: HttpClientInterface, url: string) {
   const res = await client({
     method: 'GET',
     url,
@@ -19,7 +17,7 @@ export async function getStreamData(
   if (res.statusCode !== 200 || typeof res.body === 'string') {
     throw new Error(`Unable to retrieve streaming data from ${url}`);
   }
-  return res.body;
+  return res.body as any;
 }
 
 /**
@@ -37,13 +35,14 @@ export async function areStreamsMatching(
   }
   try {
     const expectedBuffer =
-      expected instanceof Blob
-        ? await blobToBuffer(expected)
-        : await streamToBuffer(expected);
+      expected instanceof Readable
+        ? await streamToBuffer(expected)
+        : await blobToBuffer(expected as Blob);
+
     const actualBuffer =
-      actual instanceof Blob
-        ? await blobToBuffer(actual)
-        : await streamToBuffer(actual);
+      actual instanceof Readable
+        ? await streamToBuffer(actual)
+        : await blobToBuffer(actual as Blob);
 
     return Buffer.compare(actualBuffer, expectedBuffer) === 0;
   } catch (error) {
