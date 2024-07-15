@@ -1,4 +1,9 @@
-import { Schema, SchemaMappedType, SchemaType } from '../schema';
+import {
+  Schema,
+  SchemaMappedType,
+  SchemaType,
+  SchemaValidationError,
+} from '../schema';
 import { objectEntries } from '../utils';
 import { ObjectXmlOptions } from './object';
 
@@ -14,9 +19,11 @@ export function discriminatedObject<
   defaultDiscriminator: keyof TDiscrimMap,
   xmlOptions?: ObjectXmlOptions
 ): Schema<any, any> {
-  const schemaSelector = (
+  const allSchemas = Object.values(discriminatorMap).reverse();
+  const selectSchema = (
     value: unknown,
     discriminatorProp: string | TDiscrimProp | TDiscrimMappedProp,
+    checker: (schema: TSchema) => SchemaValidationError[],
     isAttr: boolean = false
   ) => {
     if (
@@ -39,41 +46,53 @@ export function discriminatedObject<
         return discriminatorMap[discriminatorValue];
       }
     }
+    for (const key in allSchemas) {
+      if (checker(allSchemas[key]).length === 0) {
+        return allSchemas[key];
+      }
+    }
     return discriminatorMap[defaultDiscriminator];
   };
+
   return {
     type: () =>
-      `DiscriminatedUnion<${discriminatorPropName},[${objectEntries(
+      `DiscriminatedUnion<${discriminatorPropName as string},[${objectEntries(
         discriminatorMap
       )
         .map(([_, v]) => v.type)
         .join(',')}]>`,
     map: (value, ctxt) =>
-      schemaSelector(value, discriminatorPropName).map(value, ctxt),
+      selectSchema(value, discriminatorPropName, (schema) =>
+        schema.validateBeforeMap(value, ctxt)
+      ).map(value, ctxt),
     unmap: (value, ctxt) =>
-      schemaSelector(value, discriminatorMappedPropName).unmap(value, ctxt),
+      selectSchema(value, discriminatorMappedPropName, (schema) =>
+        schema.validateBeforeUnmap(value, ctxt)
+      ).unmap(value, ctxt),
     validateBeforeMap: (value, ctxt) =>
-      schemaSelector(value, discriminatorPropName).validateBeforeMap(
-        value,
-        ctxt
-      ),
+      selectSchema(value, discriminatorPropName, (schema) =>
+        schema.validateBeforeMap(value, ctxt)
+      ).validateBeforeMap(value, ctxt),
     validateBeforeUnmap: (value, ctxt) =>
-      schemaSelector(value, discriminatorMappedPropName).validateBeforeUnmap(
-        value,
-        ctxt
-      ),
+      selectSchema(value, discriminatorMappedPropName, (schema) =>
+        schema.validateBeforeUnmap(value, ctxt)
+      ).validateBeforeUnmap(value, ctxt),
     mapXml: (value, ctxt) =>
-      schemaSelector(
+      selectSchema(
         value,
         xmlOptions?.xmlName ?? discriminatorPropName,
+        (schema) => schema.validateBeforeMapXml(value, ctxt),
         xmlOptions?.isAttr
       ).mapXml(value, ctxt),
     unmapXml: (value, ctxt) =>
-      schemaSelector(value, discriminatorMappedPropName).unmapXml(value, ctxt),
+      selectSchema(value, discriminatorMappedPropName, (schema) =>
+        schema.validateBeforeUnmap(value, ctxt)
+      ).unmapXml(value, ctxt),
     validateBeforeMapXml: (value, ctxt) =>
-      schemaSelector(
+      selectSchema(
         value,
         xmlOptions?.xmlName ?? discriminatorPropName,
+        (schema) => schema.validateBeforeMapXml(value, ctxt),
         xmlOptions?.isAttr
       ).validateBeforeMapXml(value, ctxt),
   };
