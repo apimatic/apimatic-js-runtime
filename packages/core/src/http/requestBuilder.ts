@@ -9,16 +9,17 @@ import {
   HttpRequest,
   HttpRequestMultipartFormBody,
   HttpRequestUrlEncodedFormBody,
-  HttpResponse,
   HttpInterceptorInterface,
   RequestOptions,
   RetryConfiguration,
   ApiLoggerInterface,
+  HttpClientInterface,
 } from '../coreInterfaces';
 import { ArgumentsValidationError } from '../errors/argumentsValidationError';
 import { ResponseValidationError } from '../errors/responseValidationError';
 import {
   Schema,
+  SchemaValidationError,
   validateAndMap,
   validateAndMapXml,
   validateAndUnmapXml,
@@ -81,11 +82,6 @@ export function skipEncode<T extends PathTemplatePrimitiveTypes>(
   return new SkipEncode(value);
 }
 
-export type HttpClientInterface = (
-  request: HttpRequest,
-  requestOptions?: RequestOptions
-) => Promise<HttpResponse>;
-
 export type ApiErrorConstructor = new (
   response: HttpContext,
   message: string
@@ -120,7 +116,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   headers(headersToMerge: Record<string, string>): void;
   query(
     name: string,
-    value: QueryValue,
+    value: QueryValue | Record<string, QueryValue>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
   query(
@@ -135,7 +131,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
-  text(body: string): void;
+  text(body: string | number | bigint | boolean | null | undefined): void;
   json(data: unknown): void;
   requestRetryOption(option: RequestRetryOption): void;
   xml<T>(
@@ -289,7 +285,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   public query(
     name: string,
-    value: QueryValue,
+    value: QueryValue | Record<string, QueryValue>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
   public query(
@@ -317,8 +313,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._query.push(queryString);
     }
   }
-  public text(body: string): void {
-    this._body = body;
+  public text(
+    body: string | number | bigint | boolean | null | undefined
+  ): void {
+    this._body = body?.toString() ?? undefined;
     this._setContentTypeIfNotSet(TEXT_CONTENT_TYPE);
   }
   public json(data: unknown): void {
@@ -499,41 +497,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return { ...request, headers };
     });
     const result = await this.call(requestOptions);
-    if (typeof result.body !== 'string') {
-      throw new Error(
-        'Could not parse body as JSON. The response body is not a string.'
-      );
-    }
-    if (result.body.trim() === '') {
-      // Try mapping the missing body as null
-      return this.tryMappingAsNull<T>(schema, result);
-    }
-    let parsed: unknown;
-    try {
-      parsed = JSON.parse(result.body);
-    } catch (error) {
-      throw new Error(`Could not parse body as JSON.\n\n${error.message}`);
-    }
-    const mappingResult = validateAndMap(parsed, schema);
-    if (mappingResult.errors) {
-      throw new ResponseValidationError(result, mappingResult.errors);
-    }
-    return { ...result, result: mappingResult.result };
-  }
 
-  private tryMappingAsNull<T>(
-    schema: Schema<T, any>,
-    result: ApiResponse<void>
-  ) {
-    const nullMappingResult = validateAndMap(null, schema);
-    if (nullMappingResult.errors) {
-      throw new Error(
-        'Could not parse body as JSON. The response body is empty.'
-      );
-    }
-    return { ...result, result: nullMappingResult.result };
+    return { ...result, result: parseJsonResult(schema, result) };
   }
-
   public async callAsXml<T>(
     rootName: string,
     schema: Schema<T, any>,
@@ -593,7 +559,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return context;
     });
   }
-
   private _addApiLoggerInterceptors(): void {
     if (this._apiLogger) {
       const apiLogger = this._apiLogger;
@@ -606,14 +571,12 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       });
     }
   }
-
   private _addAuthentication() {
     this.intercept((...args) => {
       const handler = this._authenticationProvider(this._authParams);
       return handler(...args);
     });
   }
-
   private _addRetryInterceptor() {
     this.intercept(async (request, options, next) => {
       let context: HttpContext | undefined;
@@ -659,7 +622,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return { request, response: context.response };
     });
   }
-
   private _addErrorHandlingInterceptor() {
     this.interceptResponse((context) => {
       const { response } = context;
@@ -719,4 +681,40 @@ function mergePath(left: string, right?: string): string {
   } else {
     return `${left}/${right}`;
   }
+}
+function parseJsonResult<T>(schema: Schema<T, any>, res: ApiResponse<void>): T {
+  if (typeof res.body !== 'string') {
+    throw new Error(
+      'Could not parse body as JSON. The response body is not a string.'
+    );
+  }
+  if (res.body.trim() === '') {
+    const resEmptyErr = new Error(
+      'Could not parse body as JSON. The response body is empty.'
+    );
+    return validateJson(schema, null, (_) => resEmptyErr);
+  }
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(res.body);
+  } catch (error) {
+    const resUnParseErr = new Error(
+      `Could not parse body as JSON.\n\n${error.message}`
+    );
+    return validateJson(schema, res.body, (_) => resUnParseErr);
+  }
+  const resInvalidErr = (errors: SchemaValidationError[]) =>
+    new ResponseValidationError(res, errors);
+  return validateJson(schema, parsed, (errors) => resInvalidErr(errors));
+}
+function validateJson<T>(
+  schema: Schema<T, any>,
+  value: any,
+  errorCreater: (errors: SchemaValidationError[]) => Error
+): T {
+  const mappingResult = validateAndMap(value, schema);
+  if (mappingResult.errors) {
+    throw errorCreater(mappingResult.errors);
+  }
+  return mappingResult.result;
 }
