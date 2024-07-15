@@ -33,6 +33,9 @@
     },
     {
       "path": "./packages/oauth-adapters"
+    },
+    {
+      "path": "./packages/test-helper"
     }
   ]
 }
