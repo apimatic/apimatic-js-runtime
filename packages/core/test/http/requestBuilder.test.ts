@@ -1,11 +1,11 @@
 import {
-  HttpClientInterface,
   RequestBuilder,
   createRequestBuilderFactory,
   skipEncode,
 } from '../../src/http/requestBuilder';
 import {
   AuthenticatorInterface,
+  HttpClientInterface,
   HttpMethod,
   HttpRequest,
   HttpResponse,
