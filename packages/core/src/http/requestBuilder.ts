@@ -674,9 +674,9 @@ function mergePath(left: string, right?: string): string {
     return left;
   }
   // remove all occurances of `/` (if any) from the end of left path
-  left = left.replace(new RegExp(`/+$`), '');
+  left = left.replace('/', ' ').trimEnd().replace(' ', '/');
   // remove all occurances of `/` (if any) from the start of right sub-path
-  right = right.replace(new RegExp(`^/+`), '');
+  right = right.replace('/', ' ').trimStart().replace(' ', '/');
 
   return `${left}/${right}`;
 }
