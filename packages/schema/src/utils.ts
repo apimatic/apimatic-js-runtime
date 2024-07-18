@@ -161,9 +161,16 @@ export function isOptional(type: string, value: unknown): boolean {
 }
 
 export function isOptionalNullable(type: string, value: unknown): boolean {
+  return isOptionalAndNullableType(type) && isNullOrMissing(value);
+}
+
+export function isOptionalAndNullableType(type: string): boolean {
   return (
-    (type.startsWith('Optional<Nullable<') ||
-      type.startsWith('Nullable<Optional<')) &&
-    isNullOrMissing(value)
+    type.startsWith('Optional<Nullable<') ||
+    type.startsWith('Nullable<Optional<')
   );
+}
+
+export function isOptionalOrNullableType(type: string): boolean {
+  return type.startsWith('Optional<') || type.startsWith('Nullable<');
 }

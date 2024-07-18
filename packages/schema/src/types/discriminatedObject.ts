@@ -23,7 +23,7 @@ export function discriminatedObject<
   const selectSchemaWithDisc = (
     value: unknown,
     discriminatorProp: string | TDiscrimProp | TDiscrimMappedProp,
-    isAttr: boolean
+    isAttr?: boolean
   ) => {
     if (
       typeof value === 'object' &&
@@ -51,8 +51,8 @@ export function discriminatedObject<
   const selectSchema = (
     value: unknown,
     discriminatorProp: string | TDiscrimProp | TDiscrimMappedProp,
-    checker: (schema: TSchema) => SchemaValidationError[],
-    isAttr: boolean = false
+    validater: (schema: TSchema) => SchemaValidationError[],
+    isAttr?: boolean
   ) => {
     const schema = selectSchemaWithDisc(value, discriminatorProp, isAttr);
     if (typeof schema !== 'undefined') {
@@ -60,7 +60,7 @@ export function discriminatedObject<
     }
     // Try checking with discriminator matching
     for (const key in allSchemas) {
-      if (checker(allSchemas[key]).length === 0) {
+      if (validater(allSchemas[key]).length === 0) {
         return allSchemas[key];
       }
     }
