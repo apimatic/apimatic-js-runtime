@@ -673,15 +673,14 @@ function mergePath(left: string, right?: string): string {
   if (!right || right === '') {
     return left;
   }
+  // remove all occurances of `/` (if any) from the end of left path
+  left = left.replace('/', ' ').trimEnd().replace(' ', '/');
+  // remove all occurances of `/` (if any) from the start of right sub-path
+  right = right.replace('/', ' ').trimStart().replace(' ', '/');
 
-  if (left[left.length - 1] === '/' && right[0] === '/') {
-    return left + right.substr(1);
-  } else if (left[left.length - 1] === '/' || right[0] === '/') {
-    return left + right;
-  } else {
-    return `${left}/${right}`;
-  }
+  return `${left}/${right}`;
 }
+
 function parseJsonResult<T>(schema: Schema<T, any>, res: ApiResponse<void>): T {
   if (typeof res.body !== 'string') {
     throw new Error(
@@ -707,6 +706,7 @@ function parseJsonResult<T>(schema: Schema<T, any>, res: ApiResponse<void>): T {
     new ResponseValidationError(res, errors);
   return validateJson(schema, parsed, (errors) => resInvalidErr(errors));
 }
+
 function validateJson<T>(
   schema: Schema<T, any>,
   value: any,
