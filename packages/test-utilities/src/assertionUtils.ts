@@ -24,6 +24,29 @@ export interface ExpectOptions {
 }
 
 /**
+ * Compare actual headers with expected headers, ignoring case sensitivity.
+ * @param actualHeaders Actual headers received from the request.
+ * @param expectedHeaders Expected headers with values to match against actual headers.
+ */
+export function expectHeadersToMatch(
+  actualHeaders: Record<string, string>,
+  expectedHeaders: Record<string, Array<string | boolean>>
+): void {
+  const lowerCasedHeaders = Object.keys(actualHeaders).reduce((acc, key) => {
+    acc[key.toLowerCase()] = actualHeaders[key];
+    return acc;
+  }, {} as Record<string, string>);
+
+  Object.entries(expectedHeaders).forEach(([expectedKey, expectedValue]) => {
+    const lowerCasedKey = expectedKey.toLowerCase();
+    expect(lowerCasedHeaders).toHaveProperty(lowerCasedKey);
+    if (expectedValue[1]) {
+      expect(lowerCasedHeaders[lowerCasedKey]).toBe(expectedValue[0]);
+    }
+  });
+}
+
+/**
  * Check whether the expected value is matching with the actual value.
  * @param expected Expected value.
  * @param actual Actual value to be matched with expected value.
@@ -63,43 +86,35 @@ function checkIfMatching(
   checkValues: boolean
 ): void {
   if (Array.isArray(left) && Array.isArray(right)) {
-    isOrdered
-      ? // Check if right array is directly equal to a partial left array.
-        expect(right).toEqual(expect.objectContaining(left))
-      : // Or check if right array contains all elements from left array.
-        left.forEach((leftVal) => expect(right).toContainEqual(leftVal));
+    checkArrays(left, right, isOrdered);
   } else if (typeof left === 'object' && typeof right === 'object') {
-    const rightObjKeys = Object.keys(right);
-    Object.keys(left).forEach((key) => {
-      // Check if right object keys contains this key from left object.
-      expect(rightObjKeys).toContainEqual(key);
-      // Recursive checking for each element in left and right object.
-      checkIfMatching(left[key], right[key], isOrdered, checkValues);
-    });
+    checkObjects(left, right, isOrdered, checkValues);
   } else if (checkValues) {
     expect(left).toEqual(right);
   }
 }
 
-/**
- * Compare actual headers with expected headers, ignoring case sensitivity.
- * @param actualHeaders Actual headers received from the request.
- * @param expectedHeaders Expected headers with values to match against actual headers.
- */
-export function expectHeadersToMatch(
-  actualHeaders: Record<string, string>,
-  expectedHeaders: Record<string, Array<string | boolean>>
-): void {
-  const lowerCasedHeaders = Object.keys(actualHeaders).reduce((acc, key) => {
-    acc[key.toLowerCase()] = actualHeaders[key];
-    return acc;
-  }, {} as Record<string, string>);
+function checkArrays(left: any[], right: any[], isOrdered: boolean) {
+  if (isOrdered) {
+    // Check if right array is directly equal to a partial left array.
+    expect(right).toEqual(expect.objectContaining(left));
+    return;
+  }
+  // Or check if right array contains all elements from left array.
+  left.forEach((leftVal) => expect(right).toContainEqual(leftVal));
+}
 
-  Object.entries(expectedHeaders).forEach(([expectedKey, expectedValue]) => {
-    const lowerCasedKey = expectedKey.toLowerCase();
-    expect(lowerCasedHeaders).toHaveProperty(lowerCasedKey);
-    if (expectedValue[1]) {
-      expect(lowerCasedHeaders[lowerCasedKey]).toBe(expectedValue[0]);
-    }
+function checkObjects(
+  left: {},
+  right: {},
+  isOrdered: boolean,
+  checkValues: boolean
+) {
+  const rightObjKeys = Object.keys(right);
+  Object.keys(left).forEach((key) => {
+    // Check if right object keys contains this key from left object.
+    expect(rightObjKeys).toContainEqual(key);
+    // Recursive checking for each element in left and right object.
+    checkIfMatching(left[key], right[key], isOrdered, checkValues);
   });
 }
