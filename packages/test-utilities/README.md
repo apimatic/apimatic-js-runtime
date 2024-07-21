@@ -27,10 +27,10 @@ To support multiple environments, we export various builds:
 
 | Environment | Usage |
 | --- | --- |
-| Common.js | Import like this: `require('@apimatic/test-helper')`. |
-| ES Module | Import like this: `import { /* your imports */ } from '@apimatic/test-helper'`. |
-| Browsers | *Use script: `https://unpkg.com/@apimatic/test-helper@VERSION/umd/schema.js` |
-| Modern Browsers (supports ESM and uses modern JS) | *Use script: `https://unpkg.com/@apimatic/test-helper@VERSION/umd/schema.esm.js` |
+| Common.js | Import like this: `require('@apimatic/test-utilities')`. |
+| ES Module | Import like this: `import { /* your imports */ } from '@apimatic/test-utilities'`. |
+| Browsers | *Use script: `https://unpkg.com/@apimatic/test-utilities@VERSION/umd/schema.js` |
+| Modern Browsers (supports ESM and uses modern JS) | *Use script: `https://unpkg.com/@apimatic/test-utilities@VERSION/umd/schema.esm.js` |
 
 _* Don't forget to replace VERSION with the version number._
 
