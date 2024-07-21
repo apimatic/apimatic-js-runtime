@@ -1,7 +1,6 @@
 import typescript from 'rollup-plugin-typescript2';
-const packageJson = require('./package.json');
 
-const createTsPlugin = ({ declaration = true, target } = {}) =>
+const getTsPlugin = ({ declaration = true, target } = {}) =>
   typescript({
     clean: true,
     tsconfigOverride: {
@@ -12,16 +11,16 @@ const createTsPlugin = ({ declaration = true, target } = {}) =>
     }
   });
 
-const createNpmConfig = ({ input, output, external }) => ({
+const getNpmConfig = ({ input, output, external }) => ({
   input,
   output,
   preserveModules: true,
-  plugins: [createTsPlugin({ declaration: true })],
+  plugins: [getTsPlugin({ declaration: true })],
   external
 });
 
 export default [
-  createNpmConfig({
+  getNpmConfig({
     input: 'src/index.ts',
     output: [
       {
