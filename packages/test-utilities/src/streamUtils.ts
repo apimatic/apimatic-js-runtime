@@ -32,21 +32,17 @@ export async function expectStreamsMatching(
   if (typeof actual === 'undefined') {
     throw new Error(`Actual value's type can not be undefined`);
   }
-  try {
-    const expectedBuffer =
-      expected instanceof Readable
-        ? await streamToBuffer(expected)
-        : await blobToBuffer(expected as Blob);
+  const expectedBuffer =
+    expected instanceof Readable
+      ? await streamToBuffer(expected)
+      : await blobToBuffer(expected as Blob);
 
-    const actualBuffer =
-      actual instanceof Readable
-        ? await streamToBuffer(actual)
-        : await blobToBuffer(actual as Blob);
+  const actualBuffer =
+    actual instanceof Readable
+      ? await streamToBuffer(actual)
+      : await blobToBuffer(actual as Blob);
 
-    expect(actualBuffer).toEqual(expectedBuffer);
-  } catch (error) {
-    throw error;
-  }
+  expect(actualBuffer).toEqual(expectedBuffer);
 }
 
 /**
