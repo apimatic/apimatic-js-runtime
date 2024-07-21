@@ -1,5 +1,3 @@
-import 'jest-extended';
-
 /**
  * Interface defining options for subset comparison functions.
  */
@@ -46,7 +44,7 @@ export function expectMatchingWithOptions(
 
   checkIfMatching(expected, actual, isOrdered, checkValues);
   // when extra values are not allowed in actual array or object,
-  // check by inverting actual and expected values
+  // check by inverting actual and expected values.
   allowExtra || checkIfMatching(actual, expected, isOrdered, checkValues);
 }
 
@@ -66,17 +64,18 @@ function checkIfMatching(
 ): void {
   if (Array.isArray(left) && Array.isArray(right)) {
     isOrdered
-      ? // Use toEqual for ordered comparison
+      ? // Check if right array is directly equal to a partial left array.
         expect(right).toEqual(expect.objectContaining(left))
-      : // Use toIncludeAllMembers for unordered comparison
-        expect(right).toIncludeAllMembers(left);
+      : // Or check if right array contains all elements from left array.
+        left.forEach((leftVal) => expect(right).toContainEqual(leftVal));
   } else if (typeof left === 'object' && typeof right === 'object') {
-    // Check if right object contains all the keys from left object
-    expect(Object.keys(right)).toIncludeAllMembers(Object.keys(left));
-    Object.keys(left).every(
-      // Recursive checking for each element in left and right object
-      (key) => checkIfMatching(left[key], right[key], isOrdered, checkValues)
-    );
+    const rightObjKeys = Object.keys(right);
+    Object.keys(left).forEach((key) => {
+      // Check if right object keys contains this key from left object.
+      expect(rightObjKeys).toContainEqual(key);
+      // Recursive checking for each element in left and right object.
+      checkIfMatching(left[key], right[key], isOrdered, checkValues);
+    });
   } else if (checkValues) {
     expect(left).toEqual(right);
   }
