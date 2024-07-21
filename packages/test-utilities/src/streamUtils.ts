@@ -21,17 +21,16 @@ export async function getStreamData(client: HttpClientInterface, url: string) {
 }
 
 /**
- * Check if input matches the contents of a file by comparing stream data or Blob data.
+ * Check if input data matches the expected stream data or Blob data.
  * @param expected Expected data (NodeJS ReadableStream or Blob).
  * @param actual Input data to compare against file contents (NodeJS ReadableStream or Blob).
- * @returns Promise resolving to true if input matches file contents, otherwise false.
  */
-export async function areStreamsMatching(
+export async function expectStreamsMatching(
   expected: NodeJS.ReadableStream | Blob,
   actual: NodeJS.ReadableStream | Blob | undefined
-): Promise<boolean> {
+): Promise<void> {
   if (typeof actual === 'undefined') {
-    return false;
+    throw new Error(`Actual value's type can not be undefined`);
   }
   try {
     const expectedBuffer =
@@ -44,9 +43,9 @@ export async function areStreamsMatching(
         ? await streamToBuffer(actual)
         : await blobToBuffer(actual as Blob);
 
-    return Buffer.compare(actualBuffer, expectedBuffer) === 0;
+    expect(actualBuffer).toEqual(expectedBuffer);
   } catch (error) {
-    return false;
+    throw error;
   }
 }
 
@@ -71,13 +70,7 @@ async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
 async function blobToBuffer(blob: Blob): Promise<Buffer> {
   const arrayBuffer = new Promise<ArrayBuffer>((resolve, reject) => {
     const reader = new FileReader();
-    reader.onload = () => {
-      if (reader.result instanceof ArrayBuffer) {
-        resolve(reader.result);
-      } else {
-        reject(new Error('Failed to read Blob as ArrayBuffer.'));
-      }
-    };
+    reader.onload = () => resolve(reader.result as ArrayBuffer);
     reader.onerror = reject;
     reader.readAsArrayBuffer(blob);
   });

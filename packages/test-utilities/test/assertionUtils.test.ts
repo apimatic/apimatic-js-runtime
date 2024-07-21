@@ -5,6 +5,36 @@ import {
 } from '../src';
 
 describe('expectMatchingWithOptions', () => {
+  it('should fail by matching array and object', () => {
+    const exp = {
+      name: 'lisinopril',
+    };
+    const actl = ['lisinopril'];
+    const opts: ExpectOptions = {};
+
+    expect(() => expectMatchingWithOptions(exp, actl, opts)).toThrow();
+  });
+
+  it('should fail by matching object and undefined', () => {
+    const exp = {
+      name: 'lisinopril',
+    };
+    const actl = undefined;
+    const opts: ExpectOptions = {};
+
+    expect(() => expectMatchingWithOptions(exp, actl, opts)).toThrow();
+  });
+
+  it('should fail by matching object and a different type', () => {
+    const exp = {
+      name: 'lisinopril',
+    };
+    const actl = false;
+    const opts: ExpectOptions = {};
+
+    expect(() => expectMatchingWithOptions(exp, actl, opts)).toThrow();
+  });
+
   it('object: should fail by missing keys', () => {
     const exp = {
       name: 'lisinopril',
@@ -140,6 +170,38 @@ describe('expectMatchingWithOptions', () => {
     expect(() => expectMatchingWithOptions(exp, actl, opts)).toThrow();
   });
 
+  it('object: should pass with null values', () => {
+    const exp = {
+      name: null,
+    };
+    const actl = {
+      name: null,
+      side: 'side',
+    };
+    const opts: ExpectOptions = {
+      allowExtra: true,
+      checkValues: true,
+    };
+
+    expectMatchingWithOptions(exp, actl, opts);
+  });
+
+  it('object: should pass with undefined values', () => {
+    const exp = {
+      name: undefined,
+    };
+    const actl = {
+      name: undefined,
+      side: 'side',
+    };
+    const opts: ExpectOptions = {
+      allowExtra: true,
+      checkValues: true,
+    };
+
+    expectMatchingWithOptions(exp, actl, opts);
+  });
+
   it('array: should pass without allowing extra and without ordered values', () => {
     const exp = [1, 2, 3];
     const actl = [1, 3, 2];
@@ -234,6 +296,16 @@ describe('expectMatchingWithOptions', () => {
     const actl = [];
     const opts: ExpectOptions = {
       isOrdered: true,
+      allowExtra: true,
+    };
+
+    expectMatchingWithOptions(exp, actl, opts);
+  });
+
+  it('array: should pass comparing null and undefined', () => {
+    const exp = [null, undefined, '214'];
+    const actl = [null, '214', undefined, 3];
+    const opts: ExpectOptions = {
       allowExtra: true,
     };
 

@@ -57,7 +57,7 @@ export function expectMatchingWithOptions(
   actual?: any,
   options: ExpectOptions = {}
 ): void {
-  expect(typeof expected).toEqual(typeof actual);
+  expect(typeof actual).toEqual(typeof expected);
 
   const {
     isOrdered = false,
@@ -85,9 +85,13 @@ function checkIfMatching(
   isOrdered: boolean,
   checkValues: boolean
 ): void {
+  function isObject(value: any): value is object {
+    return value !== null && typeof value === 'object';
+  }
+
   if (Array.isArray(left) && Array.isArray(right)) {
     checkArrays(left, right, isOrdered);
-  } else if (typeof left === 'object' && typeof right === 'object') {
+  } else if (isObject(left) && isObject(right)) {
     checkObjects(left, right, isOrdered, checkValues);
   } else if (checkValues) {
     expect(left).toEqual(right);
@@ -105,8 +109,8 @@ function checkArrays(left: any[], right: any[], isOrdered: boolean) {
 }
 
 function checkObjects(
-  left: {},
-  right: {},
+  left: object,
+  right: object,
   isOrdered: boolean,
   checkValues: boolean
 ) {
