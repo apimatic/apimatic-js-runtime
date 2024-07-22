@@ -6,7 +6,7 @@ import {
 import { toBuffer, getStreamData } from '../src';
 import { Readable } from 'stream';
 
-describe('areStreamsMatching with getStreamData', () => {
+describe('Tests for getting and comparing stream or blob data as buffer', () => {
   let actualBlobBuffer: Buffer;
   let actualStreamBuffer: Buffer;
 
