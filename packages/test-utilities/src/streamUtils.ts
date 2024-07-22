@@ -8,41 +8,32 @@ import { Readable } from 'stream';
  * @returns Stream of data fetched from the URL.
  * @throws Error if unable to retrieve data from the URL.
  */
-export async function getStreamData(client: HttpClientInterface, url: string) {
-  const res = await client({
-    method: 'GET',
-    url,
-    responseType: 'stream',
-  });
+export async function getStreamData(
+  client: HttpClientInterface,
+  url: string
+): Promise<NodeJS.ReadableStream | Blob> {
+  const res = await client({ method: 'GET', url, responseType: 'stream' });
   if (res.statusCode !== 200 || typeof res.body === 'string') {
     throw new Error(`Unable to retrieve streaming data from ${url}`);
   }
-  return res.body as any;
+  return res.body;
 }
 
 /**
- * Check if input data matches the expected stream data or Blob data.
- * @param expected Expected data (NodeJS ReadableStream or Blob).
- * @param actual Input data to compare against file contents (NodeJS ReadableStream or Blob).
+ * Convert a NodeJS ReadableStream or Blob to a Buffer.
+ * @param input NodeJS ReadableStream or Blob to convert.
+ * @returns Promise resolving to a Buffer containing the input data.
  */
-export async function expectStreamsMatching(
-  expected: NodeJS.ReadableStream | Blob,
-  actual: NodeJS.ReadableStream | Blob | undefined
-): Promise<void> {
-  if (typeof actual === 'undefined') {
-    throw new Error(`Actual value's type can not be undefined`);
+export async function toBuffer(
+  input: NodeJS.ReadableStream | Blob | undefined
+): Promise<Buffer> {
+  if (typeof Blob !== 'undefined' && input instanceof Blob) {
+    return blobToBuffer(input);
   }
-  const expectedBuffer =
-    expected instanceof Readable
-      ? await streamToBuffer(expected)
-      : await blobToBuffer(expected as Blob);
-
-  const actualBuffer =
-    actual instanceof Readable
-      ? await streamToBuffer(actual)
-      : await blobToBuffer(actual as Blob);
-
-  expect(actualBuffer).toEqual(expectedBuffer);
+  if (typeof Readable !== 'undefined' && input instanceof Readable) {
+    return streamToBuffer(input);
+  }
+  throw new Error('Unsupported input type. Expected a Blob or ReadableStream.');
 }
 
 /**

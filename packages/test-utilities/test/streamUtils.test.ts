@@ -3,21 +3,19 @@ import {
   HttpRequest,
   HttpResponse,
 } from '@apimatic/core-interfaces';
-import { expectStreamsMatching, getStreamData } from '../src';
+import { toBuffer, getStreamData } from '../src';
 import { Readable } from 'stream';
 
 describe('areStreamsMatching with getStreamData', () => {
-  let actualBlob: Blob | NodeJS.ReadableStream | undefined;
-  let actualStream: Blob | NodeJS.ReadableStream | undefined;
+  let actualBlobBuffer: Buffer;
+  let actualStreamBuffer: Buffer;
 
   beforeEach(async () => {
-    actualBlob = await getStreamData(
-      mockHttpClientInterface,
-      'example/getBlob'
+    actualBlobBuffer = await toBuffer(
+      await getStreamData(mockHttpClientInterface, 'example/getBlob')
     );
-    actualStream = await getStreamData(
-      mockHttpClientInterface,
-      'example/getStream'
+    actualStreamBuffer = await toBuffer(
+      await getStreamData(mockHttpClientInterface, 'example/getStream')
     );
   });
 
@@ -27,61 +25,57 @@ describe('areStreamsMatching with getStreamData', () => {
     ).rejects.toThrow('Unable to retrieve streaming data from invalid/stream');
   });
 
-  it('should pass with same blob data', async () => {
-    const expected = new Blob(['This is example data'], {
-      type: 'text/plain;charset=utf-8',
-    });
-
-    await expectStreamsMatching(expected, actualBlob);
-    await expectStreamsMatching(expected, actualStream);
+  it('should throw error for invalid buffer conversion', async () => {
+    await expect(toBuffer(undefined)).rejects.toThrow(
+      'Unsupported input type. Expected a Blob or ReadableStream.'
+    );
   });
 
-  it('should pass with same stream data', async () => {
-    await expectStreamsMatching(
-      Readable.from('This is example data'),
-      actualBlob
+  it('should pass with same blob data', async () => {
+    const expected = await toBuffer(
+      new Blob(['This is example data'], {
+        type: 'text/plain;charset=utf-8',
+      })
     );
-    await expectStreamsMatching(
-      Readable.from('This is example data'),
-      actualStream
-    );
+
+    expect(actualBlobBuffer).toEqual(expected);
+    expect(actualStreamBuffer).toEqual(expected);
   });
 
   it('should pass with same blob data with different types', async () => {
-    const expected = new Blob(['This is example data'], {
-      type: 'text/plain',
-    });
+    const expected = await toBuffer(
+      new Blob(['This is example data'], {
+        type: 'text/plain',
+      })
+    );
 
-    await expectStreamsMatching(expected, actualBlob);
-    await expectStreamsMatching(expected, actualStream);
+    expect(actualBlobBuffer).toEqual(expected);
+    expect(actualStreamBuffer).toEqual(expected);
   });
 
   it('should fail with different blob data', async () => {
-    const expected = new Blob(['different data'], {
-      type: 'text/plain;charset=utf-8',
-    });
+    const expected = await toBuffer(
+      new Blob(['different data'], {
+        type: 'text/plain;charset=utf-8',
+      })
+    );
 
-    await expect(expectStreamsMatching(expected, actualBlob)).rejects.toThrow();
-    await expect(
-      expectStreamsMatching(expected, actualStream)
-    ).rejects.toThrow();
+    expect(actualBlobBuffer).not.toEqual(expected);
+    expect(actualStreamBuffer).not.toEqual(expected);
+  });
+
+  it('should pass with same stream data', async () => {
+    const expected = await toBuffer(Readable.from('This is example data'));
+
+    expect(actualBlobBuffer).toEqual(expected);
+    expect(actualStreamBuffer).toEqual(expected);
   });
 
   it('should fail with different stream data', async () => {
-    await expect(
-      expectStreamsMatching(Readable.from('different data'), actualBlob)
-    ).rejects.toThrow();
-    await expect(
-      expectStreamsMatching(Readable.from('different data'), actualStream)
-    ).rejects.toThrow();
-  });
+    const expected = await toBuffer(Readable.from('different data'));
 
-  it('should fail when actual value is undefined', async () => {
-    const expected = new Blob(['different data'], {
-      type: 'text/plain;charset=utf-8',
-    });
-
-    await expect(expectStreamsMatching(expected, undefined)).rejects.toThrow();
+    expect(actualBlobBuffer).not.toEqual(expected);
+    expect(actualStreamBuffer).not.toEqual(expected);
   });
 });
 

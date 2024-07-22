@@ -7,7 +7,7 @@ Provides assertion utilities for testing api calls. It can be plugged in as dev 
 The exported helper functions include:
 
 1. **getStreamData**: Get streaming data from a given URL.
-2. **expectStreamsMatching**: Check if input data matches the expected stream data or Blob data.
+2. **toBuffer**: Promise to create a Buffer instance from a NodeJS.ReadableStream or Blob.
 3. **expectHeadersToMatch**: Compare actual headers with expected headers, ignoring case sensitivity.
 4. **expectMatchingWithOptions**: Check whether the expected value is matching with the actual value, with the given comparison options.
 
