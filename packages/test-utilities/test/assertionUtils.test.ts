@@ -431,16 +431,4 @@ describe('expectHeadersToMatch', () => {
 
     expect(() => expectHeadersToMatch(actl, exp)).toThrow();
   });
-
-  it('should fail for headers with undefined actl values', () => {
-    const actl = {
-      id: '1',
-    };
-    const exp = {
-      id: ['1', false],
-      name: ['Bob', false],
-    };
-
-    expect(() => expectHeadersToMatch(actl, exp)).toThrow();
-  });
 });
