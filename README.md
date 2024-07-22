@@ -22,6 +22,7 @@ They provide common runtime utilities needed by SDKs to make API calls and handl
 | [@apimatic/http-query](packages/http-query) | HTTP Query utilities for apimatic-js-runtime libraries |
 | [@apimatic/oauth-adapters](packages/oauth-adapters) | Provides pluggable adapters for OAuth 2.0 authentication schemes. |
 | [@apimatic/xml-adapter](packages/xml-adapter) | Provides XML serialization and deserialization utilities for apimatic-js-runtime libraries. |
+| [@apimatic/test-utilities](packages/test-utilities) | Provides assertion utilities for testing api calls. It can be plugged in as dev dependency to any library. |
 
 [ci-badge]: https://github.com/apimatic/apimatic-js-runtime/actions/workflows/main.yml/badge.svg
 [ci-url]: https://github.com/apimatic/apimatic-js-runtime/actions/workflows/main.yml
