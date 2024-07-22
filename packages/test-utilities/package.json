@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/test-utilities",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "provides the assertion utilities",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -52,7 +52,7 @@
     "typescript": "^4.1.2"
   },
   "dependencies": {
-    "@apimatic/core-interfaces": "^0.2.5",
+    "@apimatic/core-interfaces": "^0.2.6",
     "tslib": "^2.1.0"
   },
   "publishConfig": {

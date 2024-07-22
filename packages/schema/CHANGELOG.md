@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.7.12](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.11...@apimatic/schema@0.7.12) (2024-07-22)
+
+### Bug Fixes
+
+- **schema:** adds support of selecting schema without discriminator fields in discriminatedSchema ([#184](https://github.com/apimatic/apimatic-js-runtime/issues/184)) ([74b5483](https://github.com/apimatic/apimatic-js-runtime/commit/74b54837f267cf8063ef6765402972c4a1fd7ba3))
+
 ### [0.7.11](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.10...@apimatic/schema@0.7.11) (2024-06-27)
 
 ### Bug Fixes

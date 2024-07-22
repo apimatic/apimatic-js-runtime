@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.12](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.11...@apimatic/core@0.10.12) (2024-07-22)
+
+### Bug Fixes
+
+- **response-validation:** request builder schema validation and numeric value handling issues ([#183](https://github.com/apimatic/apimatic-js-runtime/issues/183)) ([ad18ad0](https://github.com/apimatic/apimatic-js-runtime/commit/ad18ad0e222209b76538fe7f6832f97858f74e0e))
+
 ### [0.10.11](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.10...@apimatic/core@0.10.11) (2024-07-09)
 
 ### Features
