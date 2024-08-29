@@ -112,7 +112,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   acceptJson(): void;
   accept(acceptHeaderValue: string): void;
   contentType(contentTypeHeaderValue: string): void;
-  header(name: string, value?: string | boolean | number | bigint | null): void;
+  header(name: string, value?: unknown): void;
   headers(headersToMerge: Record<string, string>): void;
   query(
     name: string,
@@ -271,14 +271,16 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   public contentType(contentTypeHeaderValue: string): void {
     this._contentType = contentTypeHeaderValue;
   }
-  public header(
-    name: string,
-    value?: string | boolean | number | bigint | null
-  ): void {
+  public header(name: string, value?: unknown): void {
     if (value === null || typeof value === 'undefined') {
       return;
     }
-    setHeader(this._headers, name, value.toString());
+    if (typeof value === 'object') {
+      setHeader(this._headers, name, JSON.stringify(value));
+      return;
+    }
+    // String() is used to convert boolean, number, bigint, or unknown types
+    setHeader(this._headers, name, String(value));
   }
   public headers(headersToMerge: Record<string, string>): void {
     mergeHeaders(this._headers, headersToMerge);
