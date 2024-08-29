@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.13](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.12...@apimatic/core@0.10.13) (2024-08-29)
+
+### Features
+
+- support object and unkown header parameters ([#186](https://github.com/apimatic/apimatic-js-runtime/issues/186)) ([190d463](https://github.com/apimatic/apimatic-js-runtime/commit/190d463b48809e3d580b0d577836a95429f303d1))
+
 ### [0.10.12](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.11...@apimatic/core@0.10.12) (2024-07-22)
 
 ### Bug Fixes
