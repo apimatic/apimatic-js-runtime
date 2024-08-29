@@ -562,6 +562,30 @@ describe('test default request builder behavior with succesful responses', () =>
     );
     expect(optionalString.result).toEqual(undefined);
   });
+  it('should test request builder configured with all kind of headers', async () => {
+    const reqBuilder = defaultRequestBuilder('GET', '/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    reqBuilder.header('test-header-missing1');
+    reqBuilder.header('test-header-missing2', null);
+    reqBuilder.header('test-header1', 'test-value\'"\n1');
+    reqBuilder.header('test-header2', true);
+    reqBuilder.header('test-header3', false);
+    reqBuilder.header('test-header4', 12345);
+    reqBuilder.header('test-header5', BigInt(12345));
+    reqBuilder.header('test-header6', { key: 'v a l u e' });
+    reqBuilder.header('test-header7', Symbol());
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.headers).toEqual({
+      'test-header1': 'test-value\'"\n1',
+      'test-header2': 'true',
+      'test-header3': 'false',
+      'test-header4': '12345',
+      'test-header5': '12345',
+      'test-header6': '{"key":"v a l u e"}',
+      'test-header7': 'Symbol()',
+    });
+  });
 
   function customRequestBuilder(
     response: HttpResponse
