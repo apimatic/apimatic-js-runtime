@@ -64,18 +64,6 @@ export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
 
 const JSON = JSONBig();
 
-type QueryValue =
-  | string
-  | string[]
-  | number
-  | number[]
-  | bigint
-  | Array<bigint>
-  | boolean
-  | boolean[]
-  | null
-  | undefined;
-
 export function skipEncode<T extends PathTemplatePrimitiveTypes>(
   value: T
 ): SkipEncode<T> {
@@ -116,11 +104,11 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   headers(headersToMerge: Record<string, string>): void;
   query(
     name: string,
-    value: QueryValue | Record<string, QueryValue>,
+    value: unknown | Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
   query(
-    parameters?: Record<string, QueryValue> | null,
+    parameters?: Record<string, unknown> | null,
     prefixFormat?: ArrayPrefixFunction
   ): void;
   form(
@@ -287,15 +275,15 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   public query(
     name: string,
-    value: QueryValue | Record<string, QueryValue>,
+    value: unknown | Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
   public query(
-    parameters?: Record<string, QueryValue> | null,
+    parameters?: Record<string, unknown> | null,
     prefixFormat?: ArrayPrefixFunction
   ): void;
   public query(
-    nameOrParameters: string | Record<string, QueryValue> | null | undefined,
+    nameOrParameters: string | Record<string, unknown> | null | undefined,
     value?: unknown,
     prefixFormat?: ArrayPrefixFunction
   ): void {

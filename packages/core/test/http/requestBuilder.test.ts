@@ -562,6 +562,43 @@ describe('test default request builder behavior with succesful responses', () =>
     );
     expect(optionalString.result).toEqual(undefined);
   });
+
+  it('should test request builder query parameters with number, string, bool and BigInt', async () => {
+    const expectedRequestUrl =
+      'http://apimatic.hopto.org:3000/test/requestBuilder?number=12345&string=string&bool=true&biginit=12345';
+
+    const reqBuilder = defaultRequestBuilder('GET');
+    reqBuilder.appendPath('/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    reqBuilder.query('number', 12345);
+    reqBuilder.query('string', 'string');
+    reqBuilder.query('bool', true);
+    reqBuilder.query('biginit', BigInt(12345));
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
+  it('should test request builder query parameters with complex object', async () => {
+    const expectedRequestUrl =
+      'http://apimatic.hopto.org:3000/test/requestBuilder?object%5Bkey1%5D=value1&object%5Bkey2%5D=value2&object%5Bkey3%5D%5Bsubkey%5D=12345&object%5Bkey4%5D%5B0%5D=item1&object%5Bkey4%5D%5B1%5D=item2';
+
+    const reqBuilder = defaultRequestBuilder('GET');
+    reqBuilder.appendPath('/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    reqBuilder.query('object', {
+      key1: 'value1',
+      key2: 'value2',
+      key3: {
+        subkey: 12345,
+      },
+      key4: ['item1', 'item2'],
+    });
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
   it('should test request builder configured with all kind of headers', async () => {
     const reqBuilder = defaultRequestBuilder('GET', '/test/requestBuilder');
     reqBuilder.baseUrl('default');
