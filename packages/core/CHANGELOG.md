@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.14](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.13...@apimatic/core@0.10.14) (2024-09-11)
+
+### Bug Fixes
+
+- **core:** query value type in request builder ([#189](https://github.com/apimatic/apimatic-js-runtime/issues/189)) ([26cbf51](https://github.com/apimatic/apimatic-js-runtime/commit/26cbf51aec8f1a183fe25c6ca9750424f839d907)), closes [#188](https://github.com/apimatic/apimatic-js-runtime/issues/188)
+
 ### [0.10.13](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.12...@apimatic/core@0.10.13) (2024-08-29)
 
 ### Features
