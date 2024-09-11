@@ -26,6 +26,15 @@ import fs from 'fs';
 import path from 'path';
 import { bossSchema } from '../../../schema/test/bossSchema';
 import { boolean, nullable, optional } from '@apimatic/schema/src';
+import {
+  ArrayPrefixFunction,
+  commaPrefix,
+  indexedPrefix,
+  pipePrefix,
+  plainPrefix,
+  tabPrefix,
+  unindexedPrefix,
+} from '@apimatic/http-query';
 
 describe('test default request builder behavior with succesful responses', () => {
   const authParams = {
@@ -63,7 +72,7 @@ describe('test default request builder behavior with succesful responses', () =>
   it('should test request builder configured with text request body and text response body', async () => {
     const expectedRequest: HttpRequest = {
       method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder?text=true',
+      url: 'https://apimatic.hopto.org:3000/test/requestBuilder?text=true',
       headers: {
         'content-type': 'text/plain; charset=utf-8',
         'test-header1': 'test-value1',
@@ -118,7 +127,7 @@ describe('test default request builder behavior with succesful responses', () =>
   it('should test request builder configured with json request body and text response body', async () => {
     const expectedRequest: HttpRequest = {
       method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder?json=true',
+      url: 'https://apimatic.hopto.org:3000/test/requestBuilder?json=true',
       headers: {
         'content-type': 'application/json',
         'test-header1': 'test-value1',
@@ -161,7 +170,7 @@ describe('test default request builder behavior with succesful responses', () =>
   it('should test request builder configured with form request body and json response body', async () => {
     const expectedRequest: HttpRequest = {
       method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder?form=true',
+      url: 'https://apimatic.hopto.org:3000/test/requestBuilder?form=true',
       headers: { 'test-header': 'test-value' },
       body: {
         content: [
@@ -221,7 +230,7 @@ describe('test default request builder behavior with succesful responses', () =>
     const expectedRequest: HttpRequest = {
       method: 'GET',
       url:
-        'http://apimatic.hopto.org:3000/auth/basic/test/requestBuilder?form-data=true',
+        'https://apimatic.hopto.org:3000/auth/basic/test/requestBuilder?form-data=true',
       headers: {
         'test-header': 'test-value',
         accept: 'application/json',
@@ -281,7 +290,7 @@ describe('test default request builder behavior with succesful responses', () =>
   it('should test request builder to test stream request body(file) and stream response body(blob)', async () => {
     const request: HttpRequest = {
       method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+      url: 'https://apimatic.hopto.org:3000/test/requestBuilder',
       headers: { 'test-header': 'test-value' },
       auth: { username: 'maryam-adnan', password: '12345678' },
     };
@@ -310,7 +319,7 @@ describe('test default request builder behavior with succesful responses', () =>
   it('should test request builder configured with text request body and text response body', async () => {
     const expectedRequest: HttpRequest = {
       method: 'GET',
-      url: 'http://apimatic.hopto.org:3000/test/requestBuilder?text=true',
+      url: 'https://apimatic.hopto.org:3000/test/requestBuilder?text=true',
       headers: {
         'content-type': 'text/plain; charset=utf-8',
         'test-header1': 'test-value1',
@@ -363,7 +372,7 @@ describe('test default request builder behavior with succesful responses', () =>
     expect(request.body).toBeUndefined();
     expect(request.body).toBeUndefined();
     expect(request.url).toEqual(
-      'http://apimatic.hopto.org:3000/test/requestBuilder'
+      'https://apimatic.hopto.org:3000/test/requestBuilder'
     );
   });
   it('should test request builder error factory with incorrect text response body', async () => {
@@ -562,6 +571,112 @@ describe('test default request builder behavior with succesful responses', () =>
     );
     expect(optionalString.result).toEqual(undefined);
   });
+
+  it('should test request builder query indexedPrefix parameters with number, string, bool and BigInt', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/test/requestBuilder?number=12345&string=string&bool=true&biginit=12345';
+
+    const reqBuilder = defaultRequestBuilder('GET');
+    reqBuilder.appendPath('/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    reqBuilder.query('number', 12345);
+    reqBuilder.query('string', 'string');
+    reqBuilder.query('bool', true);
+    reqBuilder.query('biginit', BigInt(12345));
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
+  it('should test request builder query indexedPrefix parameters with array', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/test/requestBuilder?array%5B0%5D=item1&array%5B1%5D=item2';
+
+    const reqBuilder = buildRequestWithArrayQuery(indexedPrefix);
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
+  it('should test request builder query unindexedPrefix parameters with array', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/test/requestBuilder?array%5B%5D=item1&array%5B%5D=item2';
+
+    const reqBuilder = buildRequestWithArrayQuery(unindexedPrefix);
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
+  it('should test request builder query plainPrefix parameters with array', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/test/requestBuilder?array=item1&array=item2';
+
+    const reqBuilder = buildRequestWithArrayQuery(plainPrefix);
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
+  it('should test request builder query tabPrefix parameters with array', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/test/requestBuilder?array=item1%09item2';
+
+    const reqBuilder = buildRequestWithArrayQuery(tabPrefix);
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
+  it('should test request builder query commaPrefix parameters with array', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/test/requestBuilder?array=item1%2Citem2';
+
+    const reqBuilder = buildRequestWithArrayQuery(commaPrefix);
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
+  it('should test request builder query pipePrefix parameters with array', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/test/requestBuilder?array=item1%7Citem2';
+
+    const reqBuilder = buildRequestWithArrayQuery(pipePrefix);
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
+  function buildRequestWithArrayQuery(prefixFormat: ArrayPrefixFunction) {
+    const reqBuilder = defaultRequestBuilder('GET');
+    reqBuilder.appendPath('/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    reqBuilder.query('array', ['item1', 'item2'], prefixFormat);
+
+    return reqBuilder;
+  }
+
+  it('should test request builder query parameters with complex object', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/test/requestBuilder?object%5Bkey1%5D=value1&object%5Bkey2%5D=value2&object%5Bkey3%5D%5Bsubkey%5D=12345&object%5Bkey4%5D%5B0%5D=item1&object%5Bkey4%5D%5B1%5D=item2';
+
+    const reqBuilder = defaultRequestBuilder('GET');
+    reqBuilder.appendPath('/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    reqBuilder.query('object', {
+      key1: 'value1',
+      key2: 'value2',
+      key3: {
+        subkey: 12345,
+      },
+      key4: ['item1', 'item2'],
+    });
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
   it('should test request builder configured with all kind of headers', async () => {
     const reqBuilder = defaultRequestBuilder('GET', '/test/requestBuilder');
     reqBuilder.baseUrl('default');
@@ -632,7 +747,7 @@ describe('test default request builder behavior with succesful responses', () =>
         return customResponse;
       }
       const iserrorResponse = request.url.startsWith(
-        'http://apimatic.hopto.org:3000/test/requestBuilder/errorResponse'
+        'https://apimatic.hopto.org:3000/test/requestBuilder/errorResponse'
       );
 
       if (iserrorResponse) {
@@ -812,10 +927,10 @@ describe('test default request builder behavior to test retries', () => {
 
 function mockBaseURIProvider(server: string | undefined) {
   if (server === 'default') {
-    return 'http://apimatic.hopto.org:3000/';
+    return 'https://apimatic.hopto.org:3000/';
   }
   if (server === 'auth server') {
-    return 'http://apimaticauth.hopto.org:3000/';
+    return 'https://apimaticauth.hopto.org:3000/';
   }
   return '';
 }
