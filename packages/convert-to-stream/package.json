@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/convert-to-stream",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "converts the content to stream",
   "main": "lib/index.js",
   "module": "lib/index.js",
