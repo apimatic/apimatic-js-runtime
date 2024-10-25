@@ -4,6 +4,7 @@ import {
   SchemaMappedType,
   SchemaType,
   SchemaValidationError,
+  validateAndMap,
 } from '../schema';
 import { OptionalizeObject } from '../typeUtils';
 import {
@@ -61,6 +62,18 @@ export interface ObjectSchema<
   readonly objectSchema: T;
 }
 
+export interface ExtendedObjectSchema<
+  V extends string,
+  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  K extends string,
+  U
+> extends Schema<
+    ObjectType<T> & { [key in K]?: U },
+    MappedObjectType<T> & { [key in K]?: U }
+  > {
+  readonly objectSchema: T;
+}
+
 /**
  * Create a Strict Object type schema.
  *
@@ -80,7 +93,7 @@ export function strictObject<
 }
 
 /**
- * Create an Expandable Object type schema.
+ * Create an Expandable Object type schema, allowing all additional properties.
  *
  * The object schema allows additional properties during mapping and unmapping. The
  * additional properties are copied over as is.
@@ -90,6 +103,25 @@ export function expandoObject<
   T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
 >(objectSchema: T): ObjectSchema<V, T> {
   return internalObject(objectSchema, true, true);
+}
+
+/**
+ * Create an Expandable Object type schema, allowing only typed additional properties.
+ *
+ * The object schema allows additional properties during mapping and unmapping. The
+ * additional properties are copied over in a Record<string, SchemaType<S>>
+ * with key represented by K.
+ */
+export function typedExpandoObject<
+  V extends string,
+  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  K extends string,
+  S extends Schema<any, any>
+>(
+  objectSchema: T,
+  additionalPropSchema: [K, S]
+): ExtendedObjectSchema<V, T, K, Record<string, SchemaType<S>>> {
+  return internalObject(objectSchema, true, additionalPropSchema);
 }
 
 /**
@@ -162,10 +194,10 @@ function internalObject<
 >(
   objectSchema: T,
   skipValidateAdditionalProps: boolean,
-  mapAdditionalProps: boolean
+  mapAdditionalProps: boolean | [string, Schema<any, any>]
 ): StrictObjectSchema<V, T> {
   const keys = Object.keys(objectSchema);
-  const reverseObjectSchema = createReverseObjectSchema<T>(objectSchema);
+  const reverseObjectSchema = createReverseObjectSchema(objectSchema);
   const xmlMappingInfo = getXmlPropMappingForObjectSchema(objectSchema);
   const xmlObjectSchema = createXmlObjectSchema(objectSchema);
   const reverseXmlObjectSchema = createReverseXmlObjectSchema(xmlObjectSchema);
@@ -251,7 +283,7 @@ function validateObjectBeforeMapXml(
 
 function mapObjectFromXml(
   xmlObjectSchema: XmlObjectSchema,
-  allowAdditionalProps: boolean
+  allowAdditionalProps: boolean | [string, Schema<any, any>]
 ) {
   const { elementsSchema, attributesSchema } = xmlObjectSchema;
   const mapElements = mapObject(elementsSchema, 'mapXml', allowAdditionalProps);
@@ -295,7 +327,7 @@ function mapObjectFromXml(
 
 function unmapObjectToXml(
   xmlObjectSchema: XmlObjectSchema,
-  allowAdditionalProps: boolean
+  allowAdditionalProps: boolean | [string, Schema<any, any>]
 ) {
   const { elementsSchema, attributesSchema } = xmlObjectSchema;
   const mapElements = mapObject(
@@ -449,53 +481,100 @@ function validateObject(
 function mapObject<T extends AnyObjectSchema>(
   objectSchema: T,
   mappingFn: 'map' | 'unmap' | 'mapXml' | 'unmapXml',
-  allowAdditionalProperties: boolean
+  mapAdditionalProps: boolean | [string, Schema<any, any>]
 ) {
   return (value: unknown, ctxt: SchemaContextCreator): any => {
     const output: Record<string, unknown> = {};
-    const objectValue = value as Record<string, any>;
-    /** Properties seen in the object but not in the schema */
-    const unknownKeys = new Set(Object.keys(objectValue));
+    const objectValue = { ...(value as Record<string, any>) };
+    const isUnmaping = mappingFn === 'unmap' || mappingFn === 'unmapXml';
 
-    // Map known properties using the schema
-    for (const key in objectSchema) {
-      if (!Object.prototype.hasOwnProperty.call(objectSchema, key)) {
-        continue;
-      }
+    if (
+      isUnmaping &&
+      typeof mapAdditionalProps !== 'boolean' &&
+      mapAdditionalProps[0] in objectValue
+    ) {
+      // Pre process to flatten additional properties in objectValue
+      flattenAdditionalProps(objectValue, objectSchema, mapAdditionalProps[0]);
+    }
 
-      const element = objectSchema[key];
+    // Map known properties to output using the schema
+    Object.entries(objectSchema).forEach(([key, element]) => {
       const propName = element[0];
       const propValue = objectValue[propName];
-      unknownKeys.delete(propName);
+      delete objectValue[propName];
 
       if (isOptionalNullable(element[1].type(), propValue)) {
         if (typeof propValue === 'undefined') {
           // Skip mapping to avoid creating properties with value 'undefined'
-          continue;
+          return;
         }
         output[key] = null;
-        continue;
+        return;
       }
 
       if (isOptional(element[1].type(), propValue)) {
         // Skip mapping to avoid creating properties with value 'undefined'
-        continue;
+        return;
       }
 
       output[key] = element[1][mappingFn](
         propValue,
         ctxt.createChild(propName, propValue, element[1])
       );
-    }
+    });
 
-    // Copy unknown properties over if additional properties flag is set
-    if (allowAdditionalProperties) {
-      unknownKeys.forEach((unknownKey) => {
-        output[unknownKey] = objectValue[unknownKey];
-      });
-    }
+    // Copy the additional unknown properties in output when allowed
+    Object.entries(
+      extractAdditionalProperties(objectValue, isUnmaping, mapAdditionalProps)
+    ).forEach(([k, v]) => (output[k] = v));
+
     return output;
   };
+}
+
+function flattenAdditionalProps<T extends AnyObjectSchema>(
+  objectValue: Record<string, any>,
+  objectSchema: T,
+  additionalPropsKey: string
+) {
+  Object.entries(objectValue[additionalPropsKey]).forEach(([key, value]) => {
+    if (Object.prototype.hasOwnProperty.call(objectSchema, key)) {
+      key = objectSchema[key][0];
+    }
+    if (!(key in objectValue)) {
+      objectValue[key] = value;
+    }
+  });
+  delete objectValue[additionalPropsKey];
+}
+
+function extractAdditionalProperties(
+  objectValue: Record<string, any>,
+  isUnmaping: boolean,
+  mapAdditionalProps: boolean | [string, Schema<any, any>]
+): Record<string, any> {
+  const additionalPropertiesMap: Record<string, any> = {};
+
+  if (!mapAdditionalProps) {
+    return additionalPropertiesMap;
+  }
+
+  Object.entries(objectValue).forEach(([key, value]) => {
+    if (typeof mapAdditionalProps !== 'boolean') {
+      const mappingResult = validateAndMap(value, mapAdditionalProps[1]);
+      if (mappingResult.errors) {
+        return;
+      }
+      value = mappingResult.result;
+    }
+    additionalPropertiesMap[key] = value;
+  });
+
+  if (typeof mapAdditionalProps !== 'boolean' && !isUnmaping) {
+    return { [mapAdditionalProps[0]]: additionalPropertiesMap };
+  }
+
+  return additionalPropertiesMap;
 }
 
 function getXmlPropMappingForObjectSchema(objectSchema: AnyObjectSchema) {
@@ -531,19 +610,16 @@ function getPropMappingForObjectSchema(
   return propsMapping;
 }
 
-function createReverseObjectSchema<T extends AnyObjectSchema>(
+const createReverseObjectSchema = <T extends AnyObjectSchema>(
   objectSchema: T
-): AnyObjectSchema {
-  const reverseObjectSchema: AnyObjectSchema = {};
-  for (const key in objectSchema) {
-    /* istanbul ignore else */
-    if (Object.prototype.hasOwnProperty.call(objectSchema, key)) {
-      const element = objectSchema[key];
-      reverseObjectSchema[element[0]] = [key, element[1], element[2]];
-    }
-  }
-  return reverseObjectSchema;
-}
+): AnyObjectSchema =>
+  Object.entries(objectSchema).reduce(
+    (result, [key, element]) => ({
+      ...result,
+      [element[0]]: [key, element[1], element[2]],
+    }),
+    {} as AnyObjectSchema
+  );
 
 interface XmlObjectSchema {
   elementsSchema: AnyObjectSchema;

@@ -7,15 +7,24 @@ import {
   string,
   validateAndMap,
   validateAndUnmap,
+  typedExpandoObject,
 } from '../../src';
 
 describe('Expando Object', () => {
-  describe('Mapping', () => {
-    const userSchema = expandoObject({
+  const userSchema = expandoObject({
+    id: ['user_id', string()],
+    age: ['user_age', number()],
+  });
+
+  const userSchemaWithAdditionalNumbers = typedExpandoObject(
+    {
       id: ['user_id', string()],
       age: ['user_age', number()],
-    });
+    },
+    ['additionalProps', number()]
+  );
 
+  describe('Mapping', () => {
     it('should map valid object', () => {
       const input = {
         user_id: 'John Smith',
@@ -25,6 +34,27 @@ describe('Expando Object', () => {
       const expected: SchemaType<typeof userSchema> = {
         id: 'John Smith',
         age: 50,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('should map with additional properties', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+        number1: 123,
+        number2: 123.2,
+        invalid: 'string value',
+      };
+      const output = validateAndMap(input, userSchemaWithAdditionalNumbers);
+      const expected: SchemaType<typeof userSchemaWithAdditionalNumbers> = {
+        id: 'John Smith',
+        age: 50,
+        additionalProps: {
+          number1: 123,
+          number2: 123.2,
+        },
       };
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(expected);
@@ -147,12 +177,8 @@ describe('Expando Object', () => {
       `);
     });
   });
-  describe('Unmapping', () => {
-    const userSchema = expandoObject({
-      id: ['user_id', string()],
-      age: ['user_age', number()],
-    });
 
+  describe('Unmapping', () => {
     it('should map valid object', () => {
       const input = {
         id: 'John Smith',
@@ -162,6 +188,27 @@ describe('Expando Object', () => {
       const expected: SchemaMappedType<typeof userSchema> = {
         user_id: 'John Smith',
         user_age: 50,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('should map with additional properties', () => {
+      const input = {
+        id: 'John Smith',
+        age: 50, // takes precedence over additionalProps[user_age]
+        additionalProps: {
+          number1: 123,
+          number2: 123.2,
+          user_age: 52,
+        },
+      };
+      const output = validateAndUnmap(input, userSchemaWithAdditionalNumbers);
+      const expected = {
+        user_id: 'John Smith',
+        user_age: 50,
+        number1: 123,
+        number2: 123.2,
       };
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(expected);
