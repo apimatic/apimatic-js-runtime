@@ -8,6 +8,7 @@ import {
   validateAndMap,
   validateAndUnmap,
   typedExpandoObject,
+  dict,
 } from '../../src';
 
 describe('Expando Object', () => {
@@ -21,7 +22,7 @@ describe('Expando Object', () => {
       id: ['user_id', string()],
       age: ['user_age', number()],
     },
-    ['additionalProps', number()]
+    ['additionalProps', optional(dict(number()))]
   );
 
   describe('Mapping', () => {
@@ -39,7 +40,7 @@ describe('Expando Object', () => {
       expect((output as any).result).toStrictEqual(expected);
     });
 
-    it('should map with additional properties', () => {
+    it('AdditionalProperties: should map with additional properties', () => {
       const input = {
         user_id: 'John Smith',
         user_age: 50,
@@ -55,6 +56,35 @@ describe('Expando Object', () => {
           number1: 123,
           number2: 123.2,
         },
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('AdditionalProperties: should map with only invalid additional properties', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+        invalid: 'string value',
+      };
+      const output = validateAndMap(input, userSchemaWithAdditionalNumbers);
+      const expected: SchemaType<typeof userSchemaWithAdditionalNumbers> = {
+        id: 'John Smith',
+        age: 50,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('AdditionalProperties: should map without additional properties', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+      };
+      const output = validateAndMap(input, userSchemaWithAdditionalNumbers);
+      const expected: SchemaType<typeof userSchemaWithAdditionalNumbers> = {
+        id: 'John Smith',
+        age: 50,
       };
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(expected);
@@ -179,6 +209,40 @@ describe('Expando Object', () => {
   });
 
   describe('Unmapping', () => {
+    it('AdditionalProperties: should map with additional properties', () => {
+      const input = {
+        id: 'John Smith',
+        age: 50, // takes precedence over additionalProps[user_age]
+        additionalProps: {
+          number1: 123,
+          number2: 123.2,
+        },
+      };
+      const output = validateAndUnmap(input, userSchemaWithAdditionalNumbers);
+      const expected = {
+        user_id: 'John Smith',
+        user_age: 50,
+        number1: 123,
+        number2: 123.2,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('AdditionalProperties: should map without additional properties', () => {
+      const input = {
+        id: 'John Smith',
+        age: 50,
+      };
+      const output = validateAndUnmap(input, userSchemaWithAdditionalNumbers);
+      const expected = {
+        user_id: 'John Smith',
+        user_age: 50,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
     it('should map valid object', () => {
       const input = {
         id: 'John Smith',
@@ -188,27 +252,6 @@ describe('Expando Object', () => {
       const expected: SchemaMappedType<typeof userSchema> = {
         user_id: 'John Smith',
         user_age: 50,
-      };
-      expect(output.errors).toBeFalsy();
-      expect((output as any).result).toStrictEqual(expected);
-    });
-
-    it('should map with additional properties', () => {
-      const input = {
-        id: 'John Smith',
-        age: 50, // takes precedence over additionalProps[user_age]
-        additionalProps: {
-          number1: 123,
-          number2: 123.2,
-          user_age: 52,
-        },
-      };
-      const output = validateAndUnmap(input, userSchemaWithAdditionalNumbers);
-      const expected = {
-        user_id: 'John Smith',
-        user_age: 50,
-        number1: 123,
-        number2: 123.2,
       };
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(expected);
@@ -241,6 +284,124 @@ describe('Expando Object', () => {
       };
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('AdditionalProperties: should fail with conflicting additional properties', () => {
+      const input = {
+        id: 'John Smith',
+        age: 50,
+        additionalProps: {
+          number1: 123,
+          number2: 123.2,
+          user_age: 52,
+        },
+      };
+      const output = validateAndUnmap(input, userSchemaWithAdditionalNumbers);
+      expect(output.errors).toHaveLength(1);
+      expect(output.errors).toMatchInlineSnapshot(`
+        Array [
+          Object {
+            "branch": Array [
+              Object {
+                "additionalProps": Object {
+                  "number1": 123,
+                  "number2": 123.2,
+                  "user_age": 52,
+                },
+                "age": 50,
+                "id": "John Smith",
+              },
+            ],
+            "message": "An additional property key, 'user_age' conflicts with one of the model's properties.
+
+        Given value: {\\"id\\":\\"John Smith\\",\\"age\\":50,\\"additionalProps\\":{\\"number1\\":123,\\"number2\\":123.2,\\"user_age\\":52}}
+        Type: 'object'
+        Expected type: 'Object<{id,age,...}>'",
+            "path": Array [],
+            "type": "Object<{id,age,...}>",
+            "value": Object {
+              "additionalProps": Object {
+                "number1": 123,
+                "number2": 123.2,
+                "user_age": 52,
+              },
+              "age": 50,
+              "id": "John Smith",
+            },
+          },
+        ]
+      `);
+    });
+
+    it('AdditionalProperties: should fail with empty or blank additional property keys', () => {
+      const input = {
+        id: 'John Smith',
+        age: 50,
+        additionalProps: {
+          '  ': 123.2,
+          '': 52,
+        },
+      };
+      const output = validateAndUnmap(input, userSchemaWithAdditionalNumbers);
+      expect(output.errors).toHaveLength(2);
+      expect(output.errors).toMatchInlineSnapshot(`
+        Array [
+          Object {
+            "branch": Array [
+              Object {
+                "additionalProps": Object {
+                  "": 52,
+                  "  ": 123.2,
+                },
+                "age": 50,
+                "id": "John Smith",
+              },
+            ],
+            "message": "The additional property key should not be empty or whitespace.
+
+        Given value: {\\"id\\":\\"John Smith\\",\\"age\\":50,\\"additionalProps\\":{\\"  \\":123.2,\\"\\":52}}
+        Type: 'object'
+        Expected type: 'Object<{id,age,...}>'",
+            "path": Array [],
+            "type": "Object<{id,age,...}>",
+            "value": Object {
+              "additionalProps": Object {
+                "": 52,
+                "  ": 123.2,
+              },
+              "age": 50,
+              "id": "John Smith",
+            },
+          },
+          Object {
+            "branch": Array [
+              Object {
+                "additionalProps": Object {
+                  "": 52,
+                  "  ": 123.2,
+                },
+                "age": 50,
+                "id": "John Smith",
+              },
+            ],
+            "message": "The additional property key should not be empty or whitespace.
+
+        Given value: {\\"id\\":\\"John Smith\\",\\"age\\":50,\\"additionalProps\\":{\\"  \\":123.2,\\"\\":52}}
+        Type: 'object'
+        Expected type: 'Object<{id,age,...}>'",
+            "path": Array [],
+            "type": "Object<{id,age,...}>",
+            "value": Object {
+              "additionalProps": Object {
+                "": 52,
+                "  ": 123.2,
+              },
+              "age": 50,
+              "id": "John Smith",
+            },
+          },
+        ]
+      `);
     });
 
     it('should fail on non-object value', () => {
