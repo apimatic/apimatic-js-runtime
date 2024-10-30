@@ -260,30 +260,30 @@ function validateObjectBeforeMapXml(
 
     // Validate all known elements and attributes using the schema
 
-    return validateValueObject(
-      'validateBeforeMapXml',
-      'child elements',
-      'element',
-      'element',
-      elementsToProps,
+    return validateValueObject({
+      validationMethod: 'validateBeforeMapXml',
+      propTypeName: 'child elements',
+      propTypePrefix: 'element',
+      valueTypeName: 'element',
+      propMapping: elementsToProps,
       objectSchema,
-      elements,
+      valueObject: elements,
       ctxt,
       skipAdditionalPropValidation,
-      mapAdditionalProps
-    ).concat(
-      validateValueObject(
-        'validateBeforeMapXml',
-        'attributes',
-        '@',
-        'element',
-        attributesToProps,
+      mapAdditionalProps,
+    }).concat(
+      validateValueObject({
+        validationMethod: 'validateBeforeMapXml',
+        propTypeName: 'attributes',
+        propTypePrefix: '@',
+        valueTypeName: 'element',
+        propMapping: attributesToProps,
         objectSchema,
-        attributes,
+        valueObject: attributes,
         ctxt,
         skipAdditionalPropValidation,
-        mapAdditionalProps
-      )
+        mapAdditionalProps,
+      })
     );
   };
 }
@@ -376,21 +376,32 @@ function unmapObjectToXml(
   };
 }
 
-function validateValueObject(
+function validateValueObject({
+  validationMethod,
+  propTypeName,
+  propTypePrefix,
+  valueTypeName,
+  propMapping,
+  objectSchema,
+  valueObject,
+  ctxt,
+  skipAdditionalPropValidation,
+  mapAdditionalProps,
+}: {
   validationMethod:
     | 'validateBeforeMap'
     | 'validateBeforeUnmap'
-    | 'validateBeforeMapXml',
-  propTypeName: string,
-  propTypePrefix: string,
-  valueTypeName: string,
-  propMapping: Record<string, string>,
-  objectSchema: AnyObjectSchema,
-  valueObject: { [key: string]: any },
-  ctxt: SchemaContextCreator,
-  skipAdditionalPropValidation: boolean,
-  mapAdditionalProps: boolean | [string, Schema<any, any>]
-) {
+    | 'validateBeforeMapXml';
+  propTypeName: string;
+  propTypePrefix: string;
+  valueTypeName: string;
+  propMapping: Record<string, string>;
+  objectSchema: AnyObjectSchema;
+  valueObject: { [key: string]: any };
+  ctxt: SchemaContextCreator;
+  skipAdditionalPropValidation: boolean;
+  mapAdditionalProps: boolean | [string, Schema<any, any>];
+}) {
   const errors: SchemaValidationError[] = [];
   const missingProps: Set<string> = new Set();
   const conflictingProps: Set<string> = new Set();
@@ -408,6 +419,7 @@ function validateValueObject(
     }
   }
 
+  // Create validation errors for conflicting additional properties keys
   addErrorsIfAny(
     conflictingProps,
     (names) =>
@@ -499,7 +511,7 @@ function validateObject(
   skipAdditionalPropValidation: boolean,
   mapAdditionalProps: boolean | [string, Schema<any, any>]
 ) {
-  const propsMapping = getPropMappingForObjectSchema(objectSchema);
+  const propMapping = getPropMappingForObjectSchema(objectSchema);
   return (value: unknown, ctxt: SchemaContextCreator) => {
     if (typeof value !== 'object' || value === null) {
       return ctxt.fail();
@@ -511,18 +523,18 @@ function validateObject(
         }' but found 'Array<${typeof value}>'.`
       );
     }
-    return validateValueObject(
+    return validateValueObject({
       validationMethod,
-      'properties',
-      '',
-      'object',
-      propsMapping,
+      propTypeName: 'properties',
+      propTypePrefix: '',
+      valueTypeName: 'object',
+      propMapping,
       objectSchema,
-      value as Record<string, unknown>,
+      valueObject: value as Record<string, any>,
       ctxt,
       skipAdditionalPropValidation,
-      mapAdditionalProps
-    );
+      mapAdditionalProps,
+    });
   };
 }
 
