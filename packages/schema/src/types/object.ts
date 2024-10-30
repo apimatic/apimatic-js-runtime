@@ -401,14 +401,6 @@ function validateValueObject(
     mapAdditionalProps[0] in valueObject
   ) {
     Object.entries(valueObject[mapAdditionalProps[0]]).forEach(([key, _]) => {
-      if (key.trim().length === 0) {
-        ctxt
-          .fail(
-            'The additional property key should not be empty or whitespace.'
-          )
-          .forEach((e) => errors.push(e));
-      }
-
       if (Object.prototype.hasOwnProperty.call(objectSchema, key)) {
         ctxt
           .fail(

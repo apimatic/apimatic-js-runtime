@@ -291,7 +291,7 @@ describe('Expando Object', () => {
   });
 
   describe('Unmapping', () => {
-    it('AdditionalProperties: should map with additional properties', () => {
+    it('AdditionalProperties: should unmap with additional properties', () => {
       const input = {
         id: 'John Smith',
         age: 50, // takes precedence over additionalProps[user_age]
@@ -311,7 +311,7 @@ describe('Expando Object', () => {
       expect((output as any).result).toStrictEqual(expected);
     });
 
-    it('AdditionalProperties: should map without additional properties', () => {
+    it('AdditionalProperties: should unmap without additional properties', () => {
       const input = {
         id: 'John Smith',
         age: 50,
@@ -325,7 +325,7 @@ describe('Expando Object', () => {
       expect((output as any).result).toStrictEqual(expected);
     });
 
-    it('AdditionalProperties: should map with object typed additional properties', () => {
+    it('AdditionalProperties: should unmap with object typed additional properties', () => {
       const input = {
         id: 'John Smith',
         age: 50,
@@ -349,7 +349,7 @@ describe('Expando Object', () => {
       expect((output as any).result).toStrictEqual(expected);
     });
 
-    it('AdditionalProperties: should map with anyOf typed additional properties', () => {
+    it('AdditionalProperties: should unmap with anyOf typed additional properties', () => {
       const input = {
         id: 'John Smith',
         age: 50,
@@ -375,7 +375,27 @@ describe('Expando Object', () => {
       expect((output as any).result).toStrictEqual(expected);
     });
 
-    it('should map valid object', () => {
+    it('AdditionalProperties: should unmap with empty or blank additional property keys', () => {
+      const input = {
+        id: 'John Smith',
+        age: 50,
+        additionalProps: {
+          '  ': 123.2,
+          '': 52,
+        },
+      };
+      const output = validateAndUnmap(input, userSchemaWithAdditionalNumbers);
+      const expected = {
+        user_id: 'John Smith',
+        user_age: 50,
+        '  ': 123.2,
+        '': 52,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('should unmap valid object', () => {
       const input = {
         id: 'John Smith',
         age: 50,
@@ -389,7 +409,7 @@ describe('Expando Object', () => {
       expect((output as any).result).toStrictEqual(expected);
     });
 
-    it('should map object with optional properties', () => {
+    it('should unmap object with optional properties', () => {
       const addressSchema = expandoObject({
         address1: ['address1', string()],
         address2: ['address2', optional(string())],
@@ -402,7 +422,7 @@ describe('Expando Object', () => {
       expect((output as any).result).toStrictEqual(input);
     });
 
-    it('should map valid object with additional properties', () => {
+    it('should unmap valid object with additional properties', () => {
       const input = {
         id: 'John Smith',
         age: 50,
@@ -456,77 +476,6 @@ describe('Expando Object', () => {
                 "number1": 123,
                 "number2": 123.2,
                 "user_age": 52,
-              },
-              "age": 50,
-              "id": "John Smith",
-            },
-          },
-        ]
-      `);
-    });
-
-    it('AdditionalProperties: should fail with empty or blank additional property keys', () => {
-      const input = {
-        id: 'John Smith',
-        age: 50,
-        additionalProps: {
-          '  ': 123.2,
-          '': 52,
-        },
-      };
-      const output = validateAndUnmap(input, userSchemaWithAdditionalNumbers);
-      expect(output.errors).toHaveLength(2);
-      expect(output.errors).toMatchInlineSnapshot(`
-        Array [
-          Object {
-            "branch": Array [
-              Object {
-                "additionalProps": Object {
-                  "": 52,
-                  "  ": 123.2,
-                },
-                "age": 50,
-                "id": "John Smith",
-              },
-            ],
-            "message": "The additional property key should not be empty or whitespace.
-
-        Given value: {\\"id\\":\\"John Smith\\",\\"age\\":50,\\"additionalProps\\":{\\"  \\":123.2,\\"\\":52}}
-        Type: 'object'
-        Expected type: 'Object<{id,age,...}>'",
-            "path": Array [],
-            "type": "Object<{id,age,...}>",
-            "value": Object {
-              "additionalProps": Object {
-                "": 52,
-                "  ": 123.2,
-              },
-              "age": 50,
-              "id": "John Smith",
-            },
-          },
-          Object {
-            "branch": Array [
-              Object {
-                "additionalProps": Object {
-                  "": 52,
-                  "  ": 123.2,
-                },
-                "age": 50,
-                "id": "John Smith",
-              },
-            ],
-            "message": "The additional property key should not be empty or whitespace.
-
-        Given value: {\\"id\\":\\"John Smith\\",\\"age\\":50,\\"additionalProps\\":{\\"  \\":123.2,\\"\\":52}}
-        Type: 'object'
-        Expected type: 'Object<{id,age,...}>'",
-            "path": Array [],
-            "type": "Object<{id,age,...}>",
-            "value": Object {
-              "additionalProps": Object {
-                "": 52,
-                "  ": 123.2,
               },
               "age": 50,
               "id": "John Smith",
