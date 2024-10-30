@@ -288,10 +288,10 @@ function validateObjectBeforeMapXml(
 
 function mapObjectFromXml(
   xmlObjectSchema: XmlObjectSchema,
-  allowAdditionalProps: boolean | [string, Schema<any, any>]
+  mapAdditionalProps: boolean | [string, Schema<any, any>]
 ) {
   const { elementsSchema, attributesSchema } = xmlObjectSchema;
-  const mapElements = mapObject(elementsSchema, 'mapXml', allowAdditionalProps);
+  const mapElements = mapObject(elementsSchema, 'mapXml', mapAdditionalProps);
   const mapAttributes = mapObject(
     attributesSchema,
     'mapXml',
@@ -317,7 +317,7 @@ function mapObjectFromXml(
       ...mapElements(elements, ctxt),
     };
 
-    if (allowAdditionalProps) {
+    if (mapAdditionalProps) {
       // Omit known attributes and copy the rest as additional attributes.
       const additionalAttrs = omitKeysFromObject(attributes, attributeKeys);
       if (Object.keys(additionalAttrs).length > 0) {
@@ -332,14 +332,10 @@ function mapObjectFromXml(
 
 function unmapObjectToXml(
   xmlObjectSchema: XmlObjectSchema,
-  allowAdditionalProps: boolean | [string, Schema<any, any>]
+  mapAdditionalProps: boolean | [string, Schema<any, any>]
 ) {
   const { elementsSchema, attributesSchema } = xmlObjectSchema;
-  const mapElements = mapObject(
-    elementsSchema,
-    'unmapXml',
-    allowAdditionalProps
-  );
+  const mapElements = mapObject(elementsSchema, 'unmapXml', mapAdditionalProps);
   const mapAttributes = mapObject(
     attributesSchema,
     'unmapXml',
@@ -347,7 +343,7 @@ function unmapObjectToXml(
   );
 
   // These are later used to omit attribute props from the value object so that they
-  // do not get mapped during element mapping, if the allowAdditionalProps is true.
+  // do not get mapped during element mapping, if the mapAdditionalProps is set.
   const attributeKeys = objectEntries(attributesSchema).map(
     ([_, [name]]) => name
   );
@@ -363,7 +359,7 @@ function unmapObjectToXml(
     const additionalAttributes =
       typeof attributes === 'object' &&
       attributes !== null &&
-      allowAdditionalProps
+      mapAdditionalProps
         ? attributes
         : {};
 
