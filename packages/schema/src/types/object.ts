@@ -393,6 +393,7 @@ function validateValueObject(
 ) {
   const errors: SchemaValidationError[] = [];
   const missingProps: Set<string> = new Set();
+  const conflictingProps: Set<string> = new Set();
   const unknownProps: Set<string> = new Set(Object.keys(valueObject));
 
   if (
@@ -400,16 +401,24 @@ function validateValueObject(
     typeof mapAdditionalProps !== 'boolean' &&
     mapAdditionalProps[0] in valueObject
   ) {
-    Object.entries(valueObject[mapAdditionalProps[0]]).forEach(([key, _]) => {
+    for (const [key, _] of Object.entries(valueObject[mapAdditionalProps[0]])) {
       if (Object.prototype.hasOwnProperty.call(objectSchema, key)) {
-        ctxt
-          .fail(
-            `An additional property key, '${key}' conflicts with one of the model's properties.`
-          )
-          .forEach((e) => errors.push(e));
+        conflictingProps.add(key);
       }
-    });
+    }
   }
+
+  addErrorsIfAny(
+    conflictingProps,
+    (names) =>
+      createErrorMessage(
+        `Some keys in additional properties are conflicting with the keys in`,
+        valueTypeName,
+        names
+      ),
+    errors,
+    ctxt
+  );
 
   // Validate all known properties using the schema
   for (const key in propMapping) {
@@ -430,30 +439,55 @@ function validateValueObject(
   }
 
   // Create validation error for unknown properties encountered
-  const unknownPropsArray = Array.from(unknownProps);
-  if (unknownPropsArray.length > 0 && !skipAdditionalPropValidation) {
-    ctxt
-      .fail(
-        `Some unknown ${propTypeName} were found in the ${valueTypeName}: ${unknownPropsArray
-          .map(literalToString)
-          .join(', ')}.`
-      )
-      .forEach((e) => errors.push(e));
+  if (!skipAdditionalPropValidation) {
+    addErrorsIfAny(
+      unknownProps,
+      (names) =>
+        createErrorMessage(
+          `Some unknown ${propTypeName} were found in the`,
+          valueTypeName,
+          names
+        ),
+      errors,
+      ctxt
+    );
   }
 
   // Create validation error for missing required properties
-  const missingPropsArray = Array.from(missingProps);
-  if (missingPropsArray.length > 0) {
+  addErrorsIfAny(
+    missingProps,
+    (names) =>
+      createErrorMessage(
+        `Some ${propTypeName} are missing in the`,
+        valueTypeName,
+        names
+      ),
+    errors,
     ctxt
-      .fail(
-        `Some ${propTypeName} are missing in the ${valueTypeName}: ${missingPropsArray
-          .map(literalToString)
-          .join(', ')}.`
-      )
-      .forEach((e) => errors.push(e));
-  }
+  );
 
   return errors;
+}
+
+function createErrorMessage(
+  message: string,
+  type: string,
+  properties: string[]
+): string {
+  return `${message} ${type}: ${properties.map(literalToString).join(', ')}.`;
+}
+
+function addErrorsIfAny(
+  conflictingProps: Set<string>,
+  messageGetter: (propNames: string[]) => string,
+  errors: SchemaValidationError[],
+  ctxt: SchemaContextCreator
+) {
+  const conflictingPropsArray = Array.from(conflictingProps);
+  if (conflictingPropsArray.length > 0) {
+    const message = messageGetter(conflictingPropsArray);
+    ctxt.fail(message).forEach((e) => errors.push(e));
+  }
 }
 
 function validateObject(

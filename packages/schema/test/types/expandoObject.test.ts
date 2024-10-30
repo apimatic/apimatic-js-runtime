@@ -464,7 +464,7 @@ describe('Expando Object', () => {
                 "id": "John Smith",
               },
             ],
-            "message": "An additional property key, 'user_age' conflicts with one of the model's properties.
+            "message": "Some keys in additional properties are conflicting with the keys in object: \\"user_age\\".
 
         Given value: {\\"id\\":\\"John Smith\\",\\"age\\":50,\\"additionalProps\\":{\\"number1\\":123,\\"number2\\":123.2,\\"user_age\\":52}}
         Type: 'object'
