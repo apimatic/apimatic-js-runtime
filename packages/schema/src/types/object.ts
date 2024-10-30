@@ -5,6 +5,7 @@ import {
   SchemaType,
   SchemaValidationError,
   validateAndMap,
+  validateAndUnmap,
 } from '../schema';
 import { OptionalizeObject } from '../typeUtils';
 import {
@@ -573,7 +574,10 @@ function extractAdditionalProperties(
   }
 
   Object.entries(objectValue).forEach(([k, v]) => {
-    const mappingResult = validateAndMap({ [k]: v }, mapAdditionalProps[1]);
+    const testValue = { [k]: v };
+    const mappingResult = isUnmaping
+      ? validateAndUnmap(testValue, mapAdditionalProps[1])
+      : validateAndMap(testValue, mapAdditionalProps[1]);
     if (mappingResult.errors) {
       return;
     }

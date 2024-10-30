@@ -9,6 +9,8 @@ import {
   validateAndUnmap,
   typedExpandoObject,
   dict,
+  object,
+  anyOf,
 } from '../../src';
 
 describe('Expando Object', () => {
@@ -25,21 +27,28 @@ describe('Expando Object', () => {
     ['additionalProps', optional(dict(number()))]
   );
 
-  describe('Mapping', () => {
-    it('should map valid object', () => {
-      const input = {
-        user_id: 'John Smith',
-        user_age: 50,
-      };
-      const output = validateAndMap(input, userSchema);
-      const expected: SchemaType<typeof userSchema> = {
-        id: 'John Smith',
-        age: 50,
-      };
-      expect(output.errors).toBeFalsy();
-      expect((output as any).result).toStrictEqual(expected);
-    });
+  const workSchema = object({
+    size: ['size', number()],
+    name: ['Name', string()],
+  });
 
+  const userSchemaWithAdditionalWorks = typedExpandoObject(
+    {
+      id: ['user_id', string()],
+      age: ['user_age', number()],
+    },
+    ['additionalProps', optional(dict(workSchema))]
+  );
+
+  const userSchemaWithAdditionalAnyOf = typedExpandoObject(
+    {
+      id: ['user_id', string()],
+      age: ['user_age', number()],
+    },
+    ['additionalProps', optional(dict(anyOf([workSchema, number()])))]
+  );
+
+  describe('Mapping', () => {
     it('AdditionalProperties: should map with additional properties', () => {
       const input = {
         user_id: 'John Smith',
@@ -83,6 +92,79 @@ describe('Expando Object', () => {
       };
       const output = validateAndMap(input, userSchemaWithAdditionalNumbers);
       const expected: SchemaType<typeof userSchemaWithAdditionalNumbers> = {
+        id: 'John Smith',
+        age: 50,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('AdditionalProperties: should map with object typed additional properties', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+        obj: {
+          size: 123,
+          Name: 'WorkA',
+        },
+        invalid1: 123.2,
+        invalid2: {
+          size: '123 A',
+          Name: 'WorkA',
+        },
+      };
+      const output = validateAndMap(input, userSchemaWithAdditionalWorks);
+      const expected: SchemaType<typeof userSchemaWithAdditionalWorks> = {
+        id: 'John Smith',
+        age: 50,
+        additionalProps: {
+          obj: {
+            size: 123,
+            name: 'WorkA',
+          },
+        },
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('AdditionalProperties: should map with anyOf typed additional properties', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+        obj: {
+          size: 123,
+          Name: 'WorkA',
+        },
+        number: 123.2,
+        invalid2: {
+          size: '123 A',
+          Name: 'WorkA',
+        },
+      };
+      const output = validateAndMap(input, userSchemaWithAdditionalAnyOf);
+      const expected: SchemaType<typeof userSchemaWithAdditionalAnyOf> = {
+        id: 'John Smith',
+        age: 50,
+        additionalProps: {
+          obj: {
+            size: 123,
+            name: 'WorkA',
+          },
+          number: 123.2,
+        },
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('should map valid object', () => {
+      const input = {
+        user_id: 'John Smith',
+        user_age: 50,
+      };
+      const output = validateAndMap(input, userSchema);
+      const expected: SchemaType<typeof userSchema> = {
         id: 'John Smith',
         age: 50,
       };
@@ -238,6 +320,56 @@ describe('Expando Object', () => {
       const expected = {
         user_id: 'John Smith',
         user_age: 50,
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('AdditionalProperties: should map with object typed additional properties', () => {
+      const input = {
+        id: 'John Smith',
+        age: 50,
+        additionalProps: {
+          obj: {
+            size: 123,
+            name: 'WorkA',
+          },
+        },
+      };
+      const output = validateAndUnmap(input, userSchemaWithAdditionalWorks);
+      const expected = {
+        user_id: 'John Smith',
+        user_age: 50,
+        obj: {
+          size: 123,
+          Name: 'WorkA',
+        },
+      };
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(expected);
+    });
+
+    it('AdditionalProperties: should map with anyOf typed additional properties', () => {
+      const input = {
+        id: 'John Smith',
+        age: 50,
+        additionalProps: {
+          obj: {
+            size: 123,
+            name: 'WorkA',
+          },
+          number: 123.2,
+        },
+      };
+      const output = validateAndUnmap(input, userSchemaWithAdditionalAnyOf);
+      const expected = {
+        user_id: 'John Smith',
+        user_age: 50,
+        obj: {
+          size: 123,
+          Name: 'WorkA',
+        },
+        number: 123.2,
       };
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(expected);
