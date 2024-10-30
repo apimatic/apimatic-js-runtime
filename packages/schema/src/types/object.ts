@@ -256,11 +256,8 @@ function validateObjectBeforeMapXml(
       [key: string]: unknown;
     };
     const { $: attrs, ...elements } = valueObject;
-    const attributes = attrs ?? {};
 
-    // Validate all known elements and attributes using the schema
-
-    return validateValueObject({
+    let validationObj = {
       validationMethod: 'validateBeforeMapXml',
       propTypeName: 'child elements',
       propTypePrefix: 'element',
@@ -271,20 +268,21 @@ function validateObjectBeforeMapXml(
       ctxt,
       skipAdditionalPropValidation,
       mapAdditionalProps,
-    }).concat(
-      validateValueObject({
-        validationMethod: 'validateBeforeMapXml',
-        propTypeName: 'attributes',
-        propTypePrefix: '@',
-        valueTypeName: 'element',
-        propMapping: attributesToProps,
-        objectSchema,
-        valueObject: attributes,
-        ctxt,
-        skipAdditionalPropValidation,
-        mapAdditionalProps,
-      })
-    );
+    };
+    // Validate all known elements using the schema
+    const elementErrors = validateValueObject(validationObj);
+
+    validationObj = {
+      ...validationObj,
+      propTypeName: 'attributes',
+      propTypePrefix: '@',
+      propMapping: attributesToProps,
+      valueObject: attrs ?? {},
+    };
+    // Validate all known attributes using the schema
+    const attributesErrors = validateValueObject(validationObj);
+
+    return elementErrors.concat(attributesErrors);
   };
 }
 
@@ -388,10 +386,7 @@ function validateValueObject({
   skipAdditionalPropValidation,
   mapAdditionalProps,
 }: {
-  validationMethod:
-    | 'validateBeforeMap'
-    | 'validateBeforeUnmap'
-    | 'validateBeforeMapXml';
+  validationMethod: string;
   propTypeName: string;
   propTypePrefix: string;
   valueTypeName: string;
