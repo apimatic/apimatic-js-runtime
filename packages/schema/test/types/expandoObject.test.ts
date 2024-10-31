@@ -8,7 +8,6 @@ import {
   validateAndMap,
   validateAndUnmap,
   typedExpandoObject,
-  dict,
   object,
   anyOf,
 } from '../../src';
@@ -24,7 +23,8 @@ describe('Expando Object', () => {
       id: ['user_id', string()],
       age: ['user_age', number()],
     },
-    ['additionalProps', optional(dict(number()))]
+    'additionalProps',
+    number()
   );
 
   const workSchema = object({
@@ -37,7 +37,8 @@ describe('Expando Object', () => {
       id: ['user_id', string()],
       age: ['user_age', number()],
     },
-    ['additionalProps', optional(dict(workSchema))]
+    'additionalProps',
+    workSchema
   );
 
   const userSchemaWithAdditionalAnyOf = typedExpandoObject(
@@ -45,7 +46,8 @@ describe('Expando Object', () => {
       id: ['user_id', string()],
       age: ['user_age', number()],
     },
-    ['additionalProps', optional(dict(anyOf([workSchema, number()])))]
+    'additionalProps',
+    anyOf([workSchema, number()])
   );
 
   describe('Mapping', () => {

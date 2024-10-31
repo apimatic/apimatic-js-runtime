@@ -17,6 +17,8 @@ import {
   objectKeyEncode,
   omitKeysFromObject,
 } from '../utils';
+import { dict } from './dict';
+import { optional } from './optional';
 
 type AnyObjectSchema = Record<
   string,
@@ -69,8 +71,8 @@ export interface ExtendedObjectSchema<
   K extends string,
   U
 > extends Schema<
-    ObjectType<T> & { [key in K]?: U },
-    MappedObjectType<T> & { [key in K]?: U }
+    ObjectType<T> & { [key in K]?: Record<string, U> },
+    MappedObjectType<T> & { [key in K]?: Record<string, U> }
   > {
   readonly objectSchema: T;
 }
@@ -120,9 +122,13 @@ export function typedExpandoObject<
   S extends Schema<any, any>
 >(
   objectSchema: T,
-  additionalPropSchema: [K, S]
+  additionalPropertyKey: K,
+  additionalPropertySchema: S
 ): ExtendedObjectSchema<V, T, K, SchemaType<S>> {
-  return internalObject(objectSchema, true, additionalPropSchema);
+  return internalObject(objectSchema, true, [
+    additionalPropertyKey,
+    optional(dict(additionalPropertySchema)),
+  ]);
 }
 
 /**
