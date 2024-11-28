@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.7.14](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.13...@apimatic/schema@0.7.14) (2024-11-28)
+
+### Features
+
+- **additional-properties:** adds typed expando object schema ([#193](https://github.com/apimatic/apimatic-js-runtime/issues/193)) ([b36ed4d](https://github.com/apimatic/apimatic-js-runtime/commit/b36ed4dd088341e6f69ced399f7d0b83a12c96ef))
+
 ### [0.7.13](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.12...@apimatic/schema@0.7.13) (2024-09-27)
 
 **Note:** Version bump only for package @apimatic/schema
