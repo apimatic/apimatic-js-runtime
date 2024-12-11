@@ -9,20 +9,20 @@ They provide common runtime utilities needed by SDKs to make API calls and handl
 
 ## List of Packages
 
-| Name | Description |
-| --- | --- |
-| [@apimatic/schema](packages/schema) | Validate and transform data using schema definitions. |
-| [@apimatic/authentication-adapters](packages/authentication-adapter) | Provides pluggable adapters for different authentication schemes. |
-| [@apimatic/axios-client-adapter](packages/axios-client-adapter) | Axios HTTP Client adapter which can be plugged into @apimatic/core package. |
-| [@apimatic/convert-to-stream](packages/convert-to-stream) | Converts data into streams/blobs. |
-| [@apimatic/core](packages/core) | Provides core http logic of request building, response handling and validation and using api error classes |
-| [@apimatic/core-interfaces](packages/core-interfaces) | Abstraction layer for @apimatic/core. |
-| [@apimatic/file-wrapper](packages/file-wrapper) | Wrapper around the file types and their utilities. |
-| [@apimatic/http-headers](packages/http-headers) | HTTP Headers utilities for apimatic-js-runtime libraries. |
-| [@apimatic/http-query](packages/http-query) | HTTP Query utilities for apimatic-js-runtime libraries |
-| [@apimatic/oauth-adapters](packages/oauth-adapters) | Provides pluggable adapters for OAuth 2.0 authentication schemes. |
-| [@apimatic/xml-adapter](packages/xml-adapter) | Provides XML serialization and deserialization utilities for apimatic-js-runtime libraries. |
-| [@apimatic/test-utilities](packages/test-utilities) | Provides assertion utilities for testing api calls. It can be plugged in as dev dependency to any library. |
+| Name | Version | Description |
+| --- | --- | --- |
+| [@apimatic/schema](packages/schema) | [![npm shield](https://img.shields.io/npm/v/@apimatic/schema)](https://www.npmjs.com/package/@apimatic/schema) | Validate and transform data using schema definitions. |
+| [@apimatic/authentication-adapters](packages/authentication-adapter) | [![npm shield](https://img.shields.io/npm/v/@apimatic/authentication-adapters)](https://www.npmjs.com/package/@apimatic/authentication-adapters) | Provides pluggable adapters for different authentication schemes. |
+| [@apimatic/axios-client-adapter](packages/axios-client-adapter) | [![npm shield](https://img.shields.io/npm/v/@apimatic/axios-client-adapter)](https://www.npmjs.com/package/@apimatic/axios-client-adapter) | Axios HTTP Client adapter which can be plugged into @apimatic/core package. |
+| [@apimatic/convert-to-stream](packages/convert-to-stream) | [![npm shield](https://img.shields.io/npm/v/@apimatic/convert-to-stream)](https://www.npmjs.com/package/@apimatic/convert-to-stream) | Converts data into streams/blobs. |
+| [@apimatic/core](packages/core) | [![npm shield](https://img.shields.io/npm/v/@apimatic/core)](https://www.npmjs.com/package/@apimatic/core) | Provides core http logic of request building, response handling and validation and using api error classes |
+| [@apimatic/core-interfaces](packages/core-interfaces) | [![npm shield](https://img.shields.io/npm/v/@apimatic/core-interfaces)](https://www.npmjs.com/package/@apimatic/core-interfaces) | Abstraction layer for @apimatic/core. |
+| [@apimatic/file-wrapper](packages/file-wrapper) | [![npm shield](https://img.shields.io/npm/v/@apimatic/file-wrapper)](https://www.npmjs.com/package/@apimatic/file-wrapper) | Wrapper around the file types and their utilities. |
+| [@apimatic/http-headers](packages/http-headers) | [![npm shield](https://img.shields.io/npm/v/@apimatic/http-headers)](https://www.npmjs.com/package/@apimatic/http-headers) | HTTP Headers utilities for apimatic-js-runtime libraries. |
+| [@apimatic/http-query](packages/http-query) | [![npm shield](https://img.shields.io/npm/v/@apimatic/http-query)](https://www.npmjs.com/package/@apimatic/http-query) | HTTP Query utilities for apimatic-js-runtime libraries |
+| [@apimatic/oauth-adapters](packages/oauth-adapters) | [![npm shield](https://img.shields.io/npm/v/@apimatic/oauth-adapters)](https://www.npmjs.com/package/@apimatic/oauth-adapters) | Provides pluggable adapters for OAuth 2.0 authentication schemes. |
+| [@apimatic/xml-adapter](packages/xml-adapter) | [![npm shield](https://img.shields.io/npm/v/@apimatic/xml-adapter)](https://www.npmjs.com/package/@apimatic/xml-adapter) | Provides XML serialization and deserialization utilities for apimatic-js-runtime libraries. |
+| [@apimatic/test-utilities](packages/test-utilities) | [![npm shield](https://img.shields.io/npm/v/@apimatic/test-utilities)](https://www.npmjs.com/package/@apimatic/test-utilities) | Provides assertion utilities for testing api calls. It can be plugged in as dev dependency to any library. |
 
 [ci-badge]: https://github.com/apimatic/apimatic-js-runtime/actions/workflows/main.yml/badge.svg
 [ci-url]: https://github.com/apimatic/apimatic-js-runtime/actions/workflows/main.yml
