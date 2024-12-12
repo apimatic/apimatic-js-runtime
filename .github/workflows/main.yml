@@ -36,6 +36,7 @@ jobs:
         run: yarn check-style
         
       - name: Upload coverage reports
+        if: ${{ matrix.node == "19.x" && github.actor != 'dependabot[bot]' }}
         uses: paambaati/codeclimate-action@v3.0.0
         env:
           CC_TEST_REPORTER_ID: ${{ secrets.TEST_REPORTER_ID }}
