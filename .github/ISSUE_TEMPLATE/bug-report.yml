@@ -65,7 +65,6 @@ body:
         - **Compiler / Runtime Details**:
         - **Framework / Library Versions (if applicable)**:
         - **Browser Version (if applicable)**:
-        - **Browser Version (if applicable)**: 
         - **SDK Name**:
       render: markdown
     validations:
