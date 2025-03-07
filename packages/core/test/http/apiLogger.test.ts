@@ -133,7 +133,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'info: Request GET https://apimatic.hopto.org:3000/test/requestBuilder content-type',
-      'info: Request headers {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga"}',
+      'info: Request headers {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Basic WmVlc2hhbjo5OQ=="}',
     ];
 
     await mockClient(loggingOpts);
@@ -151,7 +151,7 @@ describe('Test APILogger with Request ConsoleLogging', () => {
 
     const expectedConsoleLogs = [
       'info: Request GET https://apimatic.hopto.org:3000/test/requestBuilder content-type',
-      'info: Request headers {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga"}',
+      'info: Request headers {"Content-type":"content-type","Content-length":"Content-length","Authorization":"Basic WmVlc2hhbjo5OQ=="}',
     ];
 
     await mockClient(loggingOpts);
@@ -319,7 +319,10 @@ function mockRequest(): HttpRequest {
     headers: {
       'Content-type': 'content-type',
       'Content-length': 'Content-length',
-      Authorization: 'Bearer EAAAEFZ2r-rqsEBBB0s2rh210e18mspf4dzga',
+    },
+    auth: {
+      username: 'Zeeshan',
+      password: '99',
     },
     body: {
       type: 'text',
