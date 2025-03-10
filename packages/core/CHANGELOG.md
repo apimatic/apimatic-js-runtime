@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.18](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.17...@apimatic/core@0.10.18) (2025-03-10)
+
+### Bug Fixes
+
+- **logger:** masking headers flow is changing values of request headers ([#226](https://github.com/apimatic/apimatic-js-runtime/issues/226)) ([a3d5b95](https://github.com/apimatic/apimatic-js-runtime/commit/a3d5b95365587768f1c40290634f1f21d95d41e6))
+
 ### [0.10.17](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.16...@apimatic/core@0.10.17) (2024-12-12)
 
 **Note:** Version bump only for package @apimatic/core
