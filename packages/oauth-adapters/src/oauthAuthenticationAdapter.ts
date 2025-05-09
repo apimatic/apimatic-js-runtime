@@ -1,4 +1,3 @@
-import { OAuthToken } from './oAuthToken';
 import {
   AuthenticatorInterface,
   passThroughInterceptor,
@@ -6,14 +5,20 @@ import {
 import { AUTHORIZATION_HEADER, setHeader } from '@apimatic/http-headers';
 import { OAuthConfiguration } from './oAuthConfiguration';
 
-export const requestAuthenticationProvider = (
-  initialOAuthToken?: OAuthToken,
-  oAuthTokenProvider?: (token: OAuthToken | undefined) => Promise<OAuthToken>,
-  oAuthOnTokenUpdate?: (token: OAuthToken) => void,
-  oAuthConfiguration?: OAuthConfiguration
+export interface OAuthTokenConstraints {
+  accessToken?: string;
+  expiry?: bigint;
+}
+
+export const requestAuthenticationProvider = <T extends OAuthTokenConstraints>(
+  initialOAuthToken?: T,
+  oAuthTokenProvider?: (token: T | undefined) => Promise<T>,
+  oAuthOnTokenUpdate?: (token: T) => void,
+  oAuthConfiguration?: OAuthConfiguration,
+  setOAuthHeader?: (request: any, token: T) => void
 ): AuthenticatorInterface<boolean> => {
   // This token is shared between all API calls for a client instance.
-  let lastOAuthToken: Promise<OAuthToken | undefined> = Promise.resolve(
+  let lastOAuthToken: Promise<T | undefined> = Promise.resolve(
     initialOAuthToken
   );
 
@@ -39,20 +44,27 @@ export const requestAuthenticationProvider = (
       setOAuthTokenInRequest(
         oAuthToken,
         request,
-        oAuthConfiguration?.clockSkew
+        oAuthConfiguration?.clockSkew,
+        setOAuthHeader
       );
       return next(request, options);
     };
   };
 };
 
-function setOAuthTokenInRequest(
-  oAuthToken: OAuthToken | undefined,
+function setOAuthTokenInRequest<T extends OAuthTokenConstraints>(
+  oAuthToken: T | undefined,
   request: any,
-  clockSkew?: number
+  clockSkew?: number,
+  setOAuthHeader?: (request: any, token: T) => void
 ) {
   validateAuthorization(oAuthToken, clockSkew);
   request.headers = request.headers ?? {};
+  if (setOAuthHeader && oAuthToken) {
+    setOAuthHeader(request, oAuthToken); // assumes it mutates the request
+    return;
+  }
+
   setHeader(
     request.headers,
     AUTHORIZATION_HEADER,
@@ -60,7 +72,10 @@ function setOAuthTokenInRequest(
   );
 }
 
-function validateAuthorization(oAuthToken?: OAuthToken, clockSkew?: number) {
+function validateAuthorization<T extends OAuthTokenConstraints>(
+  oAuthToken?: T,
+  clockSkew?: number
+) {
   if (!isValid(oAuthToken)) {
     throw new Error(
       'Client is not authorized. An OAuth token is needed to make API calls.'
@@ -74,13 +89,16 @@ function validateAuthorization(oAuthToken?: OAuthToken, clockSkew?: number) {
   }
 }
 
-export function isValid(
-  oAuthToken: OAuthToken | undefined
-): oAuthToken is OAuthToken {
+export function isValid<T extends OAuthTokenConstraints>(
+  oAuthToken: T | undefined
+): oAuthToken is T {
   return typeof oAuthToken !== 'undefined';
 }
 
-export function isExpired(oAuthToken: OAuthToken, clockSkew?: number) {
+export function isExpired<T extends OAuthTokenConstraints>(
+  oAuthToken: T,
+  clockSkew?: number
+) {
   if (typeof oAuthToken.expiry === 'undefined') {
     return false; // Expiry is undefined, token cannot be expired
   }
