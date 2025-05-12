@@ -1,5 +1,10 @@
-import { callHttpInterceptors } from '../../core/src/http/httpInterceptor';
-import { requestAuthenticationProvider } from '../src/oauthAuthenticationAdapter';
+import { callHttpInterceptors } from '../../core/src';
+import {
+  isExpired,
+  isValid,
+  requestAuthenticationProvider,
+  OAuthConfiguration,
+} from '../src';
 import {
   HttpContext,
   HttpInterceptorInterface,
@@ -7,8 +12,6 @@ import {
   HttpResponse,
   RequestOptions,
 } from '../../core-interfaces/src';
-import { OAuthToken } from '../src/oAuthToken';
-import { isExpired, isValid, OAuthConfiguration } from '../lib';
 
 describe('test oauth request provider', () => {
   it('should pass with disabled authentication', async () => {
@@ -24,7 +27,7 @@ describe('test oauth request provider', () => {
   });
 
   it('should pass with valid token', async () => {
-    const oAuthToken: OAuthToken = {
+    const oAuthToken = {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiresIn: BigInt(100000),
@@ -38,20 +41,20 @@ describe('test oauth request provider', () => {
   });
 
   it('should pass with valid token + authProvider + updateCallback', async () => {
-    const oAuthToken: OAuthToken = {
+    const oAuthToken = {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiresIn: BigInt(100000),
       scope: 'products orders',
       expiry: BigInt(Date.now()),
     };
-    const oAuthTokenProvider = jest.fn((_: OAuthToken | undefined) => {
+    const oAuthTokenProvider = jest.fn((_) => {
       return Promise.resolve({
         accessToken: 'Invalid',
         tokenType: 'Bearer',
       });
     });
-    const oAuthOnTokenUpdate = jest.fn((_: OAuthToken) => {
+    const oAuthOnTokenUpdate = jest.fn((_) => {
       // handler for updated token
     });
     const authenticationProvider = requestAuthenticationProvider(
@@ -76,7 +79,7 @@ describe('test oauth request provider', () => {
   });
 
   it('should pass with undefined token + authProvider + updateCallback', async () => {
-    const oAuthTokenProvider = jest.fn((token: OAuthToken | undefined) => {
+    const oAuthTokenProvider = jest.fn((token) => {
       if (token === undefined) {
         return Promise.resolve({
           accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
@@ -92,7 +95,7 @@ describe('test oauth request provider', () => {
         accessToken: 'Invalid',
       });
     });
-    const oAuthOnTokenUpdate = jest.fn((_: OAuthToken) => {
+    const oAuthOnTokenUpdate = jest.fn((_) => {
       // handler for updated token
     });
     const authenticationProvider = requestAuthenticationProvider(
@@ -135,7 +138,7 @@ describe('test oauth request provider', () => {
       scope: 'products orders',
       expiry: BigInt(2000),
     };
-    const oAuthTokenProvider = jest.fn((token: OAuthToken | undefined) => {
+    const oAuthTokenProvider = jest.fn((token) => {
       if (token === undefined) {
         // return an invalid token if existing token is undefined
         return Promise.resolve({
@@ -149,7 +152,7 @@ describe('test oauth request provider', () => {
         expiry: BigInt(Date.now()),
       });
     });
-    const oAuthOnTokenUpdate = jest.fn((_: OAuthToken) => {
+    const oAuthOnTokenUpdate = jest.fn((_) => {
       // handler for updated token
     });
 
@@ -174,12 +177,12 @@ describe('test oauth request provider', () => {
 
 describe('isValid', () => {
   it('should return false if oAuthToken is undefined', () => {
-    const token: OAuthToken | undefined = undefined;
+    const token = undefined;
     expect(isValid(token)).toBe(false);
   });
 
   it('should return true if oAuthToken is defined', () => {
-    const token: OAuthToken = {
+    const token = {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiry: BigInt(Math.floor(Date.now() / 1000) + 60),
@@ -188,7 +191,7 @@ describe('isValid', () => {
   });
 
   it('should return true if oAuthToken is defined with no expiry', () => {
-    const token: OAuthToken = {
+    const token = {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
     };
@@ -198,7 +201,7 @@ describe('isValid', () => {
 
 describe('isExpired', () => {
   it('should return false if expiry is undefined', () => {
-    const token: OAuthToken = {
+    const token = {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiry: undefined,
@@ -207,7 +210,7 @@ describe('isExpired', () => {
   });
 
   it('should return false if token is not expired', () => {
-    const token: OAuthToken = {
+    const token = {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiry: BigInt(Math.floor(Date.now() / 1000) + 60),
@@ -216,7 +219,7 @@ describe('isExpired', () => {
   });
 
   it('should return true if token is expired', () => {
-    const token: OAuthToken = {
+    const token = {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiry: BigInt(Math.floor(Date.now() / 1000) - 60),
@@ -225,7 +228,7 @@ describe('isExpired', () => {
   });
 
   it('should correctly apply clock skew and return true if token is close to expiry', () => {
-    const token: OAuthToken = {
+    const token = {
       accessToken: '1f12495f1a1ad9066b51fb3b4e456aee',
       tokenType: 'Bearer',
       expiry: BigInt(Math.floor(Date.now() / 1000) + 30),
@@ -245,7 +248,7 @@ describe('isExpired', () => {
     const oAuthConfiguration: OAuthConfiguration = {
       clockSkew: oneMinOffset * 2,
     };
-    const oAuthTokenProvider = jest.fn((token: OAuthToken | undefined) => {
+    const oAuthTokenProvider = jest.fn((token) => {
       if (token === undefined) {
         // return an invalid token if existing token is undefined
         return Promise.resolve({
@@ -259,7 +262,7 @@ describe('isExpired', () => {
         expiry: BigInt(Date.now()),
       });
     });
-    const oAuthOnTokenUpdate = jest.fn((_: OAuthToken) => {
+    const oAuthOnTokenUpdate = jest.fn((_) => {
       // handler for updated token
     });
 
@@ -280,6 +283,42 @@ describe('isExpired', () => {
     expect(oAuthOnTokenUpdate.mock.calls[0][0].accessToken).toBe(
       '1f12495f1a1ad9066b51fb3b4e456aeeNEW'
     );
+  });
+});
+
+describe('oauthAuthenticationAdapter', () => {
+  it('calls custom setOAuthHeader and skips default header', async () => {
+    const token = {
+      accessToken: 'token',
+      expiry: BigInt(Math.floor(Date.now() / 1000) + 1000),
+    };
+    const setOAuthHeader = jest.fn((request, t) => {
+      request.headers['X-Test'] = t.accessToken;
+    });
+
+    const provider = requestAuthenticationProvider(
+      token,
+      undefined,
+      undefined,
+      undefined,
+      setOAuthHeader
+    );
+    const interceptor = provider(true);
+    const req: any = { headers: {} };
+    await interceptor(req, {}, async () => ({
+      request: req,
+      response: { statusCode: 200, body: '', headers: {} },
+    }));
+    expect(setOAuthHeader).toHaveBeenCalled();
+    expect(req.headers['X-Test']).toBe('token');
+    expect(req.headers.Authorization).toBeUndefined();
+  });
+
+  it('subtracts clockSkew from expiry in isExpired', () => {
+    const now = Math.floor(Date.now() / 1000);
+    const token = { accessToken: 't', expiry: BigInt(now + 10) };
+    expect(isExpired(token, 0)).toBe(false);
+    expect(isExpired(token, 20)).toBe(true);
   });
 });
 
