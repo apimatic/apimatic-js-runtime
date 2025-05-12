@@ -10,25 +10,6 @@ interface OAuthTokenConstraints {
   expiry?: bigint;
 }
 
-async function refreshOAuthToken<T extends OAuthTokenConstraints>(
-  currentToken: T | undefined,
-  provider: (token: T | undefined) => Promise<T>,
-  onUpdate?: (token: T) => void,
-  clockSkew?: number
-): Promise<T | undefined> {
-  if (
-    !provider ||
-    (isValid(currentToken) && !isExpired(currentToken as T, clockSkew))
-  ) {
-    return currentToken;
-  }
-  const newToken = await provider(currentToken);
-  if (newToken && onUpdate) {
-    onUpdate(newToken);
-  }
-  return newToken;
-}
-
 export const requestAuthenticationProvider = <T extends OAuthTokenConstraints>(
   initialOAuthToken?: T,
   oAuthTokenProvider?: (token: T | undefined) => Promise<T>,
@@ -64,6 +45,25 @@ export const requestAuthenticationProvider = <T extends OAuthTokenConstraints>(
     };
   };
 };
+
+async function refreshOAuthToken<T extends OAuthTokenConstraints>(
+  currentToken: T | undefined,
+  provider?: (token: T | undefined) => Promise<T>,
+  onUpdate?: (token: T) => void,
+  clockSkew?: number
+): Promise<T | undefined> {
+  if (
+    !provider ||
+    (isValid(currentToken) && !isExpired(currentToken, clockSkew))
+  ) {
+    return currentToken;
+  }
+  const newToken = await provider(currentToken);
+  if (newToken && onUpdate) {
+    onUpdate(newToken);
+  }
+  return newToken;
+}
 
 function setOAuthTokenInRequest<T extends OAuthTokenConstraints>(
   oAuthToken: T | undefined,
