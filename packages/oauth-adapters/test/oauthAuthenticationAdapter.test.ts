@@ -1,5 +1,8 @@
 import { callHttpInterceptors } from '../../core/src/http/httpInterceptor';
-import { requestAuthenticationProvider } from '../src/oauthAuthenticationAdapter';
+import {
+  requestAuthenticationProvider,
+  isExpired,
+} from '../src/oauthAuthenticationAdapter';
 import {
   HttpContext,
   HttpInterceptorInterface,
@@ -7,7 +10,12 @@ import {
   HttpResponse,
   RequestOptions,
 } from '../../core-interfaces/src';
-import { isExpired, isValid, OAuthConfiguration } from '../lib';
+import { isValid, OAuthConfiguration } from '../lib';
+
+// interface CustomToken extends OAuthTokenConstraints {
+//   accessToken: string;
+//   expiry: bigint;
+// }
 
 describe('test oauth request provider', () => {
   it('should pass with disabled authentication', async () => {
@@ -279,6 +287,42 @@ describe('isExpired', () => {
     expect(oAuthOnTokenUpdate.mock.calls[0][0].accessToken).toBe(
       '1f12495f1a1ad9066b51fb3b4e456aeeNEW'
     );
+  });
+});
+
+describe('oauthAuthenticationAdapter', () => {
+  it('calls custom setOAuthHeader and skips default header', async () => {
+    const token = {
+      accessToken: 'token',
+      expiry: BigInt(Math.floor(Date.now() / 1000) + 1000),
+    };
+    const setOAuthHeader = jest.fn((request, t) => {
+      request.headers['X-Test'] = t.accessToken;
+    });
+
+    const provider = requestAuthenticationProvider(
+      token,
+      undefined,
+      undefined,
+      undefined,
+      setOAuthHeader
+    );
+    const interceptor = provider(true);
+    const req: any = { headers: {} };
+    await interceptor(req, {}, async () => ({
+      request: req,
+      response: { statusCode: 200, body: '', headers: {} },
+    }));
+    expect(setOAuthHeader).toHaveBeenCalled();
+    expect(req.headers['X-Test']).toBe('token');
+    expect(req.headers.Authorization).toBeUndefined();
+  });
+
+  it('subtracts clockSkew from expiry in isExpired', () => {
+    const now = Math.floor(Date.now() / 1000);
+    const token = { accessToken: 't', expiry: BigInt(now + 10) };
+    expect(isExpired(token, 0)).toBe(false);
+    expect(isExpired(token, 20)).toBe(true);
   });
 });
 
