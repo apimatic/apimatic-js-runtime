@@ -1,8 +1,10 @@
-import { callHttpInterceptors } from '../../core/src/http/httpInterceptor';
+import { callHttpInterceptors } from '../../core/src';
 import {
   isExpired,
+  isValid,
   requestAuthenticationProvider,
-} from '../src/oauthAuthenticationAdapter';
+  OAuthConfiguration,
+} from '../src';
 import {
   HttpContext,
   HttpInterceptorInterface,
@@ -10,7 +12,6 @@ import {
   HttpResponse,
   RequestOptions,
 } from '../../core-interfaces/src';
-import { isValid, OAuthConfiguration } from '../lib';
 
 describe('test oauth request provider', () => {
   it('should pass with disabled authentication', async () => {

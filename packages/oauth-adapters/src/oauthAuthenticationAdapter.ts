@@ -30,7 +30,7 @@ export const requestAuthenticationProvider = <T extends OAuthTokenConstraints>(
       let token = await lastOAuthToken;
       lastOAuthToken = refreshOAuthToken(
         token,
-        oAuthTokenProvider!,
+        oAuthTokenProvider,
         oAuthOnTokenUpdate,
         oAuthConfiguration?.clockSkew
       );
