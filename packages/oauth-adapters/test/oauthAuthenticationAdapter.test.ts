@@ -1,7 +1,7 @@
 import { callHttpInterceptors } from '../../core/src/http/httpInterceptor';
 import {
-  requestAuthenticationProvider,
   isExpired,
+  requestAuthenticationProvider,
 } from '../src/oauthAuthenticationAdapter';
 import {
   HttpContext,
@@ -11,11 +11,6 @@ import {
   RequestOptions,
 } from '../../core-interfaces/src';
 import { isValid, OAuthConfiguration } from '../lib';
-
-// interface CustomToken extends OAuthTokenConstraints {
-//   accessToken: string;
-//   expiry: bigint;
-// }
 
 describe('test oauth request provider', () => {
   it('should pass with disabled authentication', async () => {
