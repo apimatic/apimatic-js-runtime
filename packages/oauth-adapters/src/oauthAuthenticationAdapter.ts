@@ -5,9 +5,28 @@ import {
 import { AUTHORIZATION_HEADER, setHeader } from '@apimatic/http-headers';
 import { OAuthConfiguration } from './oAuthConfiguration';
 
-export interface OAuthTokenConstraints {
+interface OAuthTokenConstraints {
   accessToken?: string;
   expiry?: bigint;
+}
+
+async function refreshOAuthToken<T extends OAuthTokenConstraints>(
+  currentToken: T | undefined,
+  provider: (token: T | undefined) => Promise<T>,
+  onUpdate?: (token: T) => void,
+  clockSkew?: number
+): Promise<T | undefined> {
+  if (
+    !provider ||
+    (isValid(currentToken) && !isExpired(currentToken as T, clockSkew))
+  ) {
+    return currentToken;
+  }
+  const newToken = await provider(currentToken);
+  if (newToken && onUpdate) {
+    onUpdate(newToken);
+  }
+  return newToken;
 }
 
 export const requestAuthenticationProvider = <T extends OAuthTokenConstraints>(
@@ -26,23 +45,17 @@ export const requestAuthenticationProvider = <T extends OAuthTokenConstraints>(
     if (!requiresAuth) {
       return passThroughInterceptor;
     }
-
     return async (request, options, next) => {
-      let oAuthToken = await lastOAuthToken;
-      if (
-        oAuthTokenProvider &&
-        (!isValid(oAuthToken) ||
-          isExpired(oAuthToken, oAuthConfiguration?.clockSkew))
-      ) {
-        // Set the shared token for the next API calls to use.
-        lastOAuthToken = oAuthTokenProvider(oAuthToken);
-        oAuthToken = await lastOAuthToken;
-        if (oAuthOnTokenUpdate && oAuthToken) {
-          oAuthOnTokenUpdate(oAuthToken);
-        }
-      }
+      let token = await lastOAuthToken;
+      lastOAuthToken = refreshOAuthToken(
+        token,
+        oAuthTokenProvider!,
+        oAuthOnTokenUpdate,
+        oAuthConfiguration?.clockSkew
+      );
+      token = await lastOAuthToken;
       setOAuthTokenInRequest(
-        oAuthToken,
+        token,
         request,
         oAuthConfiguration?.clockSkew,
         setOAuthHeader
