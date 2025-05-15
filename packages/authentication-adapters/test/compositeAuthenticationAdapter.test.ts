@@ -6,7 +6,6 @@ import { customHeaderAuthenticationProvider } from '../src/customHeaderAuthentic
 import { callHttpInterceptors } from '../../core/src/http/httpInterceptor';
 import { HttpRequest, HttpResponse } from '@apimatic/core-interfaces';
 import { requestAuthenticationProvider } from '../../oauth-adapters/src/oauthAuthenticationAdapter';
-import { OAuthToken } from '../../oauth-adapters/src/oAuthToken';
 
 interface Configuration {
   basicAuthCredentials?: {
@@ -30,14 +29,14 @@ interface Configuration {
   oAuthCCGCredentials?: {
     oAuthClientId: string;
     oAuthClientSecret: string;
-    oAuthToken?: OAuthToken;
+    oAuthToken?: any;
     oAuthScopes?: 'read' | 'write';
   };
   oAuthACGCredentials?: {
     oAuthClientId: string;
     oAuthClientSecret: string;
     oAuthRedirectUri: string;
-    oAuthToken?: OAuthToken;
+    oAuthToken?: any;
     oAuthScopes?: 'read' | 'write';
   };
   timeout: number;

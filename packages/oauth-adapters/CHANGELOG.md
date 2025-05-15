@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.4.10](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/oauth-adapters@0.4.9...@apimatic/oauth-adapters@0.4.10) (2025-05-12)
+
+### Features
+
+- **oauth:** support for custom oauth header ([#232](https://github.com/apimatic/apimatic-js-runtime/issues/232)) ([a28b601](https://github.com/apimatic/apimatic-js-runtime/commit/a28b6015ce87d65a6f2ec69d9acf106d1c79d6f4))
+
 ### [0.4.9](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/oauth-adapters@0.4.8...@apimatic/oauth-adapters@0.4.9) (2024-12-12)
 
 **Note:** Version bump only for package @apimatic/oauth-adapters
