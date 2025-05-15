@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.19](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.18...@apimatic/core@0.10.19) (2025-05-15)
+
+**Note:** Version bump only for package @apimatic/core
+
 ### [0.10.18](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.17...@apimatic/core@0.10.18) (2025-03-10)
 
 ### Bug Fixes

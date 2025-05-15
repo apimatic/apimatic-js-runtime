@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.2.9](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.8...@apimatic/core-interfaces@0.2.9) (2025-05-15)
+
+**Note:** Version bump only for package @apimatic/core-interfaces
+
 ### [0.2.8](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.7...@apimatic/core-interfaces@0.2.8) (2024-12-12)
 
 **Note:** Version bump only for package @apimatic/core-interfaces
