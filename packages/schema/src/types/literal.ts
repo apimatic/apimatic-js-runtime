@@ -18,5 +18,8 @@ export function literal<T>(literalValue: T): Schema<T, T> {
     type: `Literal<${literalToString(literalValue)}>`,
     validate: toValidator(validate),
     map,
+    toJSONSchema: () => ({
+      const: literalValue as any, // TODO: MAKE THIS TYPE-SAFE
+    }),
   });
 }

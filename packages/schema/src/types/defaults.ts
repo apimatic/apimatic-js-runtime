@@ -29,6 +29,10 @@ export function defaults<M, U, V extends M & U>(
       shouldDefault(v, defaultValue) ? defaultValue : schema.mapXml(v, ctxt),
     unmapXml: (v, ctxt) =>
       shouldDefault(v, defaultValue) ? defaultValue : schema.unmapXml(v, ctxt),
+    toJSONSchema: () => ({
+      ...schema.toJSONSchema(),
+      default: defaultValue as any, // TODO: MAKE THIS TYPE-SAFE
+    }),
   };
 }
 
