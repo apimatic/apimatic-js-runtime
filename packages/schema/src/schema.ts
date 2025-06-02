@@ -24,7 +24,14 @@ export interface Schema<T, S = any> {
   mapXml: (value: any, ctxt: SchemaContextCreator) => T;
   unmapXml: (value: T, ctxt: SchemaContextCreator) => any;
 
-  toJSONSchema: () => JSONSchema7;
+  toJSONSchema: () => JSONSchema;
+}
+
+export interface JSONSchema extends JSONSchema7 {
+  discriminator?: {
+    propertyName: string;
+    mapping?: { [discriminatorValue: string]: string };
+  };
 }
 
 /**
