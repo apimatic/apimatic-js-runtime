@@ -32,11 +32,15 @@ export function numberEnum<T extends string, TEnumValue extends number>(
     createEnumChecker(enumVariable, allowForUnknownProps)
   );
 
+  const enumValues = Object.values(enumVariable).filter(
+    (v) => typeof v === 'number'
+  );
   return createSymmetricSchema({
-    type: `Enum<${Object.values(enumVariable)
-      .filter((v) => typeof v === 'number')
-      .join(',')}>`,
+    type: `Enum<${enumValues.join(',')}>`,
     map: coerceNumericStringToNumber as (value: TEnumValue) => TEnumValue,
     validate,
+    toJSONSchema: () => ({
+      enum: enumValues,
+    }),
   });
 }

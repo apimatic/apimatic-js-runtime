@@ -16,5 +16,6 @@ export function lazy<T, V>(schemaFn: () => Schema<T, V>): Schema<T, V> {
     unmapXml: (...args) => getSchema().unmapXml(...args),
     validateBeforeMapXml: (...args) =>
       getSchema().validateBeforeMapXml(...args),
+    toJSONSchema: () => getSchema().toJSONSchema(),
   };
 }

@@ -11,5 +11,8 @@ export function string(): Schema<string, string> {
     type: 'string',
     validate: toValidator(isValidStringValue),
     map: identityFn,
+    toJSONSchema: () => ({
+      type: 'string',
+    }),
   });
 }

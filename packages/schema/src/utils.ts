@@ -2,6 +2,7 @@
  * Utilities for internal library usage
  */
 
+import { JSONSchema7 } from 'json-schema';
 import { Schema, SchemaContextCreator, SchemaValidationError } from './schema';
 
 export function arrayEntries<T>(arr: T[]) {
@@ -52,6 +53,7 @@ export interface SymmetricSchema<T> {
     ctxt: SchemaContextCreator
   ) => SchemaValidationError[];
   map: (value: T, ctxt: SchemaContextCreator) => T;
+  toJSONSchema: () => JSONSchema7;
 }
 
 /**
@@ -66,6 +68,7 @@ export function createSymmetricSchema<T>(
     validateBeforeUnmap: schema.validate,
     map: schema.map,
     unmap: schema.map,
+    toJSONSchema: schema.toJSONSchema,
   });
 }
 
@@ -81,6 +84,7 @@ interface BasicSchema<T, S = unknown> {
   ) => SchemaValidationError[];
   map: (value: S, ctxt: SchemaContextCreator) => T;
   unmap: (value: T, ctxt: SchemaContextCreator) => S;
+  toJSONSchema: () => JSONSchema7;
 }
 
 /** Create a basic schema where XML mapping and validation is the same as for JSON */
