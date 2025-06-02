@@ -33,7 +33,7 @@ export function numberEnum<T extends string, TEnumValue extends number>(
   );
 
   const enumValues = Object.values(enumVariable).filter(
-    (v) => typeof v === 'number'
+    (v): v is number => typeof v === 'number'
   );
   return createSymmetricSchema({
     type: `Enum<${enumValues.join(',')}>`,
