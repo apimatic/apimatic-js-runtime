@@ -1,4 +1,5 @@
 import {
+  JSONSchema,
   Schema,
   SchemaContextCreator,
   SchemaMappedType,
@@ -233,6 +234,37 @@ function internalObject<
     mapXml: mapObjectFromXml(xmlObjectSchema, mapAdditionalProps),
     unmapXml: unmapObjectToXml(reverseXmlObjectSchema, mapAdditionalProps),
     objectSchema,
+    toJSONSchema: () => {
+      const jsonSchema: JSONSchema = {
+        type: 'object',
+      };
+
+      if (Object.keys(objectSchema).length) {
+        jsonSchema.properties = {};
+        jsonSchema.required = [];
+
+        for (const key in objectSchema) {
+          if (objectSchema.hasOwnProperty(key)) {
+            const propSchema = objectSchema[key][1];
+            jsonSchema.properties[key] = propSchema.toJSONSchema();
+
+            if (!propSchema.type().startsWith('Optional<')) {
+              jsonSchema.required.push(key);
+            }
+          }
+        }
+      }
+
+      if (mapAdditionalProps) {
+        if (typeof mapAdditionalProps === 'boolean') {
+          jsonSchema.additionalProperties = true;
+        } else {
+          jsonSchema.additionalProperties = mapAdditionalProps[1].toJSONSchema();
+        }
+      }
+
+      return jsonSchema;
+    },
   };
 }
 
