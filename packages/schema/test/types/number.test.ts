@@ -85,4 +85,14 @@ describe('Number', () => {
       `);
     });
   });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = number();
+      const output = schema.toJSONSchema();
+      expect(output).toBe({
+        type: 'number',
+      });
+    });
+  });
 });
