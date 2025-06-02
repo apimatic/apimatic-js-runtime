@@ -1,3 +1,4 @@
+import { JSONSchema7 } from 'json-schema';
 import { isOptionalNullable, objectKeyEncode } from './utils';
 
 /**
@@ -22,6 +23,8 @@ export interface Schema<T, S = any> {
   ) => SchemaValidationError[];
   mapXml: (value: any, ctxt: SchemaContextCreator) => T;
   unmapXml: (value: T, ctxt: SchemaContextCreator) => any;
+
+  toJSONSchema: () => JSONSchema7;
 }
 
 /**
