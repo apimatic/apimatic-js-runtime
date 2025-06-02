@@ -20,6 +20,7 @@
     "paths": {
       "tslib": ["./node_modules/tslib/tslib.d.ts"]
     },
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "strict": true
   }
 }
