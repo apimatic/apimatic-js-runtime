@@ -1,18 +1,9 @@
 import { Schema, SchemaContextCreator } from '../schema';
-
-type SchemaType<T extends Schema<any, any>> = T extends Schema<infer U, any>
-  ? U
-  : never;
-
-type ArraySchemaType<
-  T extends Array<Schema<any, any>>
-> = T[number] extends Schema<any, any> ? SchemaType<T[number]> : never;
-
-type DiscriminatorMap<T extends Array<Schema<any, any>>> = {
-  [K in ArraySchemaType<T>]?: Schema<ArraySchemaType<T>>;
-};
-
-type ValueOf<T> = T[keyof T];
+import {
+  ArraySchemaType,
+  DiscriminatorMap,
+  getDiscriminatedSchema,
+} from '../typeUtils';
 
 export function oneOf<T extends Array<Schema<any, any>>>(
   schemas: [...T],
@@ -119,31 +110,6 @@ function createOneOfWithDiscriminator<T extends Array<Schema<any, any>>>(
       return matchAndUnmapXml(schemas, value, ctxt);
     },
   };
-}
-
-function getDiscriminatedSchema<T extends Array<Schema<any, any>>>(
-  value: unknown,
-  discriminatorMap: DiscriminatorMap<T>,
-  discriminatorField: string,
-  useTypeOfCheck: boolean = true
-): ValueOf<DiscriminatorMap<T>> | false {
-  const discriminatorValue =
-    value &&
-    (useTypeOfCheck ? typeof value === 'object' : true) &&
-    (value as Record<string, unknown>)[discriminatorField];
-
-  if (!discriminatorValue) {
-    return false;
-  }
-
-  const schema =
-    discriminatorMap[discriminatorValue as keyof DiscriminatorMap<T>];
-
-  if (schema) {
-    return schema;
-  }
-
-  return false;
 }
 
 function createOneOfWithoutDiscriminator<T extends Array<Schema<any, any>>>(
