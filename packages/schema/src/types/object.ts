@@ -25,6 +25,14 @@ type AnyObjectSchema = Record<
   [string, Schema<any, any>, ObjectXmlOptions?]
 >;
 
+/**
+ * Type for dynamically calling validate methods
+ */
+type SchemaValidationMethods = keyof Pick<
+  Schema<any, any>,
+  'validateBeforeMap' | 'validateBeforeUnmap' | 'validateBeforeMapXml'
+>;
+
 type AllValues<T extends AnyObjectSchema> = {
   [P in keyof T]: { key: P; value: T[P][0]; schema: T[P][1] };
 }[keyof T];
@@ -264,7 +272,7 @@ function validateObjectBeforeMapXml(
     const { $: attrs, ...elements } = valueObject;
 
     let validationObj = {
-      validationMethod: 'validateBeforeMapXml',
+      validationMethod: 'validateBeforeMapXml' as const,
       propTypeName: 'child elements',
       propTypePrefix: 'element',
       valueTypeName: 'element',
@@ -388,7 +396,7 @@ function validateValueObject({
   skipAdditionalPropValidation,
   mapAdditionalProps,
 }: {
-  validationMethod: string;
+  validationMethod: SchemaValidationMethods;
   propTypeName: string;
   propTypePrefix: string;
   valueTypeName: string;
