@@ -5,7 +5,7 @@ import {
   toValidator,
 } from '../utils';
 
-function isValidBigIntValue(value: unknown, strict: boolean): value is bigint {
+function isValidBigIntValue(value: unknown, strict?: boolean): value is bigint {
   return strict
     ? typeof value === 'bigint'
     : typeof value === 'bigint' ||

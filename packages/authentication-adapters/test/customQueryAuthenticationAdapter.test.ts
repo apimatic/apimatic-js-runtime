@@ -62,7 +62,7 @@ describe('test custom query authentication scheme', () => {
       );
       const handler = authenticationProvider(enableAuthentication);
       const interceptor = [handler];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);

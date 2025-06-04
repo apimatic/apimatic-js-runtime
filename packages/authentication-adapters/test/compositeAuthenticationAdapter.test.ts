@@ -74,7 +74,7 @@ describe('test composite authentication adapter with false or empty security req
     const securityRequirements = false;
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -91,10 +91,10 @@ describe('test composite authentication adapter with false or empty security req
         method: 'GET',
         url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
       };
-      const securityRequirements = [];
+      const securityRequirements: any[] = [];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -143,7 +143,7 @@ describe('test composite authentication adapter with missing credentials object 
     const securityRequirements = [{ apiKey: true }, { apiHeader: true }];
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -181,7 +181,7 @@ describe('test composite authentication adapter with missing credentials object 
     const securityRequirements = [{ apiKey: true }, { apiHeader: true }];
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -220,7 +220,7 @@ describe('test composite authentication adapter with missing credentials object 
       const securityRequirements = [{ apiKey: false }, { apiHeader: true }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -263,7 +263,7 @@ describe('test composite authentication adapter with missing credentials object 
     const securityRequirements = [{ apiKey: true }, { apiHeader: false }];
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -299,7 +299,7 @@ describe('test composite authentication adapter with missing credentials object 
       const securityRequirements = [{ apiKey: false }, { apiHeader: false }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -342,7 +342,7 @@ describe('test composite authentication adapter with missing credentials object 
       const securityRequirements = [{ apiKey: true, apiHeader: true }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -387,7 +387,7 @@ describe('test composite authentication adapter with missing credentials object 
       const securityRequirements = [{ apiKey: true, apiHeader: false }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -432,7 +432,7 @@ describe('test composite authentication adapter with missing credentials object 
       const securityRequirements = [{ apiKey: false, apiHeader: true }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -473,7 +473,7 @@ describe('test composite authentication adapter with missing credentials object 
       const securityRequirements = [{ apiKey: false, apiHeader: false }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -563,7 +563,7 @@ describe('test composite authentication adapter with security requirements combi
     const securityRequirements = [{ accessToken: true }, { basicAuth: true }];
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -582,7 +582,7 @@ describe('test composite authentication adapter with security requirements combi
     const securityRequirements = [{ accessToken: true }, { basicAuth: false }];
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -601,7 +601,7 @@ describe('test composite authentication adapter with security requirements combi
     const securityRequirements = [{ accessToken: false }, { basicAuth: true }];
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -625,7 +625,7 @@ describe('test composite authentication adapter with security requirements combi
       ];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -648,7 +648,7 @@ describe('test composite authentication adapter with security requirements combi
       const securityRequirements = [{ accessToken: false, basicAuth: true }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -672,7 +672,7 @@ describe('test composite authentication adapter with security requirements combi
     const securityRequirements = [{ accessToken: true, basicAuth: true }];
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -695,7 +695,7 @@ describe('test composite authentication adapter with security requirements combi
       const securityRequirements = [{ accessToken: true, basicAuth: false }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -721,7 +721,7 @@ describe('test composite authentication adapter with security requirements combi
     ];
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -750,7 +750,7 @@ describe('test composite authentication adapter with security requirements combi
     ];
     const provider = compositeAuthenticationProvider(authConfig);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -769,7 +769,7 @@ describe('test composite authentication adapter with security requirements combi
       const securityRequirements = [{ oAuthACG: true, oAuthCCG: true }];
       const provider = compositeAuthenticationProvider(authConfig);
       const interceptor = [provider(securityRequirements)];
-      const client = async (req) => {
+      const client = async (req: HttpRequest) => {
         return { request: req, response };
       };
       const executor = callHttpInterceptors(interceptor, client);
@@ -811,7 +811,7 @@ describe('test composite authentication adapter with security requirements combi
     const securityRequirements = [{ oAuthACG: true }, { oAuthCCG: true }];
     const provider = compositeAuthenticationProvider(auth1Config);
     const interceptor = [provider(securityRequirements)];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);

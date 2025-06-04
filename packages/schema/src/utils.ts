@@ -103,7 +103,9 @@ export function isNumericString(
         (typeof value === 'string' && !isNaN(value as any));
 }
 
-export function coerceNumericStringToNumber(value: number | string): number {
+export function coerceNumericStringToNumber<T extends number>(
+  value: T | string
+): number {
   return typeof value === 'number' ? value : +value;
 }
 

@@ -18,7 +18,7 @@ describe('test access token authentication scheme', () => {
   it('should test access token auth with enabled authentication', async () => {
     const handler = noneAuthenticationProvider();
     const interceptor = [handler];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);

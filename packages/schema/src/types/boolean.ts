@@ -1,7 +1,7 @@
 import { Schema } from '../schema';
 import { createSymmetricSchema, toValidator } from '../utils';
 
-function isValidBooleanValue(value: unknown, strict: boolean): boolean {
+function isValidBooleanValue(value: unknown, strict?: boolean): boolean {
   return strict
     ? typeof value === 'boolean'
     : typeof value === 'boolean' ||
