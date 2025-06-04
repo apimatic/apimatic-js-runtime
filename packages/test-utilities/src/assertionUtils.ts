@@ -119,6 +119,7 @@ function checkObjects(
     // Check if right object keys contains this key from left object.
     expect(rightObjKeys).toContainEqual(key);
     // Recursive checking for each element in left and right object.
+    // @ts-expect-error NOTE: We already checked that both left and right objects contain the key.
     checkIfMatching(left[key], right[key], isOrdered, checkValues);
   });
 }
