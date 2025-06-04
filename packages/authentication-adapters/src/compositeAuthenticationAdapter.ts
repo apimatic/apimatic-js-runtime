@@ -131,6 +131,10 @@ function findMatchingAuth<T extends string>(
   return securityRequirements.find(
     (andRequirements) =>
       Object.keys(andRequirements).every(
+        // @ts-ignore TODO: REMOVE THIS COMMENT. DO NOT COPY.
+        // THIS WAS ONLY FOR MIGRATING UNCHECKED CODE TO STRICT TYPE CHECKING.
+        // As for the actual compiler error, TS does not support generic keys with the `in` operator.
+        // https://github.com/microsoft/TypeScript/issues/21732#issuecomment-1423655000
         (key) => key in providerConfig && providerConfig[key]
       ) && Object.values(andRequirements).every((value) => value)
   );
@@ -145,7 +149,11 @@ function getHttpInterceptorsForAuths<T extends string>(
 ): Array<HttpInterceptorInterface<RequestOptions | undefined>> {
   return Object.entries(matchingRequirements).map(
     ([authProvider, authParam]) => {
+      // @ts-ignore TODO: REMOVE THIS COMMENT. DO NOT COPY.
+      // THIS WAS ONLY FOR MIGRATING UNCHECKED CODE TO STRICT TYPE CHECKING.
       if (providerConfig[authProvider] !== undefined) {
+        // @ts-ignore TODO: REMOVE THIS COMMENT. DO NOT COPY.
+        // THIS WAS ONLY FOR MIGRATING UNCHECKED CODE TO STRICT TYPE CHECKING.
         return providerConfig[authProvider](authParam);
       } else {
         return passThroughInterceptor;
