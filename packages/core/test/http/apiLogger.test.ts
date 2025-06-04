@@ -9,7 +9,7 @@ import { callHttpInterceptors } from '../../src/http/httpInterceptor';
 import { NullLogger } from '../../src/logger/nullLogger';
 import { mergeLoggingOptions } from '../../src/logger/defaultLoggingConfiguration';
 
-let loggerSpy;
+let loggerSpy: jest.SpyInstance<void, [message?: any, ...optionalParams: any[]]>;
 beforeEach(() => {
   // Reset the spy on console.log() before each test
   loggerSpy = jest.spyOn(console, 'log').mockImplementation();
@@ -304,7 +304,7 @@ describe('APILogger with NullLogging', () => {
 
 function mockInterceptor(loggingOpt: LoggingOptions) {
   const apiLogger = new ApiLogger(loggingOpt);
-  return async (req, options, next) => {
+  return async (req: HttpRequest, options: any, next: (arg0: any, arg1: any) => any) => {
     apiLogger.logRequest(req);
     const context = await next(req, options);
     apiLogger.logResponse(context.response);
@@ -344,14 +344,14 @@ function mockResponse(): HttpResponse {
 }
 
 async function mockClient(loggingOpts: LoggingOptions) {
-  const client = async (req) => {
+  const client = async (req: HttpRequest) => {
     return { request: req, response: mockResponse() };
   };
   const executor = callHttpInterceptors([mockInterceptor(loggingOpts)], client);
   return await executor(mockRequest(), undefined);
 }
 
-function expectLogsToBeLogged(logSpy, expectedConsoleLogs, index = 0) {
+function expectLogsToBeLogged(logSpy: jest.SpyInstance<void, [message?: any, ...optionalParams: any[]]>, expectedConsoleLogs: string | any[], index = 0) {
   for (let i = index; i < expectedConsoleLogs.length; i++) {
     expect(logSpy.mock.calls[i][0]).toEqual(expectedConsoleLogs[i]);
   }
