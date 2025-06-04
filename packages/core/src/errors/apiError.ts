@@ -35,12 +35,11 @@ export class ApiError<T = {}>
       try {
         this.result = JSON.parse(response.body);
       } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
         if (process.env.NODE_ENV !== 'production') {
           if (console) {
             // tslint:disable-next-line:no-console
             console.warn(
-              `Unexpected error: Could not parse HTTP response body as JSON. ${errorMessage}`
+              `Unexpected error: Could not parse HTTP response body as JSON. ${error.message}`
             );
           }
         }

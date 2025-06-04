@@ -14,7 +14,5 @@ export function callHttpInterceptors<T>(
   client: HttpCallExecutor<T>
 ): HttpCallExecutor<T> {
   return (request, options) =>
-    // @ts-ignore TODO: REMOVE THIS COMMENT. DO NOT COPY.
-    // THIS WAS ONLY FOR MIGRATING UNCHECKED CODE TO STRICT TYPE CHECKING.
     combineHttpInterceptors(interceptors)(request, options, client);
 }
