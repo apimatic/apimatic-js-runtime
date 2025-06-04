@@ -82,6 +82,10 @@ describe('HTTP Headers', () => {
         assertHeaders('header');
       } catch (error) {
         expect(error).toBeInstanceOf(TypeError);
+        if (!(error instanceof TypeError)) {
+          throw new Error('This check is for type narrowing.');
+        }
+
         expect(error.message).toBe('Headers must be an object.');
       }
     });
@@ -91,6 +95,9 @@ describe('HTTP Headers', () => {
       try {
         assertHeaders({ 'invalid header': 'test' });
       } catch (error) {
+        if (!(error instanceof Error)) {
+          throw new Error('This check is for type narrowing.');
+        }
         expect(error.message).toBe(
           '"invalid header" is not a valid header name.'
         );
@@ -103,6 +110,10 @@ describe('HTTP Headers', () => {
         assertHeaders({ 'header-name': 123 });
       } catch (error) {
         expect(error).toBeInstanceOf(TypeError);
+        if (!(error instanceof TypeError)) {
+          throw new Error('This check is for type narrowing.');
+        }
+
         expect(error.message).toBe(
           'Header value must be string but number provided.'
         );

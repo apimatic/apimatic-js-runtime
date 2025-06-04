@@ -48,7 +48,7 @@ describe('Number Enum', () => {
 
       expect(output.errors).toBeFalsy();
       if (output.errors) {
-        throw new Error('This line is for type narrowing.');
+        throw new Error('This check is for type narrowing.');
       }
 
       expect(output.result).toBe(5);
