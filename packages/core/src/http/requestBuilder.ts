@@ -518,7 +518,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         result.body
       );
     } catch (error) {
-      throw new Error(`Could not parse body as XML.\n\n${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Could not parse body as XML.\n\n${errorMessage}`);
     }
     const mappingResult = validateAndMapXml(xmlObject, schema);
     if (mappingResult.errors) {
@@ -588,7 +589,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         try {
           context = await next(request, options);
         } catch (error) {
-          timeoutError = error;
+          const typedError = error instanceof Error ? error : new Error(String(error));
+          timeoutError = typedError;
         }
         if (shouldRetry) {
           waitTime = getRetryWaitTime(
@@ -687,8 +689,9 @@ function parseJsonResult<T>(schema: Schema<T, any>, res: ApiResponse<void>): T {
   try {
     parsed = JSON.parse(res.body);
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : String(error);
     const resUnParseErr = new Error(
-      `Could not parse body as JSON.\n\n${error.message}`
+      `Could not parse body as JSON.\n\n${errorMessage}`
     );
     return validateJson(schema, res.body, (_) => resUnParseErr);
   }
