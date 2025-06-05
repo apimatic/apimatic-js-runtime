@@ -4,6 +4,7 @@ import {
   coerceNumericStringToNumber,
   createSymmetricSchema,
   toValidator,
+  constructJSONSchema,
 } from '../utils';
 
 function createEnumChecker<T extends string, TEnumValue extends number>(
@@ -39,7 +40,7 @@ export function numberEnum<T extends string, TEnumValue extends number>(
     type: `Enum<${enumValues.join(',')}>`,
     map: coerceNumericStringToNumber as (value: TEnumValue) => TEnumValue,
     validate,
-    toJSONSchema: () => ({
+    toJSONSchema: () => constructJSONSchema({
       enum: enumValues,
     }),
   });

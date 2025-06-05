@@ -1,5 +1,5 @@
 import { Schema } from '../schema';
-import { createSymmetricSchema, identityFn } from '../utils';
+import { constructJSONSchema, createSymmetricSchema, identityFn } from '../utils';
 
 /**
  * Create an unknown schema.
@@ -11,6 +11,6 @@ export function unknown(): Schema<unknown, unknown> {
     type: 'unknown',
     validate: () => [],
     map: identityFn,
-    toJSONSchema: () => ({}),
+    toJSONSchema: () => constructJSONSchema({}),
   });
 }

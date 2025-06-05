@@ -1,5 +1,5 @@
 import { Schema } from '../schema';
-import { isNullOrMissing } from '../utils';
+import { constructJSONSchema, isNullOrMissing } from '../utils';
 
 /**
  * Creates a nullable schema.
@@ -25,7 +25,7 @@ export function nullable<T, S>(
       value === null ? null : schema.mapXml(value, ctxt),
     unmapXml: (value, ctxt) =>
       value === null ? null : schema.unmapXml(value, ctxt),
-    toJSONSchema: () => ({
+    toJSONSchema: () => constructJSONSchema({
       oneOf: [
         {
           type: 'null',

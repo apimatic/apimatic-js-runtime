@@ -1,4 +1,5 @@
-import { JSONSchema, Schema, SchemaContextCreator } from '../schema';
+import { Schema, SchemaContextCreator } from '../schema';
+import { constructJSONSchema, PartialJSONSchema } from '../utils';
 
 type SchemaType<T extends Schema<any, any>> = T extends Schema<infer U, any>
   ? U
@@ -97,7 +98,7 @@ function createAnyOfWithDiscriminator<T extends Array<Schema<any, any>>>(
       return matchAndUnmapXml(schemas, value, ctxt);
     },
     toJSONSchema: () => {
-      const jsonSchema: JSONSchema = {
+      const jsonSchema: PartialJSONSchema = {
         anyOf: schemas.map((schema) => schema.toJSONSchema()),
       };
 
@@ -108,7 +109,7 @@ function createAnyOfWithDiscriminator<T extends Array<Schema<any, any>>>(
         // TODO: ADD DISCRIMINATOR MAP SUPPORT
       }
 
-      return jsonSchema;
+      return constructJSONSchema(jsonSchema);
     },
   };
 }
@@ -128,7 +129,7 @@ function createAnyOfWithoutDiscriminator<T extends Array<Schema<any, any>>>(
       matchAndValidateBeforeMapXml(schemas, value, ctxt),
     mapXml: (value, ctxt) => matchAndMapXml(schemas, value, ctxt),
     unmapXml: (value, ctxt) => matchAndUnmapXml(schemas, value, ctxt),
-    toJSONSchema: () => ({
+    toJSONSchema: () => constructJSONSchema({
       anyOf: schemas.map((schema) => schema.toJSONSchema()),
     }),
   };

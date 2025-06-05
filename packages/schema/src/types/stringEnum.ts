@@ -4,6 +4,7 @@ import {
   createSymmetricSchema,
   identityFn,
   literalToString,
+  constructJSONSchema,
 } from '../utils';
 
 function createEnumChecker<T extends string, TEnumValue extends string>(
@@ -37,7 +38,7 @@ export function stringEnum<T extends string, TEnumValue extends string>(
     type: `Enum<${enumValues.join(',')}>`,
     map: identityFn,
     validate,
-    toJSONSchema: () => ({
+    toJSONSchema: () => constructJSONSchema({
       enum: enumValues,
     }),
   });

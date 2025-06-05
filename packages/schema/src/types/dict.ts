@@ -1,5 +1,5 @@
 import { Schema, SchemaContextCreator, SchemaValidationError } from '../schema';
-import { objectEntries } from '../utils';
+import { constructJSONSchema, objectEntries } from '../utils';
 
 /**
  * Create a dictionary schema.
@@ -90,7 +90,7 @@ export function dict<T, S>(
       }
       return output;
     },
-    toJSONSchema: () => ({
+    toJSONSchema: () => constructJSONSchema({
       type: 'object',
       additionalProperties: itemSchema.toJSONSchema(),
     }),

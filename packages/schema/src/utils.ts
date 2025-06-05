@@ -182,3 +182,11 @@ export function isOptionalAndNullableType(type: string): boolean {
 export function isOptionalOrNullableType(type: string): boolean {
   return type.startsWith('Optional<') || type.startsWith('Nullable<');
 }
+
+export type PartialJSONSchema = Omit<JSONSchema, "$schema">;
+export function constructJSONSchema(partialJsonSchema: PartialJSONSchema): JSONSchema {
+  return {
+    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    ...partialJsonSchema,
+  };
+}

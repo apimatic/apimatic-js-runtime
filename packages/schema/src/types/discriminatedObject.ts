@@ -5,7 +5,7 @@ import {
   SchemaType,
   SchemaValidationError,
 } from '../schema';
-import { objectEntries } from '../utils';
+import { constructJSONSchema, objectEntries } from '../utils';
 import { ObjectXmlOptions } from './object';
 
 export function discriminatedObject<
@@ -103,7 +103,7 @@ export function discriminatedObject<
     unmapXml: (value, ctxt) => unmapSchema(value, ctxt).unmapXml(value, ctxt),
     validateBeforeMapXml: (value, ctxt) =>
       mapXmlSchema(value, ctxt).validateBeforeMapXml(value, ctxt),
-    toJSONSchema: () => ({
+    toJSONSchema: () => constructJSONSchema({
       allOf: Object.values(discriminatorMap).map((schema) =>
         schema.toJSONSchema()
       ),

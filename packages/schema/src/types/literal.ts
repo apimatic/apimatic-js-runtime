@@ -1,5 +1,5 @@
 import { Schema } from '../schema';
-import { createSymmetricSchema, literalToString, toValidator } from '../utils';
+import { constructJSONSchema, createSymmetricSchema, literalToString, toValidator } from '../utils';
 
 /**
  * Create a literal schema.
@@ -18,7 +18,7 @@ export function literal<T>(literalValue: T): Schema<T, T> {
     type: `Literal<${literalToString(literalValue)}>`,
     validate: toValidator(validate),
     map,
-    toJSONSchema: () => ({
+    toJSONSchema: () => constructJSONSchema({
       const: literalValue as any, // TODO: MAKE THIS TYPE-SAFE
     }),
   });

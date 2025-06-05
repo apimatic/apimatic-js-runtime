@@ -1,5 +1,4 @@
 import {
-  JSONSchema,
   Schema,
   SchemaContextCreator,
   SchemaMappedType,
@@ -10,6 +9,7 @@ import {
 } from '../schema';
 import { OptionalizeObject } from '../typeUtils';
 import {
+  constructJSONSchema,
   isOptional,
   isOptionalNullable,
   isOptionalOrNullableType,
@@ -17,6 +17,7 @@ import {
   objectEntries,
   objectKeyEncode,
   omitKeysFromObject,
+  PartialJSONSchema,
 } from '../utils';
 import { dict } from './dict';
 import { optional } from './optional';
@@ -235,7 +236,7 @@ function internalObject<
     unmapXml: unmapObjectToXml(reverseXmlObjectSchema, mapAdditionalProps),
     objectSchema,
     toJSONSchema: () => {
-      const jsonSchema: JSONSchema = {
+      const jsonSchema: PartialJSONSchema = {
         type: 'object',
       };
 
@@ -263,7 +264,7 @@ function internalObject<
         }
       }
 
-      return jsonSchema;
+      return constructJSONSchema(jsonSchema);
     },
   };
 }
