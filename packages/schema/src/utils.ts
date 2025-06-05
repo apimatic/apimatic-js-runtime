@@ -186,7 +186,7 @@ export function isOptionalOrNullableType(type: string): boolean {
 export type PartialJSONSchema = Omit<JSONSchema, "$schema">;
 export function constructJSONSchema(partialJsonSchema: PartialJSONSchema): JSONSchema {
   return {
-    $schema: 'https://json-schema.org/draft/2020-12/schema',
+    $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
     ...partialJsonSchema,
   };
 }

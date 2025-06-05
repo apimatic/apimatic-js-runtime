@@ -35,7 +35,7 @@ export interface Schema<T, S = any> {
  * draft-07 was chosen as a base type since many existing libraries already use it.
  */
 export interface JSONSchema extends JSONSchema7 {
-  $schema: "https://json-schema.org/draft/2020-12/schema",
+  $schema: "https://spec.openapis.org/oas/3.1/dialect/base",
   discriminator?: {
     propertyName: string;
     mapping?: { [discriminatorValue: string]: string };
