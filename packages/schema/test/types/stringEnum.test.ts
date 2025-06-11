@@ -89,7 +89,7 @@ describe('String Enum', () => {
       const jsonSchema = schema.toJSONSchema();
 
       expect(jsonSchema).toStrictEqual({
-        enum: ['_hearts', '_spades', '_clubs', '_diamonds']
+        enum: ['_hearts', '_spades', '_clubs', '_diamonds'],
       });
     });
   });
