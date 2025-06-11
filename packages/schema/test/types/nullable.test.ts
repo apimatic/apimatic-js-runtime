@@ -1,4 +1,5 @@
 import {
+  boolean,
   nullable,
   optional,
   string,
@@ -112,7 +113,7 @@ describe('Nullable', () => {
   });
 
   describe('To JSON Schema', () => {
-      it('should output a valid JSON Schema', () => {
+      it('should output a valid JSON Schema for nullable strings', () => {
         const schema = nullable(string());
         const jsonSchema = schema.toJSONSchema();
 
@@ -124,6 +125,24 @@ describe('Nullable', () => {
               },
               {
                 type: 'string'
+              }
+            ],
+          }
+        );
+      });
+
+      it('should output a valid JSON Schema for nullable booleans', () => {
+        const schema = nullable(boolean());
+        const jsonSchema = schema.toJSONSchema();
+
+        expect(jsonSchema).toStrictEqual(
+          {
+            oneOf: [
+              {
+                type: 'null'
+              },
+              {
+                type: 'boolean'
               }
             ],
           }
