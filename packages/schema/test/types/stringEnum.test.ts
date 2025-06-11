@@ -82,4 +82,15 @@ describe('String Enum', () => {
       `);
     });
   });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = stringEnum(SampleStringEnum);
+      const jsonSchema = schema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual({
+        enum: ['_hearts', '_spades', '_clubs', '_diamonds']
+      });
+    });
+  });
 });
