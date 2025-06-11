@@ -31,10 +31,15 @@ export function stringEnum<T extends string, TEnumValue extends string>(
     createEnumChecker(enumVariable, allowForUnknownProps)
   );
 
-  const enumValues = Object.values(enumVariable).map(literalToString);
+  const enumValues: TEnumValue[] = [];
+  for (const key in enumVariable) {
+    if (Object.prototype.hasOwnProperty.call(enumVariable, key)) {
+      enumValues.push(enumVariable[key]);
+    }
+  }
 
   return createSymmetricSchema({
-    type: `Enum<${enumValues.join(',')}>`,
+    type: `Enum<${enumValues.map(literalToString).join(',')}>`,
     map: identityFn,
     validate,
     toJSONSchema: () => ({
