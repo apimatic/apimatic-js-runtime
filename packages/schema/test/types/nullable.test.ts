@@ -110,4 +110,24 @@ describe('Nullable', () => {
       `);
     });
   });
+
+  describe('To JSON Schema', () => {
+      it('should output a valid JSON Schema', () => {
+        const schema = nullable(string());
+        const jsonSchema = schema.toJSONSchema();
+
+        expect(jsonSchema).toStrictEqual(
+          {
+            oneOf: [
+              {
+                type: 'null'
+              },
+              {
+                type: 'string'
+              }
+            ],
+          }
+        );
+      });
+    });
 });
