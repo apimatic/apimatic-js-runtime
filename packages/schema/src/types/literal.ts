@@ -1,5 +1,5 @@
 import { Schema } from '../schema';
-import { constructJSONSchema, createSymmetricSchema, literalToString, toValidator } from '../utils';
+import { createSymmetricSchema, literalToString, toValidator } from '../utils';
 
 /**
  * Create a literal schema.
@@ -18,7 +18,7 @@ export function literal<T>(literalValue: T): Schema<T, T> {
     type: `Literal<${literalToString(literalValue)}>`,
     validate: toValidator(validate),
     map,
-    toJSONSchema: () => constructJSONSchema({
+    toJSONSchema: () => ({
       // `const` literals can be any type
       // https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-const
       const: literalValue as any,

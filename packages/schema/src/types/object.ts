@@ -1,4 +1,5 @@
 import {
+  PartialJSONSchema,
   Schema,
   SchemaContextCreator,
   SchemaMappedType,
@@ -9,7 +10,6 @@ import {
 } from '../schema';
 import { OptionalizeObject } from '../typeUtils';
 import {
-  constructJSONSchema,
   isOptional,
   isOptionalNullable,
   isOptionalOrNullableType,
@@ -17,7 +17,6 @@ import {
   objectEntries,
   objectKeyEncode,
   omitKeysFromObject,
-  PartialJSONSchema,
 } from '../utils';
 import { dict } from './dict';
 import { optional } from './optional';
@@ -264,7 +263,7 @@ function internalObject<
         }
       }
 
-      return constructJSONSchema(jsonSchema);
+      return jsonSchema;
     },
   };
 }

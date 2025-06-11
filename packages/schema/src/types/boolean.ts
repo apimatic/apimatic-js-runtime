@@ -1,5 +1,5 @@
 import { Schema } from '../schema';
-import { constructJSONSchema, createSymmetricSchema, toValidator } from '../utils';
+import { createSymmetricSchema, toValidator } from '../utils';
 
 function isValidBooleanValue(value: unknown, strict: boolean): boolean {
   return strict
@@ -14,7 +14,7 @@ export function boolean(): Schema<boolean, boolean> {
     type: 'boolean',
     validate: toValidator(isValidBooleanValue),
     map: (value) => (typeof value === 'boolean' ? value : value === 'true'),
-    toJSONSchema: () => constructJSONSchema({
+    toJSONSchema: () => ({
       type: 'boolean',
     }),
   });

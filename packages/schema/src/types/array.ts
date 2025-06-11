@@ -1,5 +1,5 @@
 import { Schema } from '../schema';
-import { arrayEntries, constructJSONSchema } from '../utils';
+import { arrayEntries } from '../utils';
 
 export interface ArrayXmlOptions {
   xmlItemName: string;
@@ -89,7 +89,7 @@ export function array<T, S>(
           )
         : ctxt.fail();
     },
-    toJSONSchema: () => constructJSONSchema({
+    toJSONSchema: () => ({
       type: 'array',
       items: itemsSchema.toJSONSchema(),
     }),

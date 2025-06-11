@@ -4,6 +4,7 @@
 
 import {
   JSONSchema,
+  PartialJSONSchema,
   Schema,
   SchemaContextCreator,
   SchemaValidationError,
@@ -57,7 +58,7 @@ export interface SymmetricSchema<T> {
     ctxt: SchemaContextCreator
   ) => SchemaValidationError[];
   map: (value: T, ctxt: SchemaContextCreator) => T;
-  toJSONSchema: () => JSONSchema;
+  toJSONSchema: () => PartialJSONSchema;
 }
 
 /**
@@ -88,7 +89,7 @@ interface BasicSchema<T, S = unknown> {
   ) => SchemaValidationError[];
   map: (value: S, ctxt: SchemaContextCreator) => T;
   unmap: (value: T, ctxt: SchemaContextCreator) => S;
-  toJSONSchema: () => JSONSchema;
+  toJSONSchema: () => PartialJSONSchema;
 }
 
 /** Create a basic schema where XML mapping and validation is the same as for JSON */
@@ -183,7 +184,6 @@ export function isOptionalOrNullableType(type: string): boolean {
   return type.startsWith('Optional<') || type.startsWith('Nullable<');
 }
 
-export type PartialJSONSchema = Omit<JSONSchema, "$schema">;
 export function constructJSONSchema(partialJsonSchema: PartialJSONSchema): JSONSchema {
   return {
     $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',

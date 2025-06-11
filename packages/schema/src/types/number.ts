@@ -1,7 +1,6 @@
 import { Schema } from '../schema';
 import {
   coerceNumericStringToNumber,
-  constructJSONSchema,
   createSymmetricSchema,
   isNumericString,
   toValidator,
@@ -13,7 +12,7 @@ export function number(): Schema<number, number> {
     type: 'number',
     validate: toValidator(isNumericString),
     map: coerceNumericStringToNumber as (arg: number) => number,
-    toJSONSchema: () => constructJSONSchema({
+    toJSONSchema: () => ({
       type: 'number',
     }),
   });
