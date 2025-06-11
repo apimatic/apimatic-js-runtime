@@ -1,5 +1,4 @@
 import { boolean, validateAndMap, validateAndUnmap } from '../../src';
-import { constructJSONSchema } from '../../src/utils';
 
 describe('Boolean', () => {
   describe('Mapping', () => {
@@ -109,9 +108,9 @@ describe('Boolean', () => {
       const jsonSchema = schema.toJSONSchema();
 
       expect(jsonSchema).toStrictEqual(
-        constructJSONSchema({
+        {
           type: 'boolean',
-        })
+        }
       );
     });
   });
