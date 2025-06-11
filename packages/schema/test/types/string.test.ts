@@ -1,4 +1,5 @@
 import { string, validateAndMap, validateAndUnmap } from '../../src';
+import { constructJSONSchema } from '../../src/utils';
 
 describe('String', () => {
   describe('Mapping', () => {
@@ -70,6 +71,19 @@ describe('String', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = string();
+      const jsonSchema = schema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual(
+        constructJSONSchema({
+          type: 'string',
+        })
+      );
     });
   });
 });

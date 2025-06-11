@@ -1,4 +1,5 @@
 import { number, validateAndMap, validateAndUnmap } from '../../src';
+import { constructJSONSchema } from '../../src/utils';
 
 describe('Number', () => {
   describe('Mapping', () => {
@@ -89,10 +90,13 @@ describe('Number', () => {
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema', () => {
       const schema = number();
-      const output = schema.toJSONSchema();
-      expect(output).toBe({
-        type: 'number',
-      });
+      const jsonSchema = schema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual(
+        constructJSONSchema({
+          type: 'number',
+        })
+      );
     });
   });
 });
