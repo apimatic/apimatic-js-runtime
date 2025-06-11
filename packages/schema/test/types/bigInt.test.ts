@@ -187,4 +187,16 @@ describe('bigint', () => {
       `);
     });
   });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = bigint();
+      const jsonSchema = schema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual({
+        type: 'integer',
+        format: 'int64',
+      });
+    });
+  });
 });
