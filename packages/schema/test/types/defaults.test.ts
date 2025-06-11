@@ -105,4 +105,16 @@ describe('Defaults', () => {
       `);
     });
   });
+
+  describe('To JSON Schema', () => {
+      it('should output a valid JSON Schema', () => {
+        const schema = defaults(string(), 'default value');
+        const jsonSchema = schema.toJSONSchema();
+
+        expect(jsonSchema).toStrictEqual({
+          type: 'string',
+          default: 'default value'
+        });
+      });
+    });
 });

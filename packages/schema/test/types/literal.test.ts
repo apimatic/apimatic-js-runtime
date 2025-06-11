@@ -85,4 +85,15 @@ describe('Literal', () => {
       `);
     });
   });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = literal(123);
+      const jsonSchema = schema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual({
+        const: 123,
+      });
+    });
+  });
 });
