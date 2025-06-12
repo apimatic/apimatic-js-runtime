@@ -1,5 +1,5 @@
 import { nullable, array, dict, object } from '../../src';
-import { validateAndMap, validateAndUnmap } from '../../src/schema';
+import { type PartialJSONSchema, validateAndMap, validateAndUnmap } from '../../src/schema';
 import { anyOf } from '../../src/types/anyOf';
 import { number } from '../../src/types/number';
 import { string } from '../../src/types/string';
@@ -336,6 +336,58 @@ describe('AnyOf', () => {
 
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input); // The input should be unchanged since it matches schema1
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for anyOf primitive types', () => {
+      const jsonSchema = anyOf([string(), number()]).toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        anyOf: [
+          {
+            type: 'string'
+          },
+          {
+            type: 'number'
+          }
+        ]
+      });
+    });
+
+    it('should output a valid JSON Schema for anyOf objects without discriminator', () => {
+      const schema = anyOf([
+        object({
+          name: ['name', string()],
+        }),
+        object({
+          title: ['title', string()],
+        })
+      ]);
+      const jsonSchema = schema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        anyOf: [
+          {
+            type: 'object',
+            required: ['name'],
+            properties: {
+              name: {
+                type: 'string'
+              }
+            }
+          },
+          {
+            type: 'object',
+            required: ['title'],
+            properties: {
+              title: {
+                type: 'string'
+              }
+            }
+          }
+        ]
+      });
     });
   });
 });
