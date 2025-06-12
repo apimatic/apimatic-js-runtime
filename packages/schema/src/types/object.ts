@@ -240,19 +240,22 @@ function internalObject<
       };
 
       if (Object.keys(objectSchema).length) {
-        jsonSchema.properties = {};
-        jsonSchema.required = [];
+        const properties = {};
+        const required: string[] = [];
 
-        for (const key in objectSchema) {
-          if (objectSchema.hasOwnProperty(key)) {
-            const propSchema = objectSchema[key][1];
-            jsonSchema.properties[key] = propSchema.toJSONSchema();
+        for (const key of Object.keys(objectSchema)) {
+          const propSchema = objectSchema[key][1];
+          properties[key] = propSchema.toJSONSchema();
 
-            if (!propSchema.type().startsWith('Optional<')) {
-              jsonSchema.required.push(key);
-            }
+          if (!propSchema.type().startsWith('Optional<')) {
+            required.push(key);
           }
         }
+
+        if (required.length) {
+          jsonSchema.required = required;
+        }
+        jsonSchema.properties = properties;
       }
 
       if (mapAdditionalProps) {

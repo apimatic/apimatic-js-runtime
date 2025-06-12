@@ -4,6 +4,7 @@ import {
   number,
   object,
   optional,
+  type PartialJSONSchema,
   SchemaMappedType,
   SchemaType,
   string,
@@ -341,6 +342,97 @@ describe('Object', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for an object with required properties', () => {
+      const userSchema = object({
+        id: ['id', string()],
+        age: ['age', number()],
+      });
+      const jsonSchema = userSchema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        type: 'object',
+        required: ['id', 'age'],
+        properties: {
+          id: {
+            type: 'string',
+          },
+          age: {
+            type: 'number',
+          },
+        },
+      });
+    });
+
+    it('should output a valid JSON Schema for an object with required and optional properties', () => {
+      const userSchema = object({
+        id: ['id', string()],
+        age: ['age', optional(number())],
+      });
+      const jsonSchema = userSchema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: {
+            type: 'string',
+          },
+          age: {
+            type: 'number',
+          },
+        },
+      });
+    });
+
+    it('should output a valid JSON Schema for an object with required nullable property', () => {
+      const userSchema = object({
+        id: ['id', nullable(string())],
+      });
+      const jsonSchema = userSchema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: {
+            oneOf: [
+              {
+                type: 'null',
+              },
+              {
+                type: 'string',
+              },
+            ],
+          },
+        },
+      });
+    });
+
+    it('should output a valid JSON Schema for an object with optional nullable property', () => {
+      const userSchema = object({
+        id: ['id', optional(nullable(string()))],
+      });
+      const jsonSchema = userSchema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        type: 'object',
+        properties: {
+          id: {
+            oneOf: [
+              {
+                type: 'null',
+              },
+              {
+                type: 'string',
+              },
+            ],
+          },
+        },
+      });
     });
   });
 });
