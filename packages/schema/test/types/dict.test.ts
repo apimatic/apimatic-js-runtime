@@ -1,4 +1,4 @@
-import { dict, string, validateAndMap, validateAndUnmap } from '../../src';
+import { dict, type PartialJSONSchema, string, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Dictionary', () => {
   describe('Mapping', () => {
@@ -143,6 +143,19 @@ describe('Dictionary', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for an array', () => {
+      const jsonSchema = dict(string()).toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        type: 'object',
+        additionalProperties: {
+          type: 'string'
+        }
+      });
     });
   });
 });

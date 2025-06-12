@@ -1,4 +1,4 @@
-import { array, string, validateAndMap, validateAndUnmap } from '../../src';
+import { array, type PartialJSONSchema, string, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Array', () => {
   describe('Mapping', () => {
@@ -131,6 +131,19 @@ describe('Array', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for an array', () => {
+      const jsonSchema = array(string()).toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        type: 'array',
+        items: {
+          type: 'string'
+        }
+      });
     });
   });
 });
