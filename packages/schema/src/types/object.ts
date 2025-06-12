@@ -128,7 +128,7 @@ export function typedExpandoObject<
 ): ExtendedObjectSchema<V, T, K, SchemaType<S>> {
   return internalObject(objectSchema, true, [
     additionalPropertyKey,
-    optional(dict(additionalPropertySchema)),
+    additionalPropertySchema,
   ]);
 }
 
@@ -204,6 +204,12 @@ function internalObject<
   skipAdditionalPropValidation: boolean,
   mapAdditionalProps: boolean | [string, Schema<any, any>]
 ): StrictObjectSchema<V, T> {
+  let additionalPropsSchema: Schema<any, any> | undefined;
+  if (typeof mapAdditionalProps !== 'boolean') {
+    additionalPropsSchema = mapAdditionalProps[1];
+    mapAdditionalProps = [mapAdditionalProps[0], optional(dict(mapAdditionalProps[1]))];
+  }
+
   const keys = Object.keys(objectSchema);
   const reverseObjectSchema = createReverseObjectSchema(objectSchema);
   const xmlMappingInfo = getXmlPropMappingForObjectSchema(objectSchema);
@@ -259,10 +265,10 @@ function internalObject<
       }
 
       if (mapAdditionalProps) {
-        if (typeof mapAdditionalProps === 'boolean') {
-          jsonSchema.additionalProperties = true;
+        if (additionalPropsSchema) {
+          jsonSchema.additionalProperties = additionalPropsSchema.toJSONSchema();
         } else {
-          jsonSchema.additionalProperties = mapAdditionalProps[1].toJSONSchema();
+          jsonSchema.additionalProperties = true;
         }
       }
 

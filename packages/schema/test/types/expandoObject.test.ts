@@ -10,6 +10,7 @@ import {
   typedExpandoObject,
   object,
   anyOf,
+  type PartialJSONSchema,
 } from '../../src';
 
 describe('Expando Object', () => {
@@ -573,6 +574,50 @@ describe('Expando Object', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for an object with additional properties', () => {
+      const userSchema = expandoObject({
+        id: ['id', string()],
+      });
+      const jsonSchema = userSchema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+        },
+        required: ['id'],
+        additionalProperties: true,
+      });
+    });
+
+    it('should output a valid JSON Schema for an object with typed additional properties', () => {
+      const userSchema = typedExpandoObject(
+        {
+          id: ['id', string()],
+        },
+        'additionalProps',
+        number()
+      );
+      const jsonSchema = userSchema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+        },
+        required: ['id'],
+        additionalProperties: {
+          type: 'number',
+        },
+      });
     });
   });
 });
