@@ -540,5 +540,69 @@ describe('OnyOf', () => {
         ]
       });
     });
+
+    it('should output a valid JSON Schema for oneOf objects with discriminator', () => {
+      const firstSchema = object({
+        type: ['type', string()],
+        name: ['name', string()],
+      });
+
+      const secondSchema = object({
+        type: ['type', string()],
+        title: ['title', string()],
+      });
+
+      const discriminatorMap = {
+        object1: firstSchema,
+        object2: secondSchema,
+      };
+
+      const schema = oneOf([firstSchema, secondSchema], discriminatorMap, 'type');
+      const jsonSchema = schema.toJSONSchema();
+
+      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+        oneOf: [
+          {
+            $ref: '#/$defs/schema1'
+          },
+          {
+            $ref: '#/$defs/schema2'
+          }
+        ],
+        discriminator: {
+          propertyName: 'type',
+          mapping: {
+            object1: '#/$defs/schema1',
+            object2: '#/$defs/schema2'
+          }
+        },
+        $defs: {
+          schema1: {
+            type: 'object',
+            required: ['type', 'name'],
+            properties: {
+              type: {
+                type: 'string'
+              },
+              name: {
+                type: 'string'
+              }
+            }
+          },
+          schema2: {
+            type: 'object',
+            required: ['type', 'title'],
+            properties: {
+              type: {
+                type: 'string'
+              },
+              title: {
+                type: 'string'
+              }
+            }
+          }
+        }
+      });
+    });
   });
 });
