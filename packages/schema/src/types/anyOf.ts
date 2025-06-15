@@ -97,19 +97,30 @@ function createAnyOfWithDiscriminator<T extends Array<Schema<any, any>>>(
       }
       return matchAndUnmapXml(schemas, value, ctxt);
     },
-    toJSONSchema: () => {
-      const jsonSchema: PartialJSONSchema = {
-        anyOf: schemas.map((schema) => schema.toJSONSchema()),
-      };
-
-      if (discriminatorField) {
-        jsonSchema.discriminator = {
-          propertyName: discriminatorField,
+    toJSONSchema: (): PartialJSONSchema => {
+      if (!(discriminatorMap && discriminatorField)) {
+        return {
+          anyOf: schemas.map((schema) => schema.toJSONSchema()),
         };
-        // TODO: ADD DISCRIMINATOR MAP SUPPORT
       }
-
-      return jsonSchema;
+      const anyOf: { $ref: string }[] = [];
+      const discriminatorMapping: { [val: string]: string } = {};
+      const $defs: Record<string, PartialJSONSchema> = {};
+      Object.keys(discriminatorMap).forEach((key, index) => {
+        const schemaName = `schema${index + 1}`;
+        const schemaRef = `#/$defs/${schemaName}`;
+        anyOf.push({ $ref: schemaRef });
+        discriminatorMapping[key] = schemaRef;
+        $defs[schemaName] = schemas[index].toJSONSchema();
+      });
+      return {
+        anyOf: anyOf,
+        discriminator: {
+          propertyName: discriminatorField,
+          mapping: discriminatorMapping,
+        },
+        $defs: $defs,
+      };
     },
   };
 }
