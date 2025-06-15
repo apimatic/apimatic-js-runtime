@@ -27,7 +27,7 @@ export interface Schema<T, S = any> {
   toJSONSchema: () => PartialJSONSchema;
 }
 
-export type PartialJSONSchema = Omit<JSONSchema, "$schema">;
+export type PartialJSONSchema = Omit<JSONSchema, '$schema'>;
 
 /**
  * The equivalent JSON Schema representation of the Schema interface.
@@ -37,7 +37,7 @@ export type PartialJSONSchema = Omit<JSONSchema, "$schema">;
  * draft-07 was chosen as a base type since many existing libraries already use it.
  */
 export interface JSONSchema extends JSONSchema7 {
-  $schema: "https://spec.openapis.org/oas/3.1/dialect/base",
+  $schema: 'https://spec.openapis.org/oas/3.1/dialect/base';
   discriminator?: {
     propertyName: string;
     mapping?: { [discriminatorValue: string]: string };

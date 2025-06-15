@@ -105,7 +105,7 @@ function createOneOfWithDiscriminator<T extends Array<Schema<any, any>>>(
       }
 
       const oneOf: { $ref: string }[] = [];
-      const discriminatorMapping: {[val: string]: string} = {};
+      const discriminatorMapping: { [val: string]: string } = {};
       const $defs: Record<string, PartialJSONSchema> = {};
       Object.keys(discriminatorMap).forEach((key, index) => {
         const schemaName = `schema${index + 1}`;
@@ -122,9 +122,9 @@ function createOneOfWithDiscriminator<T extends Array<Schema<any, any>>>(
         oneOf: oneOf,
         discriminator: {
           propertyName: discriminatorField,
-          mapping: discriminatorMapping
+          mapping: discriminatorMapping,
         },
-        $defs: $defs
+        $defs: $defs,
       };
     },
   };
