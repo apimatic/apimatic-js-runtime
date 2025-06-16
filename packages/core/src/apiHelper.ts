@@ -3,6 +3,7 @@ import { getHeader } from '@apimatic/http-headers';
 import { detect } from 'detect-browser';
 import warning from 'tiny-warning';
 import { JsonPointer } from 'json-ptr';
+import { PagedResponse } from './paginator/pagedResponse';
 
 /**
  * Validates the protocol and removes duplicate forward slashes
@@ -115,6 +116,77 @@ export function updateErrorMessage(
     message = replaceBodyPlaceholders(message, response.body, bodyPlaceholders);
   }
   return message;
+}
+
+export function updateValueByJsonPointer<T>(
+  obj: T,
+  pointer: string,
+  updater: (val: any) => any
+): T {
+  if (!obj || !pointer || !updater) {
+    return obj;
+  }
+
+  const pathParts = pointer.split('/').filter(Boolean); //
+
+  let current: any = obj;
+
+  for (let i = 0; i < pathParts.length - 1; i++) {
+    const key = pathParts[i];
+    if (!(key in current)) {
+      break;
+    }
+    current = current[key];
+  }
+
+  const lastKey = pathParts[pathParts.length - 1];
+
+  current[lastKey] = updater(current[lastKey]);
+  return obj;
+}
+
+export function getValueByJsonPointer(
+  obj: PagedResponse<any, any>,
+  pointer: string
+): any {
+  const [prefix] = pointer.split('#');
+
+  switch (prefix) {
+    case '$response.body':
+      return extractValueFromJsonPointer(obj.body, pointer);
+
+    case '$response.headers':
+      return extractValueFromJsonPointer(obj.headers, pointer);
+
+    default:
+      return this;
+  }
+}
+
+function extractValueFromJsonPointer<T>(obj: T, pointer: string): any {
+  if (!obj || !pointer) {
+    return null;
+  }
+
+  let current: any = obj;
+  if (typeof current === 'string') {
+    try {
+      current = JSON.parse(current);
+    } catch {
+      return null;
+    }
+  }
+
+  const [, jsonPath = ''] = pointer.split('#');
+  const pathParts = jsonPath.split('/').filter(Boolean);
+
+  for (const key of pathParts) {
+    if (!current || typeof current !== 'object' || !(key in current)) {
+      return null;
+    }
+    current = current[key];
+  }
+  return current;
 }
 
 function replaceStatusCodePlaceholder(

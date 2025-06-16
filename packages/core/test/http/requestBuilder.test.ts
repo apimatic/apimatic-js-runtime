@@ -677,6 +677,16 @@ describe('test default request builder behavior with succesful responses', () =>
     expect(apiResponse.request.url).toEqual(expectedRequestUrl);
   });
 
+  it('should test request builder query with multiple parameters and prefix format', async () => {
+    const reqBuilder = defaultRequestBuilder('GET');
+    reqBuilder.appendPath('/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    reqBuilder.query('array1', ['item1', 'item2'], indexedPrefix);
+
+    const prefixFormats = (reqBuilder as any)._queryParamsPrefixFormat;
+    expect(prefixFormats.array1).toBe(indexedPrefix);
+  });
+
   it('should test request builder configured with all kind of headers', async () => {
     const reqBuilder = defaultRequestBuilder('GET', '/test/requestBuilder');
     reqBuilder.baseUrl('default');
@@ -838,7 +848,303 @@ describe('test default request builder behavior with succesful responses', () =>
     }
     return response;
   }
+
+  describe('template function tests', () => {
+    it('should replace template parameters in path with provided values', async () => {
+      const expectedRequestUrl =
+        'https://apimatic.hopto.org:3000/users/123/posts/456';
+
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/users/{userId}/posts/{postId}');
+      reqBuilder.baseUrl('default');
+
+      reqBuilder.template('userId', '123');
+      reqBuilder.template('postId', '456');
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+    });
+
+    it('should handle template parameters with different types', async () => {
+      const expectedRequestUrl =
+        'https://apimatic.hopto.org:3000/data/123/true/3.14';
+
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/data/{number}/{boolean}/{float}');
+      reqBuilder.baseUrl('default');
+
+      reqBuilder.template('number', 123);
+      reqBuilder.template('boolean', true);
+      reqBuilder.template('float', 3.14);
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+    });
+
+    it('should handle multiple template parameters in the same path segment', async () => {
+      const expectedRequestUrl =
+        'https://apimatic.hopto.org:3000/org/123/dept/456/emp/789';
+
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/org/{orgId}/dept/{deptId}/emp/{empId}');
+      reqBuilder.baseUrl('default');
+
+      reqBuilder.template('orgId', '123');
+      reqBuilder.template('deptId', '456');
+      reqBuilder.template('empId', '789');
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+    });
+  });
+
+  describe('updateParameterByJsonPointer tests', () => {
+    it('should update request body object using JSON pointer', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      // Set initial JSON body
+      reqBuilder.json({
+        user: {
+          name: 'John',
+          age: 30,
+          address: {
+            city: 'New York',
+          },
+        },
+      });
+
+      // Update nested value using JSON pointer
+      reqBuilder.updateParameterByJsonPointer(
+        '$request.body#/user/address/city',
+        () => 'Boston'
+      );
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(apiResponse.request.body).toBeDefined();
+      expect(apiResponse.request.body?.type).toBe('text');
+      const requestBody = JSON.parse(
+        apiResponse.request.body?.content as string
+      );
+      expect(requestBody.user.address.city).toBe('Boston');
+    });
+
+    it('should update request body string using JSON pointer', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      // Set initial JSON body
+      reqBuilder.text('NewYork');
+
+      // Update nested value using JSON pointer
+      reqBuilder.updateParameterByJsonPointer('$request.body', () => 'Boston');
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(apiResponse.request.body).toBeDefined();
+      expect(apiResponse.request.body?.type).toBe('text');
+      const requestBody = apiResponse.request.body?.content as string;
+      expect(requestBody).toBe('Boston');
+    });
+
+    it('should update form using JSON pointer', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      // Set initial form data
+      reqBuilder.form({
+        user: {
+          name: 'John',
+          age: '30',
+          address: {
+            city: 'New York',
+          },
+        },
+      });
+
+      // Update nested value using JSON pointer
+      reqBuilder.updateParameterByJsonPointer(
+        '$request.body#/user/address/city',
+        () => 'Boston'
+      );
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(apiResponse.request.body).toBeDefined();
+      expect(apiResponse.request.body?.type).toBe('form');
+      const form = apiResponse.request.body?.content as Array<{
+        key: string;
+        value: string;
+      }>;
+      const cityField = form.find(
+        (field) => field.key === 'user[address][city]'
+      );
+      expect(cityField?.value).toBe('Boston');
+    });
+
+    it('should update form data using JSON pointer', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      // Set initial form data
+      reqBuilder.formData({
+        user: {
+          name: 'John',
+          age: '30',
+          address: {
+            city: 'New York',
+          },
+        },
+      });
+
+      // Update nested value using JSON pointer
+      reqBuilder.updateParameterByJsonPointer(
+        '$request.body#/user/address/city',
+        () => 'Boston'
+      );
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(apiResponse.request.body).toBeDefined();
+      expect(apiResponse.request.body?.type).toBe('form');
+      const form = apiResponse.request.body?.content as Array<{
+        key: string;
+        value: string;
+      }>;
+      const cityField = form.find(
+        (field) => field.key === 'user[address][city]'
+      );
+      expect(cityField?.value).toBe('Boston');
+    });
+
+    it('should update path template parameters using JSON pointer', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/users/{userId}/posts/{postId}');
+      reqBuilder.baseUrl('default');
+
+      // Set initial template values
+      reqBuilder.template('userId', '123');
+      reqBuilder.template('postId', '456');
+
+      // Update template value using JSON pointer
+      reqBuilder.updateParameterByJsonPointer(
+        '$request.path#/userId',
+        () => '789'
+      );
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(apiResponse.request.url).toBe(
+        'https://apimatic.hopto.org:3000/users/789/posts/456'
+      );
+    });
+
+    it('should update query parameters using JSON pointer', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      // Set initial query parameters
+      reqBuilder.query({
+        filter: {
+          status: 'active',
+          type: 'user',
+        },
+      });
+
+      // Update nested query value using JSON pointer
+      reqBuilder.updateParameterByJsonPointer(
+        '$request.query#/filter/status',
+        () => 'inactive'
+      );
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(decodeURIComponent(apiResponse.request.url)).toContain(
+        'filter[status]=inactive'
+      );
+    });
+
+    it('should update headers using JSON pointer', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      // Set initial headers
+      reqBuilder.headers({
+        'x-api-key': 'old-key',
+        'content-type': 'application/json',
+      });
+
+      // Update header value using JSON pointer
+      reqBuilder.updateParameterByJsonPointer(
+        '$request.headers#/x-api-key',
+        () => 'new-key'
+      );
+
+      const apiResponse = await reqBuilder.callAsText();
+      expect(apiResponse.request.headers).toBeDefined();
+      expect(apiResponse.request.headers?.['x-api-key']).toBe('new-key');
+    });
+
+    it('should return builder instance for chaining', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      const result = reqBuilder
+        .updateParameterByJsonPointer(
+          '$request.headers#/x-api-key',
+          () => 'key1'
+        )
+        .updateParameterByJsonPointer(
+          '$request.headers#/content-type',
+          () => 'application/json'
+        );
+
+      expect(result).toBe(reqBuilder);
+    });
+
+    it('should handle null pointer gracefully', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      const result = reqBuilder.updateParameterByJsonPointer(
+        null,
+        () => 'value'
+      );
+      expect(result).toBe(reqBuilder);
+    });
+
+    it('should handle invalid pointer prefix', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      const result = reqBuilder.updateParameterByJsonPointer(
+        '$invalid.prefix#/key',
+        () => 'value'
+      );
+      expect(result).toBe(reqBuilder);
+    });
+
+    it('should handle invalid pointer key', async () => {
+      const reqBuilder = defaultRequestBuilder('GET');
+      reqBuilder.appendPath('/test/requestBuilder');
+      reqBuilder.baseUrl('default');
+
+      reqBuilder.updateParameterByJsonPointer(
+        '$request.query#/invalid/key',
+        () => 'value'
+      );
+      const apiResponse = await reqBuilder.callAsText();
+      expect(decodeURIComponent(apiResponse.request.url)).toContain(
+        'key=value'
+      );
+    });
+  });
 });
+
 it('should test skipEncode instance', () => {
   expect(skipEncode('test-value')).toEqual({ value: 'test-value' });
 });

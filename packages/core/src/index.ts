@@ -27,3 +27,25 @@ export {
   pipePrefix,
 } from './http/queryString';
 export { XmlSerializerInterface } from './xml/xmlSerializer';
+export { OffsetPagination } from './paginator/offsetPagination';
+export { CursorPagination } from './paginator/cursorPagination';
+export { PagePagination } from './paginator/pagePagination';
+export { LinkPagination } from './paginator/linkPagination';
+export {
+  createOffsetPagedResponse,
+  OffsetPagedResponse,
+} from './paginator/offsetPagedResponse';
+export {
+  createCursorPagedResponse,
+  CursorPagedResponse,
+} from './paginator/cursorPagedResponse';
+export {
+  createLinkPagedResponse,
+  LinkPagedResponse,
+} from './paginator/linkPagedResponse';
+export {
+  createNumberPagedResponse,
+  NumberPagedResponse,
+} from './paginator/numberPagedResponse';
+export { PagedResponse } from './paginator/pagedResponse';
+export { PagedAsyncIterable } from './paginator/pagedData';
