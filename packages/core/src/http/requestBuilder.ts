@@ -320,10 +320,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       if (prefixFormat) {
         this._queryParamsPrefixFormat[nameOrParameters] = prefixFormat;
       }
-    } else {
-      this.setPrefixFormats(nameOrParameters, prefixFormat);
-      this.setQueryParams(nameOrParameters);
+      return;
     }
+    this.setPrefixFormats(nameOrParameters, prefixFormat);
+    this.setQueryParams(nameOrParameters);
   }
 
   private setPrefixFormats(
@@ -676,16 +676,18 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (this._body) {
       if (pointer === '') {
         this._body = setter(this._body.toString());
-      } else {
-        this._body = JSON.stringify(
-          updateValueByJsonPointer(JSON.parse(this._body), pointer, setter)
-        );
+        return;
       }
-    } else if (this._form) {
-      this._form = updateValueByJsonPointer(this._form, pointer, setter);
-    } else if (this._formData) {
-      this._form = updateValueByJsonPointer(this._formData, pointer, setter);
+      this._body = JSON.stringify(
+        updateValueByJsonPointer(JSON.parse(this._body), pointer, setter)
+      );
+      return;
     }
+    if (this._form) {
+      this._form = updateValueByJsonPointer(this._form, pointer, setter);
+      return;
+    }
+    this._formData = updateValueByJsonPointer(this._formData, pointer, setter);
   }
 
   private _setContentTypeIfNotSet(contentType: string) {

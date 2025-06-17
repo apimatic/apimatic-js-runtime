@@ -141,6 +141,13 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
       return this.paginationStrategies[0];
     }
 
+    return this.selectStrategy(request, currentPage);
+  }
+
+  private selectStrategy(
+    request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
+    currentPage: PagedResponse<I, P> | null
+  ): Pagination<BaseUrlParamType, AuthParams, I, P> | null {
     for (const strategy of this.paginationStrategies) {
       if (strategy.isApplicable(request, currentPage)) {
         this.selectedPaginationStrategy = strategy;

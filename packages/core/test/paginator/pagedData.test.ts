@@ -1,36 +1,50 @@
-import { DefaultRequestBuilder } from '../../src';
-import { PagePagination } from '../../src';
-import { OffsetPagination } from '../../src';
-import { LinkPagination } from '../../src';
-import { createNumberPagedResponse } from '../../src';
-import { createOffsetPagedResponse } from '../../src';
-import { createLinkPagedResponse } from '../../src';
+import {
+  ApiError,
+  CursorPagination,
+  createCursorPagedResponse,
+  createNumberPagedResponse,
+  createOffsetPagedResponse,
+  createLinkPagedResponse,
+  createRequestBuilderFactory,
+  DefaultRequestBuilder,
+  PagePagination,
+  OffsetPagination,
+  PagedResponse,
+  LinkPagination,
+} from '../../src';
 import { Schema } from '../../src/schema';
 import {
   ApiResponse,
   HttpRequest,
   HttpClientInterface,
   HttpMethod,
+  passThroughInterceptor,
+  RetryConfiguration,
 } from '../../src/coreInterfaces';
-import { createRequestBuilderFactory } from '../../src';
-import { ApiError } from '../../src';
-import { passThroughInterceptor } from '../../src/coreInterfaces';
-import { RetryConfiguration } from '../../src/coreInterfaces';
 import { object, array, string } from '@apimatic/schema';
-import { CursorPagination } from '../../src';
-import { createCursorPagedResponse } from '../../src';
 import { Pagination } from '../../src/paginator/pagination';
-import { PagedResponse } from '../../src';
+
+type PaginationType = 'page' | 'offset' | 'link' | 'cursor' | null;
 
 describe('PagedData', () => {
   let mockSchema: Schema<any>;
   let mockGetData: jest.Mock;
 
+  const expectedPages = [
+    ['item1', 'item2'],
+    ['item3', 'item4'],
+    ['item5', 'item6'],
+  ];
+  const expectedItems = expectedPages.reduce(
+    (acc, curr) => acc.concat(curr),
+    []
+  );
+
   const mockResponses = {
     page1: {
       statusCode: 200,
       body: JSON.stringify({
-        data: ['item1', 'item2'],
+        data: expectedPages[0],
         nextLink:
           'https://apimatic.hopto.org:3000/test/pagination?nextLink=page2',
         nextCursor: 'cursor2',
@@ -40,7 +54,7 @@ describe('PagedData', () => {
     page2: {
       statusCode: 200,
       body: JSON.stringify({
-        data: ['item3', 'item4'],
+        data: expectedPages[1],
         nextLink:
           'https://apimatic.hopto.org:3000/test/pagination?nextLink=page3',
         nextCursor: 'cursor3',
@@ -50,7 +64,7 @@ describe('PagedData', () => {
     page3: {
       statusCode: 200,
       body: JSON.stringify({
-        data: ['item5', 'item6'],
+        data: expectedPages[2],
         nextLink: null,
         nextCursor: 'cursor4',
       }),
@@ -74,7 +88,7 @@ describe('PagedData', () => {
   };
 
   function createMockHttpClient(
-    paginationType: 'page' | 'offset' | 'link' | 'cursor' | null
+    paginationType: PaginationType
   ): HttpClientInterface {
     return async (request: HttpRequest) => {
       const queryString = request.url.split('?')[1] || '';
@@ -146,7 +160,7 @@ describe('PagedData', () => {
   };
 
   function getRequestBuilder(
-    paginationType: 'page' | 'offset' | 'link' | 'cursor' | null
+    paginationType: PaginationType
   ): DefaultRequestBuilder<string, boolean> {
     const defaultRequestBuilder = createRequestBuilderFactory<string, boolean>(
       createMockHttpClient(paginationType),
@@ -166,7 +180,7 @@ describe('PagedData', () => {
   }
 
   function getPagedData(
-    paginationType: 'page' | 'offset' | 'link' | 'cursor' | null,
+    paginationType: PaginationType,
     pagination: Pagination<string, boolean, any, any>,
     pageResponseCreator: (response: PagedResponse<any, any>) => any
   ) {
@@ -207,14 +221,7 @@ describe('PagedData', () => {
         items.push(item);
       }
 
-      expect(items).toEqual([
-        'item1',
-        'item2',
-        'item3',
-        'item4',
-        'item5',
-        'item6',
-      ]);
+      expect(items).toEqual(expectedItems);
     });
 
     it('should iterate through pages as pages', async () => {
@@ -229,11 +236,7 @@ describe('PagedData', () => {
         pages.push(page.items);
       }
 
-      expect(pages).toEqual([
-        ['item1', 'item2'],
-        ['item3', 'item4'],
-        ['item5', 'item6'],
-      ]);
+      expect(pages).toEqual(expectedPages);
     });
   });
 
@@ -252,14 +255,7 @@ describe('PagedData', () => {
         items.push(item);
       }
 
-      expect(items).toEqual([
-        'item1',
-        'item2',
-        'item3',
-        'item4',
-        'item5',
-        'item6',
-      ]);
+      expect(items).toEqual(expectedItems);
     });
 
     it('should iterate through pages as pages using offset', async () => {
@@ -276,11 +272,7 @@ describe('PagedData', () => {
         pages.push(page.items);
       }
 
-      expect(pages).toEqual([
-        ['item1', 'item2'],
-        ['item3', 'item4'],
-        ['item5', 'item6'],
-      ]);
+      expect(pages).toEqual(expectedPages);
     });
   });
 
@@ -299,14 +291,7 @@ describe('PagedData', () => {
         items.push(item);
       }
 
-      expect(items).toEqual([
-        'item1',
-        'item2',
-        'item3',
-        'item4',
-        'item5',
-        'item6',
-      ]);
+      expect(items).toEqual(expectedItems);
     });
 
     it('should iterate through pages as pages using next links', async () => {
@@ -326,22 +311,17 @@ describe('PagedData', () => {
         });
       }
 
-      expect(pages).toEqual([
-        {
-          items: ['item1', 'item2'],
-          nextLink: null,
-        },
-        {
-          items: ['item3', 'item4'],
-          nextLink:
-            'https://apimatic.hopto.org:3000/test/pagination?nextLink=page2',
-        },
-        {
-          items: ['item5', 'item6'],
-          nextLink:
-            'https://apimatic.hopto.org:3000/test/pagination?nextLink=page3',
-        },
-      ]);
+      const expectedLinkPages = expectedPages.map((items, index) => ({
+        items,
+        nextLink:
+          index === 0
+            ? null
+            : `https://apimatic.hopto.org:3000/test/pagination?nextLink=page${
+                index + 1
+              }`,
+      }));
+
+      expect(pages).toEqual(expectedLinkPages);
     });
   });
 
@@ -361,14 +341,7 @@ describe('PagedData', () => {
         items.push(item);
       }
 
-      expect(items).toEqual([
-        'item1',
-        'item2',
-        'item3',
-        'item4',
-        'item5',
-        'item6',
-      ]);
+      expect(items).toEqual(expectedItems);
     });
 
     it('should iterate through pages as pages using cursor', async () => {
@@ -389,20 +362,12 @@ describe('PagedData', () => {
         });
       }
 
-      expect(pages).toEqual([
-        {
-          items: ['item1', 'item2'],
-          nextCursor: null,
-        },
-        {
-          items: ['item3', 'item4'],
-          nextCursor: 'cursor2',
-        },
-        {
-          items: ['item5', 'item6'],
-          nextCursor: 'cursor3',
-        },
-      ]);
+      const expectedCursorPages = expectedPages.map((items, index) => ({
+        items,
+        nextCursor: index === 0 ? null : `cursor${index + 1}`,
+      }));
+
+      expect(pages).toEqual(expectedCursorPages);
     });
   });
 
@@ -478,9 +443,8 @@ describe('PagedData', () => {
       );
 
       await expect(async () => {
-        const items: any[] = [];
-        for await (const item of pagedData) {
-          items.push(item);
+        for await (const _ of pagedData) {
+          // iterating to trigger the error condition
         }
       }).rejects.toThrow();
     });

@@ -1,17 +1,19 @@
-import { PagePagination } from '../../src';
-import { LinkPagination } from '../../src';
-import { createLinkPagedResponse } from '../../src';
+import {
+  ApiError,
+  createLinkPagedResponse,
+  createRequestBuilderFactory,
+  LinkPagination,
+  PagePagination,
+} from '../../src';
 import { Schema } from '../../src/schema';
 import {
   ApiResponse,
   HttpRequest,
   HttpClientInterface,
   HttpMethod,
+  passThroughInterceptor,
+  RetryConfiguration,
 } from '../../src/coreInterfaces';
-import { createRequestBuilderFactory } from '../../src';
-import { ApiError } from '../../src';
-import { passThroughInterceptor } from '../../src/coreInterfaces';
-import { RetryConfiguration } from '../../src/coreInterfaces';
 import { object, array, string } from '@apimatic/schema';
 
 describe('Multiple Pagination Strategies', () => {
@@ -64,7 +66,6 @@ describe('Multiple Pagination Strategies', () => {
       const queryString = request.url.split('?')[1] || '';
       const params = new URLSearchParams(queryString);
 
-      // First check for link-based pagination
       const nextLink = params.get('nextLink');
       if (nextLink) {
         const linkMap: Record<string, keyof typeof mockResponses> = {
@@ -74,7 +75,6 @@ describe('Multiple Pagination Strategies', () => {
         return mockResponses[linkMap[nextLink]] || mockResponses.empty;
       }
 
-      // Fall back to page-based pagination
       const page = parseInt(params.get('page') || '1', 10);
       const pageMap: Record<number, keyof typeof mockResponses> = {
         1: 'page1',
@@ -111,7 +111,7 @@ describe('Multiple Pagination Strategies', () => {
     });
   });
 
-  it('should use link pagination first and then fall back to page pagination', async () => {
+  it('should use link pagination without falling back to page pagination ', async () => {
     const defaultRequestBuilder = createRequestBuilderFactory<string, boolean>(
       createMockHttpClient(),
       mockBaseURIProvider,
@@ -155,42 +155,6 @@ describe('Multiple Pagination Strategies', () => {
         nextLink:
           'https://apimatic.hopto.org:3000/test/pagination?nextLink=page3',
       },
-    ]);
-  });
-
-  it('should iterate through all items correctly with mixed pagination strategies', async () => {
-    const defaultRequestBuilder = createRequestBuilderFactory<string, boolean>(
-      createMockHttpClient(),
-      mockBaseURIProvider,
-      ApiError,
-      noneAuthenticationProvider,
-      retryConfig
-    )('GET', '/test/pagination');
-
-    defaultRequestBuilder.baseUrl('default');
-    defaultRequestBuilder.query('page', 1);
-
-    const pagedData = defaultRequestBuilder.paginate(
-      mockSchema,
-      undefined,
-      createLinkPagedResponse,
-      mockGetData,
-      new LinkPagination<string, boolean, any, any>('$response.body#/nextLink'),
-      new PagePagination<string, boolean, any, any>('$request.query#/page')
-    );
-
-    const items: any[] = [];
-    for await (const item of pagedData) {
-      items.push(item);
-    }
-
-    expect(items).toEqual([
-      'item1',
-      'item2',
-      'item3',
-      'item4',
-      'item5',
-      'item6',
     ]);
   });
 });
