@@ -68,8 +68,7 @@ describe('test default request builder behavior with succesful responses', () =>
     basicAuth,
     retryConfig
   );
-
-  it('should test request builder configured with text request body and text response body', async () => {
+  const setupTextRequestTest = async () => {
     const expectedRequest: HttpRequest = {
       method: 'GET',
       url: 'https://apimatic.hopto.org:3000/test/requestBuilder?text=true',
@@ -85,6 +84,20 @@ describe('test default request builder behavior with succesful responses', () =>
       },
       auth: { username: 'maryam-adnan', password: '12345678' },
     };
+
+    const expectedResponse = {
+      request: expectedRequest,
+      statusCode: 200,
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+        'test-header1': 'test-value1',
+        'test-header2': 'test-value2',
+        'test-header3': 'test-value3',
+      },
+      result: 'testBody result',
+      body: 'testBody result',
+    };
+
     const reqBuilder = defaultRequestBuilder('GET');
     reqBuilder.appendPath('/test/requestBuilder');
     reqBuilder.baseUrl('default');
@@ -97,32 +110,17 @@ describe('test default request builder behavior with succesful responses', () =>
     reqBuilder.requestRetryOption(RequestRetryOption.Disable);
     reqBuilder.authenticate(true);
     reqBuilder.text('testBody');
+
+    return { reqBuilder, expectedResponse };
+  };
+
+  it('should test request builder configured with text request body and text response body', async () => {
+    const { reqBuilder, expectedResponse } = await setupTextRequestTest();
     const apiResponse = await reqBuilder.callAsText();
     const apiResponseForOptionalText = await reqBuilder.callAsOptionalText();
-    expect(apiResponse).toEqual({
-      request: expectedRequest,
-      statusCode: 200,
-      headers: {
-        'content-type': 'text/plain; charset=utf-8',
-        'test-header1': 'test-value1',
-        'test-header2': 'test-value2',
-        'test-header3': 'test-value3',
-      },
-      result: 'testBody result',
-      body: 'testBody result',
-    });
-    expect(apiResponseForOptionalText).toEqual({
-      request: expectedRequest,
-      statusCode: 200,
-      headers: {
-        'content-type': 'text/plain; charset=utf-8',
-        'test-header1': 'test-value1',
-        'test-header2': 'test-value2',
-        'test-header3': 'test-value3',
-      },
-      result: 'testBody result',
-      body: 'testBody result',
-    });
+
+    expect(apiResponse).toEqual(expectedResponse);
+    expect(apiResponseForOptionalText).toEqual(expectedResponse);
   });
   it('should test request builder configured with json request body and text response body', async () => {
     const expectedRequest: HttpRequest = {
@@ -317,46 +315,9 @@ describe('test default request builder behavior with succesful responses', () =>
     });
   });
   it('should test request builder configured with text request body and text response body', async () => {
-    const expectedRequest: HttpRequest = {
-      method: 'GET',
-      url: 'https://apimatic.hopto.org:3000/test/requestBuilder?text=true',
-      headers: {
-        'content-type': 'text/plain; charset=utf-8',
-        'test-header1': 'test-value1',
-        'test-header2': 'test-value2',
-        'test-header3': 'test-value3',
-      },
-      body: {
-        content: 'testBody',
-        type: 'text',
-      },
-      auth: { username: 'maryam-adnan', password: '12345678' },
-    };
-    const reqBuilder = defaultRequestBuilder('GET');
-    reqBuilder.appendPath('/test/requestBuilder');
-    reqBuilder.baseUrl('default');
-    reqBuilder.header('test-header1', 'test-value1');
-    reqBuilder.headers({
-      'test-header2': 'test-value2',
-      'test-header3': 'test-value3',
-    });
-    reqBuilder.query('text', true);
-    reqBuilder.requestRetryOption(RequestRetryOption.Disable);
-    reqBuilder.authenticate(true);
-    reqBuilder.text('testBody');
+    const { reqBuilder, expectedResponse } = await setupTextRequestTest();
     const apiResponse = await reqBuilder.callAsText();
-    expect(apiResponse).toEqual({
-      request: expectedRequest,
-      statusCode: 200,
-      headers: {
-        'content-type': 'text/plain; charset=utf-8',
-        'test-header1': 'test-value1',
-        'test-header2': 'test-value2',
-        'test-header3': 'test-value3',
-      },
-      result: 'testBody result',
-      body: 'testBody result',
-    });
+    expect(apiResponse).toEqual(expectedResponse);
   });
   it('should test request builder with undefined and null header, query, empty path', async () => {
     const reqBuilder = defaultRequestBuilder('GET', 'test/requestBuilder');
@@ -1007,7 +968,7 @@ describe('test default request builder behavior with succesful responses', () =>
 
       const apiResponse = await reqBuilder.callAsText();
       expect(apiResponse.request.body).toBeDefined();
-      expect(apiResponse.request.body?.type).toBe('form');
+      expect(apiResponse.request.body?.type).toBe('form-data');
       const form = apiResponse.request.body?.content as Array<{
         key: string;
         value: string;
