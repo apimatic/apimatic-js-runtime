@@ -1,10 +1,10 @@
-import { DefaultRequestBuilder } from '../../src/http/requestBuilder';
-import { PagePagination } from '../../src/paginator/pagePagination';
-import { OffsetPagination } from '../../src/paginator/offsetPagination';
-import { LinkPagination } from '../../src/paginator/linkPagination';
-import { createNumberPagedResponse } from '../../src/paginator/numberPagedResponse';
-import { createOffsetPagedResponse } from '../../src/paginator/offsetPagedResponse';
-import { createLinkPagedResponse } from '../../src/paginator/linkPagedResponse';
+import { DefaultRequestBuilder } from '../../src';
+import { PagePagination } from '../../src';
+import { OffsetPagination } from '../../src';
+import { LinkPagination } from '../../src';
+import { createNumberPagedResponse } from '../../src';
+import { createOffsetPagedResponse } from '../../src';
+import { createLinkPagedResponse } from '../../src';
 import { Schema } from '../../src/schema';
 import {
   ApiResponse,
@@ -12,15 +12,15 @@ import {
   HttpClientInterface,
   HttpMethod,
 } from '../../src/coreInterfaces';
-import { createRequestBuilderFactory } from '../../src/http/requestBuilder';
-import { ApiError } from '../../src/errors/apiError';
+import { createRequestBuilderFactory } from '../../src';
+import { ApiError } from '../../src';
 import { passThroughInterceptor } from '../../src/coreInterfaces';
 import { RetryConfiguration } from '../../src/coreInterfaces';
 import { object, array, string } from '@apimatic/schema';
-import { CursorPagination } from '../../src/paginator/cursorPagination';
-import { createCursorPagedResponse } from '../../src/paginator/cursorPagedResponse';
+import { CursorPagination } from '../../src';
+import { createCursorPagedResponse } from '../../src';
 import { Pagination } from '../../src/paginator/pagination';
-import { PagedResponse } from '../../src/paginator/pagedResponse';
+import { PagedResponse } from '../../src';
 
 describe('PagedData', () => {
   let mockSchema: Schema<any>;

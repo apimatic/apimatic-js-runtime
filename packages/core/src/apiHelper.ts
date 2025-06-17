@@ -168,7 +168,7 @@ function extractValueFromJsonPointer<T>(obj: T, pointer: string): any {
     return null;
   }
 
-  let current: any = obj;
+  let current = obj;
   if (typeof current === 'string') {
     try {
       current = JSON.parse(current);
@@ -180,13 +180,18 @@ function extractValueFromJsonPointer<T>(obj: T, pointer: string): any {
   const [, jsonPath = ''] = pointer.split('#');
   const pathParts = jsonPath.split('/').filter(Boolean);
 
+  return getValueAtPath(current, pathParts);
+}
+
+function getValueAtPath(obj: any, pathParts: string[]): any {
+  let result = obj;
   for (const key of pathParts) {
-    if (!current || typeof current !== 'object' || !(key in current)) {
+    if (!result || typeof result !== 'object' || !(key in result)) {
       return null;
     }
-    current = current[key];
+    result = result[key];
   }
-  return current;
+  return result;
 }
 
 function replaceStatusCodePlaceholder(

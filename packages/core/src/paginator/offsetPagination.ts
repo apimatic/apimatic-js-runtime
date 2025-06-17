@@ -6,10 +6,10 @@ import { OffsetPagedResponse } from './offsetPagedResponse';
 export class OffsetPagination<
   BaseUrlParamType,
   AuthParams,
-  T,
+  I,
   P
-> extends Pagination<BaseUrlParamType, AuthParams, T, P> {
-  private offsetPointer: string;
+> extends Pagination<BaseUrlParamType, AuthParams, I, P> {
+  private readonly offsetPointer: string;
   private pageOffset: string = '0';
 
   constructor(offsetPointer: string) {
@@ -37,8 +37,8 @@ export class OffsetPagination<
   }
 
   public withMetadata(
-    response: PagedResponse<T, P>
-  ): OffsetPagedResponse<T, P> {
+    response: PagedResponse<I, P>
+  ): OffsetPagedResponse<I, P> {
     return {
       ...response,
       offset: this.pageOffset,

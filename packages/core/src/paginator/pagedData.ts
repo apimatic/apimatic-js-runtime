@@ -4,26 +4,26 @@ import { ApiResponse, RequestOptions } from '@apimatic/core-interfaces';
 import { Pagination } from './pagination';
 import { PagedResponse } from './pagedResponse';
 
-export interface PagedAsyncIterable<TItem, TPage> extends AsyncIterable<TItem> {
-  pages(): AsyncIterable<TPage>;
+export interface PagedAsyncIterable<I, P> extends AsyncIterable<I> {
+  pages(): AsyncIterable<P>;
 }
 
-export class PagedData<T, P, PageWrapper, BaseUrlParamType, AuthParams>
-  implements PagedAsyncIterable<T, PageWrapper> {
-  private request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>;
-  private schema: Schema<P>;
-  private requestOptions?: RequestOptions;
-  private pageResponseCreator: (
-    p: PagedResponse<T, P>
+export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
+  implements PagedAsyncIterable<I, PageWrapper> {
+  private readonly schema: Schema<P>;
+  private readonly requestOptions?: RequestOptions;
+  private readonly pageResponseCreator: (
+    p: PagedResponse<I, P>
   ) => PageWrapper | undefined;
-  private getData: (response: ApiResponse<P>) => T[] | undefined;
-  private paginationStrategies: Array<
-    Pagination<BaseUrlParamType, AuthParams, T, P>
+  private readonly getData: (response: ApiResponse<P>) => I[] | undefined;
+  private readonly paginationStrategies: Array<
+    Pagination<BaseUrlParamType, AuthParams, I, P>
   >;
+  private request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>;
   private selectedPaginationStrategy: Pagination<
     BaseUrlParamType,
     AuthParams,
-    T,
+    I,
     P
   > | null;
 
@@ -31,10 +31,10 @@ export class PagedData<T, P, PageWrapper, BaseUrlParamType, AuthParams>
     request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
     schema: Schema<P>,
     requestOptions: RequestOptions | undefined,
-    pageResponseCreator: (p: PagedResponse<T, P>) => PageWrapper | undefined,
-    getData: (response: ApiResponse<P>) => T[] | undefined,
+    pageResponseCreator: (p: PagedResponse<I, P>) => PageWrapper | undefined,
+    getData: (response: ApiResponse<P>) => I[] | undefined,
     ...paginationStrategies: Array<
-      Pagination<BaseUrlParamType, AuthParams, T, P>
+      Pagination<BaseUrlParamType, AuthParams, I, P>
     >
   ) {
     this.request = request;
@@ -46,115 +46,126 @@ export class PagedData<T, P, PageWrapper, BaseUrlParamType, AuthParams>
     this.selectedPaginationStrategy = null;
   }
 
-  public [Symbol.asyncIterator](): AsyncIterator<T> {
+  public [Symbol.asyncIterator](): AsyncIterator<I> {
     const request = this.request.clone();
-    let currentPage: PagedResponse<T, P> | null = null;
-    let currentItems: T[] = [];
-    let currentIndex = 0;
+    const state = {
+      currentPage: null as PagedResponse<I, P> | null,
+      currentItems: [] as I[],
+      currentIndex: 0,
+    };
 
     return {
-      next: async (): Promise<IteratorResult<T>> => {
-        if (currentIndex < currentItems.length) {
-          return { done: false, value: currentItems[currentIndex++] };
-        }
-
-        currentPage = await this.fetchPage(request, currentPage);
-
-        if (currentPage === null) {
-          return { done: true, value: undefined };
-        }
-
-        currentItems = currentPage.items || [];
-        currentIndex = 0;
-
-        return currentItems.length > 0
-          ? { done: false, value: currentItems[currentIndex++] }
-          : { done: true, value: undefined };
-      },
+      next: () => this.getNextItem(request, state),
     };
   }
 
   public pages(): AsyncIterable<PageWrapper> {
     const request = this.request.clone();
+    const state = {
+      currentPage: null as PagedResponse<I, P> | null,
+    };
 
     return {
-      [Symbol.asyncIterator]: () => {
-        let currentPage: PagedResponse<T, P> | null = null;
-
-        return {
-          next: async (): Promise<IteratorResult<PageWrapper>> => {
-            currentPage = await this.fetchPage(request, currentPage);
-
-            if (currentPage === null) {
-              return { done: true, value: undefined };
-            }
-
-            const wrappedPage = this.pageResponseCreator(currentPage);
-
-            return wrappedPage
-              ? { done: false, value: wrappedPage }
-              : { done: true, value: undefined };
-          },
-        };
-      },
+      [Symbol.asyncIterator]: () => ({
+        next: () => this.getNextPage(request, state),
+      }),
     };
+  }
+
+  private async getNextItem(
+    request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
+    state: {
+      currentPage: PagedResponse<I, P> | null;
+      currentItems: I[];
+      currentIndex: number;
+    }
+  ): Promise<IteratorResult<I>> {
+    if (state.currentIndex < state.currentItems.length) {
+      return { done: false, value: state.currentItems[state.currentIndex++] };
+    }
+
+    state.currentPage = await this.fetchPage(request, state.currentPage);
+
+    if (state.currentPage === null) {
+      return { done: true, value: undefined };
+    }
+
+    state.currentItems = state.currentPage.items || [];
+    state.currentIndex = 0;
+
+    return state.currentItems.length > 0
+      ? { done: false, value: state.currentItems[state.currentIndex++] }
+      : { done: true, value: undefined };
+  }
+
+  private async getNextPage(
+    request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
+    state: { currentPage: PagedResponse<I, P> | null }
+  ): Promise<IteratorResult<PageWrapper>> {
+    state.currentPage = await this.fetchPage(request, state.currentPage);
+
+    if (state.currentPage === null) {
+      return { done: true, value: undefined };
+    }
+
+    const wrappedPage = this.pageResponseCreator(state.currentPage);
+
+    return wrappedPage
+      ? { done: false, value: wrappedPage }
+      : { done: true, value: undefined };
   }
 
   private async fetchPage(
     request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
-    currentPage: PagedResponse<T, P> | null
-  ): Promise<PagedResponse<T, P> | null> {
-    let pagedResponse: PagedResponse<T, P>;
-    let isApplicable: boolean;
-
-    // First call
-    if (this.selectedPaginationStrategy === null) {
-      for (const pagination of this.paginationStrategies) {
-        isApplicable = pagination.isApplicable(request, currentPage);
-        if (isApplicable) {
-          if (!currentPage) {
-            this.selectedPaginationStrategy = pagination;
-          }
-          const callResponse = await request.callAsJson(
-            this.schema,
-            this.requestOptions
-          );
-          const callData = this.getData(callResponse);
-          if (!callData || callData.length === 0) {
-            return null;
-          }
-          pagedResponse = {
-            ...callResponse,
-            items: callData,
-          };
-          return pagination.withMetadata(pagedResponse);
-        }
-      }
-      if (this.selectedPaginationStrategy === null) {
-        return null;
-      }
-    }
-
-    // Subsequent calls
-    isApplicable = this.selectedPaginationStrategy.isApplicable(
-      request,
-      currentPage
-    );
-    if (!isApplicable) {
+    currentPage: PagedResponse<I, P> | null
+  ): Promise<PagedResponse<I, P> | null> {
+    const strategy = this.getApplicableStrategy(request, currentPage);
+    if (!strategy) {
       return null;
     }
-    const subsequentCallResponse = await request.callAsJson(
-      this.schema,
-      this.requestOptions
-    );
-    const subsequentCallData = this.getData(subsequentCallResponse);
-    if (!subsequentCallData || subsequentCallData.length === 0) {
+
+    return this.executeRequest(request, strategy);
+  }
+
+  private getApplicableStrategy(
+    request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
+    currentPage: PagedResponse<I, P> | null
+  ): Pagination<BaseUrlParamType, AuthParams, I, P> | null {
+    if (this.selectedPaginationStrategy) {
+      return this.selectedPaginationStrategy.isApplicable(request, currentPage)
+        ? this.selectedPaginationStrategy
+        : null;
+    }
+
+    if (!currentPage && this.paginationStrategies.length > 0) {
+      return this.paginationStrategies[0];
+    }
+
+    for (const strategy of this.paginationStrategies) {
+      if (strategy.isApplicable(request, currentPage)) {
+        this.selectedPaginationStrategy = strategy;
+        return strategy;
+      }
+    }
+    return null;
+  }
+
+  private async executeRequest(
+    request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
+    strategy: Pagination<BaseUrlParamType, AuthParams, I, P>
+  ): Promise<PagedResponse<I, P> | null> {
+    const response = await request.callAsJson(this.schema, this.requestOptions);
+    const data = this.getData(response);
+
+    if (!data || data.length === 0) {
       return null;
     }
-    pagedResponse = {
-      ...subsequentCallResponse,
-      items: subsequentCallData,
+
+    const pagedResponse: PagedResponse<I, P> = {
+      ...response,
+      items: data,
     };
-    return this.selectedPaginationStrategy.withMetadata(pagedResponse);
+
+    return strategy.withMetadata(pagedResponse);
   }
 }

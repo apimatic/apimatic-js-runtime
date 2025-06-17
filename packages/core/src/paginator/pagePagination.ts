@@ -6,10 +6,10 @@ import { PagedResponse } from './pagedResponse';
 export class PagePagination<
   BaseUrlParamType,
   AuthParams,
-  T,
+  I,
   P
-> extends Pagination<BaseUrlParamType, AuthParams, T, P> {
-  private pagePointer: string;
+> extends Pagination<BaseUrlParamType, AuthParams, I, P> {
+  private readonly pagePointer: string;
   private pageNumber: string = '1';
 
   constructor(pagePointer: string) {
@@ -37,8 +37,8 @@ export class PagePagination<
   }
 
   public withMetadata(
-    response: PagedResponse<T, P>
-  ): NumberPagedResponse<T, P> {
+    response: PagedResponse<I, P>
+  ): NumberPagedResponse<I, P> {
     return {
       ...response,
       pageNumber: this.pageNumber,

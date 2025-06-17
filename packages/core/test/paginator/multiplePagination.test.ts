@@ -1,6 +1,6 @@
-import { PagePagination } from '../../src/paginator/pagePagination';
-import { LinkPagination } from '../../src/paginator/linkPagination';
-import { createLinkPagedResponse } from '../../src/paginator/linkPagedResponse';
+import { PagePagination } from '../../src';
+import { LinkPagination } from '../../src';
+import { createLinkPagedResponse } from '../../src';
 import { Schema } from '../../src/schema';
 import {
   ApiResponse,
@@ -8,8 +8,8 @@ import {
   HttpClientInterface,
   HttpMethod,
 } from '../../src/coreInterfaces';
-import { createRequestBuilderFactory } from '../../src/http/requestBuilder';
-import { ApiError } from '../../src/errors/apiError';
+import { createRequestBuilderFactory } from '../../src';
+import { ApiError } from '../../src';
 import { passThroughInterceptor } from '../../src/coreInterfaces';
 import { RetryConfiguration } from '../../src/coreInterfaces';
 import { object, array, string } from '@apimatic/schema';

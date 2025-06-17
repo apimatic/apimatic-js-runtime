@@ -190,7 +190,6 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     getData: (response: ApiResponse<P>) => T[] | undefined,
     ...paginator: Array<Pagination<BaseUrlParamType, AuthParams, T, P>>
   ): PagedAsyncIterable<T, PageWrapper>;
-  clone(): DefaultRequestBuilder<any, any>;
   updateParameterByJsonPointer(
     pointer: string | null,
     setter: (value: any) => any
@@ -316,25 +315,31 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return;
     }
 
-    let parametersToStore: Record<string, unknown>;
-
     if (typeof nameOrParameters === 'string') {
-      // Single parameter case
-      parametersToStore = { [nameOrParameters]: value };
+      this._queryParams[nameOrParameters] = value;
       if (prefixFormat) {
         this._queryParamsPrefixFormat[nameOrParameters] = prefixFormat;
       }
     } else {
-      // Multiple parameters case
-      parametersToStore = nameOrParameters;
-      if (prefixFormat) {
-        for (const key of Object.keys(parametersToStore)) {
-          this._queryParamsPrefixFormat[key] = prefixFormat;
-        }
-      }
+      this.setPrefixFormats(nameOrParameters, prefixFormat);
+      this.setQueryParams(nameOrParameters);
     }
+  }
 
-    for (const [key, val] of Object.entries(parametersToStore)) {
+  private setPrefixFormats(
+    parameters: Record<string, unknown>,
+    prefixFormat?: ArrayPrefixFunction
+  ): void {
+    if (!prefixFormat) {
+      return;
+    }
+    for (const key of Object.keys(parameters)) {
+      this._queryParamsPrefixFormat[key] = prefixFormat;
+    }
+  }
+
+  private setQueryParams(parameters: Record<string, unknown>): void {
+    for (const [key, val] of Object.entries(parameters)) {
       if (val !== undefined && val !== null) {
         this._queryParams[key] = val;
       }
@@ -605,46 +610,25 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
 
     const [prefix, point = ''] = pointer.split('#');
 
-    switch (prefix) {
-      case '$request.body':
-        if (this._body) {
-          if (point === '') {
-            this._body = setter(this._body.toString());
-          } else {
-            this._body = JSON.stringify(
-              updateValueByJsonPointer(JSON.parse(this._body), point, setter)
-            );
-          }
-        } else if (this._form) {
-          this._form = updateValueByJsonPointer(this._form, point, setter);
-        } else if (this._formData) {
-          this._form = updateValueByJsonPointer(this._formData, point, setter);
-        }
-        return this;
-
-      case '$request.path':
-        this._templateParams = updateValueByJsonPointer(
-          this._templateParams,
-          point,
-          setter
-        );
-        return this;
-
-      case '$request.query':
-        this._queryParams = updateValueByJsonPointer(
-          this._queryParams,
-          point,
-          setter
-        );
-        return this;
-
-      case '$request.headers':
-        this._headers = updateValueByJsonPointer(this._headers, point, setter);
-        return this;
-
-      default:
-        return this;
+    if (prefix === '$request.body') {
+      this.updateBody(point, setter);
+    } else if (prefix === '$request.path') {
+      this._templateParams = updateValueByJsonPointer(
+        this._templateParams,
+        point,
+        setter
+      );
+    } else if (prefix === '$request.query') {
+      this._queryParams = updateValueByJsonPointer(
+        this._queryParams,
+        point,
+        setter
+      );
+    } else if (prefix === '$request.headers') {
+      this._headers = updateValueByJsonPointer(this._headers, point, setter);
     }
+
+    return this;
   }
 
   public clone(): DefaultRequestBuilder<BaseUrlParamType, AuthParams> {
@@ -660,6 +644,13 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._apiLogger
     );
 
+    this.cloneParameters(cloned);
+    return cloned;
+  }
+
+  private cloneParameters(
+    cloned: DefaultRequestBuilder<BaseUrlParamType, AuthParams>
+  ) {
     cloned._accept = this._accept;
     cloned._contentType = this._contentType;
     cloned._headers = { ...this._headers };
@@ -679,8 +670,22 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     cloned._retryOption = this._retryOption;
     cloned._apiErrorFactory = { ...this._apiErrorFactory };
     cloned._errorTypes = [...this._errorTypes];
+  }
 
-    return cloned;
+  private updateBody(pointer: string, setter: (value: any) => any) {
+    if (this._body) {
+      if (pointer === '') {
+        this._body = setter(this._body.toString());
+      } else {
+        this._body = JSON.stringify(
+          updateValueByJsonPointer(JSON.parse(this._body), pointer, setter)
+        );
+      }
+    } else if (this._form) {
+      this._form = updateValueByJsonPointer(this._form, pointer, setter);
+    } else if (this._formData) {
+      this._form = updateValueByJsonPointer(this._formData, pointer, setter);
+    }
   }
 
   private _setContentTypeIfNotSet(contentType: string) {
@@ -719,13 +724,19 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
   }
   private buildPath(): string {
-    return (
-      this._path?.replace(/\{([^}]+)\}/g, (match, key) =>
-        this._templateParams[key] !== undefined
-          ? encodeURIComponent(String(this._templateParams[key]))
-          : match
-      ) ?? ''
-    );
+    if (!this._path) {
+      return '';
+    }
+
+    for (const [key, value] of Object.entries(this._templateParams)) {
+      if (value !== undefined && value !== null) {
+        this._path = this._path.replace(
+          `{${key}}`,
+          encodeURIComponent(String(value))
+        );
+      }
+    }
+    return this._path;
   }
   private _addAuthentication() {
     this.intercept((...args) => {

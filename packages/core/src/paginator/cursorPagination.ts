@@ -7,11 +7,11 @@ import { getValueByJsonPointer } from '../apiHelper';
 export class CursorPagination<
   BaseUrlParamType,
   AuthParams,
-  T,
+  I,
   P
-> extends Pagination<BaseUrlParamType, AuthParams, T, P> {
-  private currentCursorPointer: string;
-  private nextCursorPointer: string;
+> extends Pagination<BaseUrlParamType, AuthParams, I, P> {
+  private readonly currentCursorPointer: string;
+  private readonly nextCursorPointer: string;
   private nextCursorValue: string | null = null;
 
   constructor(currentCursorPointer: string, nextCursorPointer: string) {
@@ -43,8 +43,8 @@ export class CursorPagination<
   }
 
   public withMetadata(
-    response: PagedResponse<T, P>
-  ): CursorPagedResponse<T, P> {
+    response: PagedResponse<I, P>
+  ): CursorPagedResponse<I, P> {
     return {
       ...response,
       nextCursor: this.nextCursorValue,

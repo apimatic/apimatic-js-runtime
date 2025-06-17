@@ -7,10 +7,10 @@ import { getValueByJsonPointer } from '../apiHelper';
 export class LinkPagination<
   BaseUrlParamType,
   AuthParams,
-  T,
+  I,
   P
-> extends Pagination<BaseUrlParamType, AuthParams, T, P> {
-  private nextLinkPointer: string;
+> extends Pagination<BaseUrlParamType, AuthParams, I, P> {
+  private readonly nextLinkPointer: string;
   private nextLinkValue: string | null = null;
 
   constructor(nextLinkPointer: string) {
@@ -40,7 +40,7 @@ export class LinkPagination<
     return true;
   }
 
-  public withMetadata(response: PagedResponse<T, P>): LinkPagedResponse<T, P> {
+  public withMetadata(response: PagedResponse<I, P>): LinkPagedResponse<I, P> {
     return {
       ...response,
       nextLink: this.nextLinkValue,
