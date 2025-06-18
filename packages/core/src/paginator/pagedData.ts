@@ -147,13 +147,13 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
     currentPage: PagedResponse<I, P> | null
   ): Pagination<BaseUrlParamType, AuthParams, I, P> | null {
     for (const strategy of this.paginationStrategies) {
-      if (strategy.isApplicable(request, currentPage)) {
-        if (!currentPage) {
-          return strategy;
-        }
-        this.selectedPaginationStrategy = strategy;
-        return strategy;
+      if (!strategy.isApplicable(request, currentPage)) {
+        continue;
       }
+      if (currentPage) {
+        this.selectedPaginationStrategy = strategy;
+      }
+      return strategy;
     }
     return null;
   }
