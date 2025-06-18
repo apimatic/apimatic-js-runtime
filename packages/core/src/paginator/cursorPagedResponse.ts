@@ -14,7 +14,7 @@ export function createCursorPagedResponse(
   return undefined;
 }
 
-function isCursorPagedResponse(
+export function isCursorPagedResponse(
   response: PagedResponse<any, any>
 ): response is CursorPagedResponse<any, any> {
   return 'nextCursor' in response;

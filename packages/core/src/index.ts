@@ -33,18 +33,22 @@ export { PagePagination } from './paginator/pagePagination';
 export { LinkPagination } from './paginator/linkPagination';
 export {
   createOffsetPagedResponse,
+  isOffsetPagedResponse,
   OffsetPagedResponse,
 } from './paginator/offsetPagedResponse';
 export {
   createCursorPagedResponse,
   CursorPagedResponse,
+  isCursorPagedResponse,
 } from './paginator/cursorPagedResponse';
 export {
   createLinkPagedResponse,
+  isLinkPagedResponse,
   LinkPagedResponse,
 } from './paginator/linkPagedResponse';
 export {
   createNumberPagedResponse,
+  isNumberPagedResponse,
   NumberPagedResponse,
 } from './paginator/numberPagedResponse';
 export { PagedResponse } from './paginator/pagedResponse';

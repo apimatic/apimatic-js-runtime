@@ -14,7 +14,7 @@ export function createNumberPagedResponse(
   return undefined;
 }
 
-function isNumberPagedResponse(
+export function isNumberPagedResponse(
   response: PagedResponse<any, any>
 ): response is NumberPagedResponse<any, any> {
   return 'pageNumber' in response;

@@ -14,7 +14,7 @@ export function createOffsetPagedResponse(
   return undefined;
 }
 
-function isOffsetPagedResponse(
+export function isOffsetPagedResponse(
   response: PagedResponse<any, any>
 ): response is OffsetPagedResponse<any, any> {
   return 'offset' in response;

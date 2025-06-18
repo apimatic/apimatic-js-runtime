@@ -14,7 +14,7 @@ export function createLinkPagedResponse(
   return undefined;
 }
 
-function isLinkPagedResponse(
+export function isLinkPagedResponse(
   response: PagedResponse<any, any>
 ): response is LinkPagedResponse<any, any> {
   return 'nextLink' in response;
