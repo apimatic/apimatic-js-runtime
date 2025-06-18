@@ -21,15 +21,23 @@ export class OffsetPagination<
     request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
     currentData: PagedResponse<any, any> | null
   ): boolean {
-    const dataLength = currentData?.items.length ?? 0;
     let isUpdated: boolean = false;
 
     request.updateParameterByJsonPointer(this.offsetPointer, (value) => {
+      if (currentData === null) {
+        isUpdated = true;
+        if (value === undefined || value === null) {
+          this.pageOffset = '0';
+          return 0;
+        }
+        this.pageOffset = value;
+        return value;
+      }
+      const dataLength = currentData?.items.length ?? 0;
       const numericValue = +(value ?? 0);
       const newOffset = numericValue + dataLength;
       this.pageOffset = String(newOffset);
       isUpdated = true;
-
       return newOffset;
     });
 

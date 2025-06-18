@@ -21,12 +21,17 @@ export class PagePagination<
     request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
     currentData: PagedResponse<any, any> | null
   ): boolean {
-    if (currentData === null) {
-      return true;
-    }
-
     let isUpdated: boolean = false;
     request.updateParameterByJsonPointer(this.pagePointer, (value) => {
+      if (currentData === null) {
+        isUpdated = true;
+        if (value === undefined || value === null) {
+          this.pageNumber = '1';
+          return 1;
+        }
+        this.pageNumber = value;
+        return value;
+      }
       const numericValue = +(value ?? 0);
       const newPage = numericValue + 1;
       this.pageNumber = newPage.toString();

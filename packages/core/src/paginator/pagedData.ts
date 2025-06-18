@@ -48,6 +48,7 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
 
   public [Symbol.asyncIterator](): AsyncIterator<I> {
     const request = this.request.clone();
+    this.resetPaginationStrategy();
     const state = {
       currentPage: null as PagedResponse<I, P> | null,
       currentItems: [] as I[],
@@ -61,6 +62,7 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
 
   public pages(): AsyncIterable<PageWrapper> {
     const request = this.request.clone();
+    this.resetPaginationStrategy();
     const state = {
       currentPage: null as PagedResponse<I, P> | null,
     };
@@ -137,10 +139,6 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
         : null;
     }
 
-    if (!currentPage && this.paginationStrategies.length > 0) {
-      return this.paginationStrategies[0];
-    }
-
     return this.selectStrategy(request, currentPage);
   }
 
@@ -150,6 +148,9 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
   ): Pagination<BaseUrlParamType, AuthParams, I, P> | null {
     for (const strategy of this.paginationStrategies) {
       if (strategy.isApplicable(request, currentPage)) {
+        if (!currentPage) {
+          return strategy;
+        }
         this.selectedPaginationStrategy = strategy;
         return strategy;
       }
@@ -174,5 +175,9 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
     };
 
     return strategy.withMetadata(pagedResponse);
+  }
+
+  private resetPaginationStrategy(): void {
+    this.selectedPaginationStrategy = null;
   }
 }

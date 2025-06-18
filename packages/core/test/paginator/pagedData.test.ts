@@ -364,7 +364,7 @@ describe('PagedData', () => {
 
       const expectedCursorPages = expectedPages.map((items, index) => ({
         items,
-        nextCursor: index === 0 ? null : `cursor${index + 1}`,
+        nextCursor: `cursor${index + 1}`,
       }));
 
       expect(pages).toEqual(expectedCursorPages);

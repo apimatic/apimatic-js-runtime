@@ -28,10 +28,10 @@ export class LinkPagination<
     }
 
     const nextLink = getValueByJsonPointer(currentData, this.nextLinkPointer);
-    this.nextLinkValue = nextLink;
     if (nextLink == null) {
       return false;
     }
+    this.nextLinkValue = nextLink;
     const queryParams = this.extractQueryParams(nextLink);
 
     for (const [key, value] of Object.entries(queryParams)) {

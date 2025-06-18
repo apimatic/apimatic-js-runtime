@@ -24,17 +24,25 @@ export class CursorPagination<
     request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
     currentData: PagedResponse<any, any> | null
   ): boolean {
-    if (currentData === null) {
-      this.nextCursorValue = null;
-      return true;
-    }
-    const nextCursor = getValueByJsonPointer(
-      currentData,
-      this.nextCursorPointer
-    );
-    this.nextCursorValue = nextCursor;
     let isUpdated: boolean = false;
-    request.updateParameterByJsonPointer(this.currentCursorPointer, () => {
+    request.updateParameterByJsonPointer(this.currentCursorPointer, (value) => {
+      if (currentData === null) {
+        isUpdated = true;
+        if (value === undefined) {
+          this.nextCursorValue = null;
+          return null;
+        }
+        this.nextCursorValue = value;
+        return value;
+      }
+      const nextCursor = getValueByJsonPointer(
+        currentData,
+        this.nextCursorPointer
+      );
+      if (nextCursor === null) {
+        return value;
+      }
+      this.nextCursorValue = nextCursor;
       isUpdated = true;
       return nextCursor;
     });
