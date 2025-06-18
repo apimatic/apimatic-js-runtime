@@ -97,7 +97,6 @@ describe('test default request builder behavior with succesful responses', () =>
       result: 'testBody result',
       body: 'testBody result',
     };
-
     const reqBuilder = defaultRequestBuilder('GET');
     reqBuilder.appendPath('/test/requestBuilder');
     reqBuilder.baseUrl('default');
@@ -113,6 +112,43 @@ describe('test default request builder behavior with succesful responses', () =>
 
     return { reqBuilder, expectedResponse };
   };
+  const createBaseExpectedRequest = (
+    url: string,
+    bodyType: 'form' | 'form-data',
+    headers: Record<string, string> = {}
+  ) => ({
+    method: 'GET',
+    url,
+    headers: { 'test-header': 'test-value', ...headers },
+    body: {
+      content: [
+        { key: 'integers[0]', value: '1' },
+        { key: 'integers[1]', value: '2' },
+        { key: 'integers[2]', value: '3' },
+        { key: 'strings[0]', value: 'param1' },
+        { key: 'strings[1]', value: 'param2' },
+        { key: 'model[department]', value: 'IT' },
+      ],
+      type: bodyType,
+    },
+    auth: { username: 'maryam-adnan', password: '12345678' },
+  });
+
+  const getTestData = () => ({
+    employee: { department: 'IT' } as Employee,
+    strings: ['param1', 'param2'],
+    integers: [1, 2, 3],
+    expectedResponse: {
+      statusCode: 200,
+      headers: {
+        'test-header': 'test-value',
+        accept: 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: '{ "department": "IT", "boss": { "promotedAt" : 2 }}',
+      result: { department: 'IT', boss: { promotedAt: 2 } },
+    },
+  });
 
   it('should test request builder configured with text request body and text response body', async () => {
     const { reqBuilder, expectedResponse } = await setupTextRequestTest();
@@ -166,35 +202,20 @@ describe('test default request builder behavior with succesful responses', () =>
     });
   });
   it('should test request builder configured with form request body and json response body', async () => {
-    const expectedRequest: HttpRequest = {
-      method: 'GET',
-      url: 'https://apimatic.hopto.org:3000/test/requestBuilder?form=true',
-      headers: { 'test-header': 'test-value' },
-      body: {
-        content: [
-          { key: 'integers[0]', value: '1' },
-          { key: 'integers[1]', value: '2' },
-          { key: 'integers[2]', value: '3' },
-          { key: 'strings[0]', value: 'param1' },
-          { key: 'strings[1]', value: 'param2' },
-          { key: 'model[department]', value: 'IT' },
-        ],
-        type: 'form',
-      },
-      auth: { username: 'maryam-adnan', password: '12345678' },
-    };
+    const expectedRequest = createBaseExpectedRequest(
+      'https://apimatic.hopto.org:3000/test/requestBuilder?form=true',
+      'form'
+    );
 
-    const employee: Employee = {
-      department: 'IT',
-    };
-    const strings = ['param1', 'param2'];
-    const integers = [1, 2, 3];
+    const { employee, strings, integers, expectedResponse } = getTestData();
+
     const reqBuilder = defaultRequestBuilder('GET');
     const mapped = reqBuilder.prepareArgs({
       integers: [integers, array(number())],
       model: [employee, employeeSchema],
       strings: [strings, array(string())],
     });
+
     reqBuilder.method('GET');
     reqBuilder.appendPath('/test/requestBuilder');
     reqBuilder.baseUrl('default');
@@ -214,51 +235,28 @@ describe('test default request builder behavior with succesful responses', () =>
     const apiResponse = await reqBuilder.callAsJson(employeeSchema);
     expect(apiResponse).toEqual({
       request: expectedRequest,
-      statusCode: 200,
-      headers: {
-        'test-header': 'test-value',
-        accept: 'application/json',
-        'content-type': 'application/x-www-form-urlencoded',
-      },
-      body: '{ "department": "IT", "boss": { "promotedAt" : 2 }}',
-      result: { department: 'IT', boss: { promotedAt: 2 } },
+      ...expectedResponse,
     });
   });
   it('should test request builder with form-data request body and json response body', async () => {
-    const expectedRequest: HttpRequest = {
-      method: 'GET',
-      url:
-        'https://apimatic.hopto.org:3000/auth/basic/test/requestBuilder?form-data=true',
-      headers: {
-        'test-header': 'test-value',
+    const expectedRequest = createBaseExpectedRequest(
+      'https://apimatic.hopto.org:3000/auth/basic/test/requestBuilder?form-data=true',
+      'form-data',
+      {
         accept: 'application/json',
         'content-type': 'application/x-www-form-urlencoded',
-      },
-      body: {
-        content: [
-          { key: 'integers[0]', value: '1' },
-          { key: 'integers[1]', value: '2' },
-          { key: 'integers[2]', value: '3' },
-          { key: 'strings[0]', value: 'param1' },
-          { key: 'strings[1]', value: 'param2' },
-          { key: 'model[department]', value: 'IT' },
-        ],
-        type: 'form-data',
-      },
-      auth: { username: 'maryam-adnan', password: '12345678' },
-    };
+      }
+    );
 
-    const employee: Employee = {
-      department: 'IT',
-    };
-    const strings = ['param1', 'param2'];
-    const integers = [1, 2, 3];
+    const { employee, strings, integers, expectedResponse } = getTestData();
+
     const reqBuilder = defaultRequestBuilder('GET', '/auth/basic');
     const mapped = reqBuilder.prepareArgs({
       integers: [integers, array(number())],
       model: [employee, employeeSchema],
       strings: [strings, array(string())],
     });
+
     reqBuilder.appendPath('/test/requestBuilder');
     reqBuilder.baseUrl('default');
     reqBuilder.header('test-header', 'test-value');
@@ -272,17 +270,11 @@ describe('test default request builder behavior with succesful responses', () =>
     });
     reqBuilder.acceptJson();
     reqBuilder.contentType('application/x-www-form-urlencoded');
+
     const apiResponse = await reqBuilder.callAsJson(employeeSchema);
     expect(apiResponse).toEqual({
       request: expectedRequest,
-      statusCode: 200,
-      headers: {
-        'test-header': 'test-value',
-        accept: 'application/json',
-        'content-type': 'application/x-www-form-urlencoded',
-      },
-      body: '{ "department": "IT", "boss": { "promotedAt" : 2 }}',
-      result: { department: 'IT', boss: { promotedAt: 2 } },
+      ...expectedResponse,
     });
   });
   it('should test request builder to test stream request body(file) and stream response body(blob)', async () => {
