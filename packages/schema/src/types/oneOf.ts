@@ -1,17 +1,6 @@
 import { Schema, SchemaContextCreator } from '../schema';
 import { PartialJSONSchema } from '../schema';
-
-type SchemaType<T extends Schema<any, any>> = T extends Schema<infer U, any>
-  ? U
-  : never;
-
-type ArraySchemaType<
-  T extends Array<Schema<any, any>>
-> = T[number] extends Schema<any, any> ? SchemaType<T[number]> : never;
-
-type DiscriminatorMap<T extends Array<Schema<any, any>>> = {
-  [K in ArraySchemaType<T>]?: Schema<ArraySchemaType<T>>;
-};
+import { toCombinatorJSONSchemaWithDiscriminator, DiscriminatorMap, ArraySchemaType } from '../typeCombinatorUtils';
 
 export function oneOf<T extends Array<Schema<any, any>>>(
   schemas: [...T],
@@ -103,29 +92,12 @@ function createOneOfWithDiscriminator<T extends Array<Schema<any, any>>>(
           oneOf: schemas.map((schema) => schema.toJSONSchema()),
         };
       }
-
-      const oneOf: { $ref: string }[] = [];
-      const discriminatorMapping: { [val: string]: string } = {};
-      const $defs: Record<string, PartialJSONSchema> = {};
-      Object.keys(discriminatorMap).forEach((key, index) => {
-        const schemaName = `schema${index + 1}`;
-        const schemaRef = `#/$defs/${schemaName}`;
-
-        oneOf.push({ $ref: schemaRef });
-
-        discriminatorMapping[key] = schemaRef;
-
-        $defs[schemaName] = schemas[index].toJSONSchema();
-      });
-
-      return {
-        oneOf: oneOf,
-        discriminator: {
-          propertyName: discriminatorField,
-          mapping: discriminatorMapping,
-        },
-        $defs: $defs,
-      };
+      return toCombinatorJSONSchemaWithDiscriminator(
+        schemas,
+        discriminatorMap,
+        discriminatorField,
+        'oneOf'
+      );
     },
   };
 }
