@@ -109,7 +109,7 @@ export function discriminatedObject<
         Object.values(discriminatorMap),
         discriminatorMap,
         discriminatorPropName as string,  // TODO: Need some type gymnastics to remove this 'as'
-        'oneOf',
+        'anyOf',
         context
       );
     },
