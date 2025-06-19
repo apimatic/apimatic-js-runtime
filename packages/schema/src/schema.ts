@@ -24,12 +24,11 @@ export interface Schema<T, S = any> {
   mapXml: (value: any, ctxt: SchemaContextCreator) => T;
   unmapXml: (value: T, ctxt: SchemaContextCreator) => any;
 
-  toJSONSchema: (context: JSONSchemaContext) => JSONSchemaContext;
+  toJSONSchema: (context: JSONSchemaContext) => PartialJSONSchema;
 }
 
 export type JSONSchemaContext = {
   $defs: Exclude<Pick<JSONSchema, "$defs">, undefined>
-  partialJsonSchema: PartialJSONSchema
 }
 
 export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
