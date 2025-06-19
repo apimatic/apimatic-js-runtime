@@ -1,6 +1,10 @@
 import { Schema, SchemaContextCreator } from '../schema';
 import { PartialJSONSchema } from '../schema';
-import { toCombinatorJSONSchemaWithDiscriminator, DiscriminatorMap, ArraySchemaType } from '../typeCombinatorUtils';
+import {
+  toCombinatorJSONSchemaWithDiscriminator,
+  DiscriminatorMap,
+  ArraySchemaType,
+} from '../typeCombinatorUtils';
 
 export function anyOf<T extends Array<Schema<any, any>>>(
   schemas: [...T],
@@ -96,7 +100,8 @@ function createAnyOfWithDiscriminator<T extends Array<Schema<any, any>>>(
         schemas,
         discriminatorMap,
         discriminatorField,
-        'anyOf'
+        'anyOf',
+        context
       );
     },
   };

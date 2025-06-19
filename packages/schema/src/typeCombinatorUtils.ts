@@ -1,4 +1,4 @@
-import { Schema, PartialJSONSchema } from './schema';
+import { Schema, PartialJSONSchema, JSONSchemaContext } from './schema';
 
 // Common type utilities for combinators
 export type SchemaType<T extends Schema<any, any>> = T extends Schema<
@@ -25,17 +25,18 @@ export function toCombinatorJSONSchemaWithDiscriminator<
   schemas: [...T],
   discriminatorMap: DiscriminatorMap<T>,
   discriminatorField: string,
-  oneOfOrAnyOf: 'anyOf' | 'oneOf'
+  oneOfOrAnyOf: 'anyOf' | 'oneOf',
+  context: JSONSchemaContext
 ): PartialJSONSchema {
   const types: { $ref: string }[] = [];
   const discriminatorMapping: { [val: string]: string } = {};
-  const $defs: Record<string, PartialJSONSchema> = {};
+  const schemaCount = context.$defs.length;
   Object.keys(discriminatorMap).forEach((key, index) => {
-    const schemaName = `schema${index + 1}`;
+    const schemaName = `schema${schemaCount + index + 1}`;
     const schemaRef = `#/$defs/${schemaName}`;
     types.push({ $ref: schemaRef });
     discriminatorMapping[key] = schemaRef;
-    $defs[schemaName] = schemas[index].toJSONSchema();
+    context.$defs.push(schemas[index].toJSONSchema(context));
   });
   return {
     [oneOfOrAnyOf]: types,
@@ -43,6 +44,5 @@ export function toCombinatorJSONSchemaWithDiscriminator<
       propertyName: discriminatorField,
       mapping: discriminatorMapping,
     },
-    $defs: $defs,
   };
 }

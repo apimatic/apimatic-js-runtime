@@ -1,4 +1,4 @@
-import { JSONSchema7 } from 'json-schema';
+import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { isOptionalNullable, objectKeyEncode } from './utils';
 
 /**
@@ -28,10 +28,12 @@ export interface Schema<T, S = any> {
 }
 
 export type JSONSchemaContext = {
-  $defs: Exclude<Pick<JSONSchema, "$defs">, undefined>
-}
+  $defs: JSONSchemaDefinition[];
+};
 
 export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
+
+type JSONSchemaDefinition = JSONSchema7Definition;
 
 /**
  * The equivalent JSON Schema representation of the Schema interface.
