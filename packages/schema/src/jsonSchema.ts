@@ -11,6 +11,11 @@ export function generateJSONSchema<T extends Schema<any, any>>(
   const defsArr: JSONSchemaDefinition[] = [];
   const context: JSONSchemaContext = {
     addDefinition: (def) => {
+      const existingDefIdx = defsArr.findIndex((storedDef) => storedDef === def);
+      if (existingDefIdx !== -1) {
+        return `#/$defs/schema${existingDefIdx + 1}`;
+      }
+
       defsArr.push(def);
       return `#/$defs/schema${defsArr.length}`;
     },
