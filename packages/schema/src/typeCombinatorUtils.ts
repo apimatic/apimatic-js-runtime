@@ -1,4 +1,4 @@
-import { Schema, PartialJSONSchema, JSONSchemaContext } from './schema';
+import type { Schema, PartialJSONSchema, JSONSchemaContext } from './schema';
 
 // Common type utilities for combinators
 export type SchemaType<T extends Schema<any, any>> = T extends Schema<

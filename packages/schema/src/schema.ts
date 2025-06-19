@@ -1,4 +1,4 @@
-import { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
 import { isOptionalNullable, objectKeyEncode } from './utils';
 
 /**
