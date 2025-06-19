@@ -30,13 +30,12 @@ export function toCombinatorJSONSchemaWithDiscriminator<
 ): PartialJSONSchema {
   const types: { $ref: string }[] = [];
   const discriminatorMapping: { [val: string]: string } = {};
-  const schemaCount = context.$defs.length;
   Object.keys(discriminatorMap).forEach((key, index) => {
-    const schemaName = `schema${schemaCount + index + 1}`;
-    const schemaRef = `#/$defs/${schemaName}`;
+    const schemaRef = context.addDefinition(
+      schemas[index].toJSONSchema(context)
+    );
     types.push({ $ref: schemaRef });
     discriminatorMapping[key] = schemaRef;
-    context.$defs.push(schemas[index].toJSONSchema(context));
   });
   return {
     [oneOfOrAnyOf]: types,

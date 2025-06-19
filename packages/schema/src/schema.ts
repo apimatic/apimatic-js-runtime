@@ -27,13 +27,13 @@ export interface Schema<T, S = any> {
   toJSONSchema: (context: JSONSchemaContext) => PartialJSONSchema;
 }
 
-export type JSONSchemaContext = {
-  $defs: JSONSchemaDefinition[];
-};
+export interface JSONSchemaContext {
+  addDefinition: (def: JSONSchemaDefinition) => $ref;
+}
+export type JSONSchemaDefinition = JSONSchema7Definition;
+type $ref = `#/$defs/${string}`;
 
 export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
-
-type JSONSchemaDefinition = JSONSchema7Definition;
 
 /**
  * The equivalent JSON Schema representation of the Schema interface.

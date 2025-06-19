@@ -1,14 +1,23 @@
-import { JSONSchema, JSONSchemaContext, Schema } from './schema';
+import type {
+  JSONSchema,
+  JSONSchemaContext,
+  JSONSchemaDefinition,
+  Schema,
+} from './schema';
 
 export function generateJSONSchema<T extends Schema<any, any>>(
   schema: T
 ): JSONSchema {
+  const defsArr: JSONSchemaDefinition[] = [];
   const context: JSONSchemaContext = {
-    $defs: [],
+    addDefinition: (def) => {
+      defsArr.push(def);
+      return `#/$defs/schema${defsArr.length}`;
+    },
   };
   const partialJsonSchema = schema.toJSONSchema(context);
 
-  if (context.$defs.length === 0) {
+  if (defsArr.length === 0) {
     return {
       $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
       ...partialJsonSchema,
@@ -16,7 +25,7 @@ export function generateJSONSchema<T extends Schema<any, any>>(
   }
 
   const $defs = {};
-  context.$defs.forEach((def, idx) => {
+  defsArr.forEach((def, idx) => {
     $defs[`schema${idx + 1}`] = def;
   });
 
