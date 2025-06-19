@@ -30,6 +30,6 @@ export function optional<T, S>(
       typeof value === 'undefined' ? undefined : schema.mapXml(value, ctxt),
     unmapXml: (value, ctxt) =>
       typeof value === 'undefined' ? undefined : schema.unmapXml(value, ctxt),
-    toJSONSchema: (context) => schema.toJSONSchema(context),
+    toJSONSchema: () => schema.toJSONSchema(),
   };
 }

@@ -29,19 +29,12 @@ export function defaults<M, U, V extends M & U>(
       shouldDefault(v, defaultValue) ? defaultValue : schema.mapXml(v, ctxt),
     unmapXml: (v, ctxt) =>
       shouldDefault(v, defaultValue) ? defaultValue : schema.unmapXml(v, ctxt),
-    toJSONSchema: (context) => {
-      const newContext = schema.toJSONSchema(context);
-
-      return {
-        ...newContext,
-        partialJsonSchema: {
-          ...newContext.partialJsonSchema,
-          // `defaultValue` has no restrictions, assuming it matches the schema it describes.
-          // https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-default
-          default: defaultValue as any,
-        },
-      };
-    },
+    toJSONSchema: () => ({
+      ...schema.toJSONSchema(),
+      // `defaultValue` has no restrictions, assuming it matches the schema it describes.
+      // https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-default
+      default: defaultValue as any,
+    }),
   };
 }
 

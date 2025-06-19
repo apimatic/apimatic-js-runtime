@@ -18,13 +18,10 @@ export function literal<T>(literalValue: T): Schema<T, T> {
     type: `Literal<${literalToString(literalValue)}>`,
     validate: toValidator(validate),
     map,
-    toJSONSchema: (context) => ({
-      ...context,
-      partialJsonSchema: {
-        // `const` literals can be any type
-        // https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-const
-        const: literalValue as any,
-      },
+    toJSONSchema: () => ({
+      // `const` literals can be any type
+      // https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-const
+      const: literalValue as any,
     }),
   });
 }
