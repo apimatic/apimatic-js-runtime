@@ -3,7 +3,6 @@
  */
 
 import {
-  JSONSchema,
   PartialJSONSchema,
   Schema,
   SchemaContextCreator,
@@ -182,11 +181,4 @@ export function isOptionalAndNullableType(type: string): boolean {
 
 export function isOptionalOrNullableType(type: string): boolean {
   return type.startsWith('Optional<') || type.startsWith('Nullable<');
-}
-
-export function constructJSONSchema(partialJsonSchema: PartialJSONSchema): JSONSchema {
-  return {
-    $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
-    ...partialJsonSchema,
-  };
 }
