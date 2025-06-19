@@ -1,4 +1,4 @@
-import { literal, validateAndMap, validateAndUnmap } from '../../src';
+import { generateJSONSchema, type JSONSchema, literal, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Literal', () => {
   describe('Mapping', () => {
@@ -89,9 +89,10 @@ describe('Literal', () => {
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema', () => {
       const schema = literal(123);
-      const jsonSchema = schema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         const: 123,
       });
     });

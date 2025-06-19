@@ -39,8 +39,11 @@ export function numberEnum<T extends string, TEnumValue extends number>(
     type: `Enum<${enumValues.join(',')}>`,
     map: coerceNumericStringToNumber as (value: TEnumValue) => TEnumValue,
     validate,
-    toJSONSchema: () => ({
-      enum: enumValues,
+    toJSONSchema: (context) => ({
+      ...context,
+      partialJsonSchema: {
+        enum: enumValues,
+      },
     }),
   });
 }

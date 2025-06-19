@@ -42,8 +42,11 @@ export function stringEnum<T extends string, TEnumValue extends string>(
     type: `Enum<${enumValues.map(literalToString).join(',')}>`,
     map: identityFn,
     validate,
-    toJSONSchema: () => ({
-      enum: enumValues,
+    toJSONSchema: (context) => ({
+      ...context,
+      partialJsonSchema: {
+        enum: enumValues,
+      },
     }),
   });
 }

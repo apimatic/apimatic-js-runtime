@@ -1,5 +1,7 @@
 import {
   boolean,
+  generateJSONSchema,
+  JSONSchema,
   nullable,
   optional,
   string,
@@ -115,10 +117,11 @@ describe('Nullable', () => {
   describe('To JSON Schema', () => {
       it('should output a valid JSON Schema for nullable strings', () => {
         const schema = nullable(string());
-        const jsonSchema = schema.toJSONSchema();
+        const jsonSchema = generateJSONSchema(schema);
 
-        expect(jsonSchema).toStrictEqual(
+        expect(jsonSchema).toStrictEqual<JSONSchema>(
           {
+            $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
             oneOf: [
               {
                 type: 'null'
@@ -133,10 +136,11 @@ describe('Nullable', () => {
 
       it('should output a valid JSON Schema for nullable booleans', () => {
         const schema = nullable(boolean());
-        const jsonSchema = schema.toJSONSchema();
+        const jsonSchema = generateJSONSchema(schema);
 
-        expect(jsonSchema).toStrictEqual(
+        expect(jsonSchema).toStrictEqual<JSONSchema>(
           {
+            $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
             oneOf: [
               {
                 type: 'null'

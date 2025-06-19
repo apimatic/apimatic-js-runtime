@@ -1,4 +1,4 @@
-import { bigint, validateAndMap, validateAndUnmap } from '../../src';
+import { bigint, generateJSONSchema, type JSONSchema, validateAndMap, validateAndUnmap } from '../../src';
 describe('bigint', () => {
   describe('Mapping', () => {
     it('should accept number in bigint constructor', () => {
@@ -191,9 +191,10 @@ describe('bigint', () => {
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema', () => {
       const schema = bigint();
-      const jsonSchema = schema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         type: 'integer',
         format: 'int64',
       });

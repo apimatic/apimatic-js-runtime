@@ -1,5 +1,7 @@
 import {
   defaults,
+  generateJSONSchema,
+  JSONSchema,
   nullable,
   optional,
   string,
@@ -107,14 +109,15 @@ describe('Defaults', () => {
   });
 
   describe('To JSON Schema', () => {
-      it('should output a valid JSON Schema', () => {
-        const schema = defaults(string(), 'default value');
-        const jsonSchema = schema.toJSONSchema();
+    it('should output a valid JSON Schema', () => {
+      const schema = defaults(string(), 'default value');
+      const jsonSchema = generateJSONSchema(schema);
 
-        expect(jsonSchema).toStrictEqual({
-          type: 'string',
-          default: 'default value'
-        });
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        type: 'string',
+        default: 'default value',
       });
     });
+  });
 });

@@ -1,4 +1,4 @@
-import { stringEnum, validateAndMap, validateAndUnmap } from '../../src';
+import { generateJSONSchema, type JSONSchema, stringEnum, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('String Enum', () => {
   enum SampleStringEnum {
@@ -86,9 +86,10 @@ describe('String Enum', () => {
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema', () => {
       const schema = stringEnum(SampleStringEnum);
-      const jsonSchema = schema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         enum: ['_hearts', '_spades', '_clubs', '_diamonds'],
       });
     });

@@ -1,4 +1,4 @@
-import { unknown, validateAndMap, validateAndUnmap } from '../../src';
+import { generateJSONSchema, type JSONSchema, unknown, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Unknown', () => {
   describe('Mapping', () => {
@@ -17,6 +17,17 @@ describe('Unknown', () => {
       const output = validateAndUnmap(input, schema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toBe(input);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = unknown();
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base'
+      });
     });
   });
 });

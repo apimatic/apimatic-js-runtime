@@ -19,9 +19,12 @@ export function bigint(): Schema<bigint, bigint> {
     type: 'bigint',
     validate: toValidator(isValidBigIntValue),
     map: coerceStringOrNumberToBigInt as (arg: bigint) => bigint,
-    toJSONSchema: () => ({
-      type: 'integer',
-      format: 'int64', // based on OpenAPI 3.1.0 https://spec.openapis.org/oas/v3.1.0.html#data-types
+    toJSONSchema: (context) => ({
+      ...context,
+      partialJsonSchema: {
+        type: 'integer',
+        format: 'int64',
+      },
     }),
   });
 }

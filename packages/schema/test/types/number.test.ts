@@ -1,4 +1,4 @@
-import { number, validateAndMap, validateAndUnmap } from '../../src';
+import { generateJSONSchema, type JSONSchema, number, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Number', () => {
   describe('Mapping', () => {
@@ -89,10 +89,11 @@ describe('Number', () => {
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema', () => {
       const schema = number();
-      const jsonSchema = schema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual(
+      expect(jsonSchema).toStrictEqual<JSONSchema>(
         {
+          $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
           type: 'number',
         }
       );

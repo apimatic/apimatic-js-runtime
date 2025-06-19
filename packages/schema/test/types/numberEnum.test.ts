@@ -1,4 +1,4 @@
-import { numberEnum } from '../../src';
+import { generateJSONSchema, type JSONSchema, numberEnum } from '../../src';
 
 describe('Number Enum', () => {
   enum SampleNumberEnum {
@@ -11,9 +11,10 @@ describe('Number Enum', () => {
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema', () => {
       const schema = numberEnum(SampleNumberEnum);
-      const jsonSchema = schema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         enum: [2, 4, 8, 16],
       });
     });

@@ -14,8 +14,11 @@ export function boolean(): Schema<boolean, boolean> {
     type: 'boolean',
     validate: toValidator(isValidBooleanValue),
     map: (value) => (typeof value === 'boolean' ? value : value === 'true'),
-    toJSONSchema: () => ({
-      type: 'boolean',
+    toJSONSchema: (context) => ({
+      ...context,
+      partialJsonSchema: {
+        type: 'boolean',
+      },
     }),
   });
 }
