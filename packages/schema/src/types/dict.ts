@@ -90,16 +90,9 @@ export function dict<T, S>(
       }
       return output;
     },
-    toJSONSchema: (context) => {
-      const newContext = itemSchema.toJSONSchema(context);
-
-      return {
-        ...newContext,
-        partialJsonSchema: {
-          type: 'object',
-          additionalProperties: newContext.partialJsonSchema,
-        },
-      };
-    },
+    toJSONSchema: () => ({
+      type: 'object',
+      additionalProperties: itemSchema.toJSONSchema(),
+    }),
   };
 }
