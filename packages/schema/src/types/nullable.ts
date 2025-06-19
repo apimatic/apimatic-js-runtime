@@ -25,12 +25,12 @@ export function nullable<T, S>(
       value === null ? null : schema.mapXml(value, ctxt),
     unmapXml: (value, ctxt) =>
       value === null ? null : schema.unmapXml(value, ctxt),
-    toJSONSchema: () => ({
+    toJSONSchema: (context) => ({
       oneOf: [
         {
           type: 'null',
         },
-        schema.toJSONSchema(),
+        schema.toJSONSchema(context),
       ],
     }),
   };

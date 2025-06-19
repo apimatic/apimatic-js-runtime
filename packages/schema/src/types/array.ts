@@ -89,9 +89,9 @@ export function array<T, S>(
           )
         : ctxt.fail();
     },
-    toJSONSchema: () => ({
+    toJSONSchema: (context) => ({
       type: 'array',
-      items: itemsSchema.toJSONSchema(),
+      items: itemsSchema.toJSONSchema(context),
     }),
   };
   return arraySchema;

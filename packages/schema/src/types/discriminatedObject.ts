@@ -103,9 +103,9 @@ export function discriminatedObject<
     unmapXml: (value, ctxt) => unmapSchema(value, ctxt).unmapXml(value, ctxt),
     validateBeforeMapXml: (value, ctxt) =>
       mapXmlSchema(value, ctxt).validateBeforeMapXml(value, ctxt),
-    toJSONSchema: () => ({
+    toJSONSchema: (context) => ({
       allOf: Object.values(discriminatorMap).map((schema) =>
-        schema.toJSONSchema()
+        schema.toJSONSchema(context)
       ),
       // TODO: HANDLE DISCRIMINATOR MAPPING
     }),

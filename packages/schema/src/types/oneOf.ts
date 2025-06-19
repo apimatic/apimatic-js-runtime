@@ -86,10 +86,10 @@ function createOneOfWithDiscriminator<T extends Array<Schema<any, any>>>(
       }
       return matchAndUnmapXml(schemas, value, ctxt);
     },
-    toJSONSchema: (): PartialJSONSchema => {
+    toJSONSchema: (context): PartialJSONSchema => {
       if (!(discriminatorMap && discriminatorField)) {
         return {
-          oneOf: schemas.map((schema) => schema.toJSONSchema()),
+          oneOf: schemas.map((schema) => schema.toJSONSchema(context)),
         };
       }
       return toCombinatorJSONSchemaWithDiscriminator(
@@ -117,8 +117,8 @@ function createOneOfWithoutDiscriminator<T extends Array<Schema<any, any>>>(
       matchAndValidateBeforeMapXml(schemas, value, ctxt),
     mapXml: (value, ctxt) => matchAndMapXml(schemas, value, ctxt),
     unmapXml: (value, ctxt) => matchAndUnmapXml(schemas, value, ctxt),
-    toJSONSchema: () => ({
-      oneOf: schemas.map((schema) => schema.toJSONSchema()),
+    toJSONSchema: (context) => ({
+      oneOf: schemas.map((schema) => schema.toJSONSchema(context)),
     }),
   };
 }

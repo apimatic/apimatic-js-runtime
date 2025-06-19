@@ -240,7 +240,7 @@ function internalObject<
     mapXml: mapObjectFromXml(xmlObjectSchema, mapAdditionalProps),
     unmapXml: unmapObjectToXml(reverseXmlObjectSchema, mapAdditionalProps),
     objectSchema,
-    toJSONSchema: () => {
+    toJSONSchema: (context) => {
       const jsonSchema: PartialJSONSchema = {
         type: 'object',
       };
@@ -251,7 +251,7 @@ function internalObject<
 
         for (const key of Object.keys(objectSchema)) {
           const propSchema = objectSchema[key][1];
-          properties[key] = propSchema.toJSONSchema();
+          properties[key] = propSchema.toJSONSchema(context);
 
           if (!propSchema.type().startsWith('Optional<')) {
             required.push(key);
@@ -266,7 +266,7 @@ function internalObject<
 
       if (mapAdditionalProps) {
         if (additionalPropsSchema) {
-          jsonSchema.additionalProperties = additionalPropsSchema.toJSONSchema();
+          jsonSchema.additionalProperties = additionalPropsSchema.toJSONSchema(context);
         } else {
           jsonSchema.additionalProperties = true;
         }

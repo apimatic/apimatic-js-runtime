@@ -11,11 +11,8 @@ export function string(): Schema<string, string> {
     type: 'string',
     validate: toValidator(isValidStringValue),
     map: identityFn,
-    toJSONSchema: (context) => ({
-      ...context,
-      partialJsonSchema: {
-        type: 'string',
-      },
+    toJSONSchema: () => ({
+      type: 'string',
     }),
   });
 }
