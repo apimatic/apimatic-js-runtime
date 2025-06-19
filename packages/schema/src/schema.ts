@@ -24,10 +24,15 @@ export interface Schema<T, S = any> {
   mapXml: (value: any, ctxt: SchemaContextCreator) => T;
   unmapXml: (value: T, ctxt: SchemaContextCreator) => any;
 
-  toJSONSchema: () => PartialJSONSchema;
+  toJSONSchema: (context: JSONSchemaContext) => JSONSchemaContext;
 }
 
-export type PartialJSONSchema = Omit<JSONSchema, '$schema'>;
+export type JSONSchemaContext = {
+  $defs: Exclude<Pick<JSONSchema, "$defs">, undefined>
+  partialJsonSchema: PartialJSONSchema
+}
+
+export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
 
 /**
  * The equivalent JSON Schema representation of the Schema interface.

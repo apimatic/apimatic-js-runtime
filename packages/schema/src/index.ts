@@ -18,3 +18,4 @@ export * from './types/optional';
 export * from './types/string';
 export * from './types/stringEnum';
 export * from './types/unknown';
+export { generateJSONSchema } from './jsonSchema.js';

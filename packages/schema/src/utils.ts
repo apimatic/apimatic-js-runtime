@@ -3,7 +3,7 @@
  */
 
 import {
-  PartialJSONSchema,
+  JSONSchemaContext,
   Schema,
   SchemaContextCreator,
   SchemaValidationError,
@@ -57,7 +57,7 @@ export interface SymmetricSchema<T> {
     ctxt: SchemaContextCreator
   ) => SchemaValidationError[];
   map: (value: T, ctxt: SchemaContextCreator) => T;
-  toJSONSchema: () => PartialJSONSchema;
+  toJSONSchema: (context: JSONSchemaContext) => JSONSchemaContext;
 }
 
 /**
@@ -88,7 +88,7 @@ interface BasicSchema<T, S = unknown> {
   ) => SchemaValidationError[];
   map: (value: S, ctxt: SchemaContextCreator) => T;
   unmap: (value: T, ctxt: SchemaContextCreator) => S;
-  toJSONSchema: () => PartialJSONSchema;
+  toJSONSchema: (context: JSONSchemaContext) => JSONSchemaContext;
 }
 
 /** Create a basic schema where XML mapping and validation is the same as for JSON */
