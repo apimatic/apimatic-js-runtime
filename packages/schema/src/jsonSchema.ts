@@ -5,10 +5,10 @@ export function generateJSONSchema<T extends Schema<any, any>>(schema: T): JSONS
     $defs: {},
     partialJsonSchema: {}
   };
-  const partialJsonSchema = schema.toJSONSchema(context);
+  const newContext = schema.toJSONSchema(context);
 
   return {
     $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
-    ...partialJsonSchema,
+    ...newContext.partialJsonSchema,
   };
 }
