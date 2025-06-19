@@ -1,10 +1,11 @@
 import {
+  generateJSONSchema,
   lazy,
   nullable,
   number,
   object,
   optional,
-  type PartialJSONSchema,
+  type JSONSchema,
   SchemaMappedType,
   SchemaType,
   string,
@@ -351,9 +352,10 @@ describe('Object', () => {
         id: ['id', string()],
         age: ['age', number()],
       });
-      const jsonSchema = userSchema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(userSchema);
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         type: 'object',
         required: ['id', 'age'],
         properties: {
@@ -372,9 +374,10 @@ describe('Object', () => {
         id: ['id', string()],
         age: ['age', optional(number())],
       });
-      const jsonSchema = userSchema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(userSchema);
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         type: 'object',
         required: ['id'],
         properties: {
@@ -392,9 +395,10 @@ describe('Object', () => {
       const userSchema = object({
         id: ['id', nullable(string())],
       });
-      const jsonSchema = userSchema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(userSchema);
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         type: 'object',
         required: ['id'],
         properties: {
@@ -416,9 +420,10 @@ describe('Object', () => {
       const userSchema = object({
         id: ['id', optional(nullable(string()))],
       });
-      const jsonSchema = userSchema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(userSchema);
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         type: 'object',
         properties: {
           id: {

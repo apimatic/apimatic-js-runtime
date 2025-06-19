@@ -1,4 +1,4 @@
-import { PartialJSONSchema, validateAndMap } from '../src';
+import { generateJSONSchema, type JSONSchema, validateAndMap } from '../src';
 import { Boss, bossSchema } from './bossSchema';
 
 describe('Self-Referencing', () => {
@@ -20,7 +20,8 @@ describe('Self-Referencing', () => {
   });
 
   it('should generate valid JSON Schema for self-referencing schemas', () => {
-    expect(bossSchema.toJSONSchema()).toStrictEqual<PartialJSONSchema>({
+    expect(generateJSONSchema(bossSchema)).toStrictEqual<JSONSchema>({
+      $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
       type: 'object',
       properties: {
         promotedAt: {

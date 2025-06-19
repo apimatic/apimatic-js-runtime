@@ -10,7 +10,8 @@ import {
   typedExpandoObject,
   object,
   anyOf,
-  type PartialJSONSchema,
+  type JSONSchema,
+  generateJSONSchema,
 } from '../../src';
 
 describe('Expando Object', () => {
@@ -582,9 +583,10 @@ describe('Expando Object', () => {
       const userSchema = expandoObject({
         id: ['id', string()],
       });
-      const jsonSchema = userSchema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(userSchema);
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         type: 'object',
         properties: {
           id: {
@@ -604,9 +606,10 @@ describe('Expando Object', () => {
         'additionalProps',
         number()
       );
-      const jsonSchema = userSchema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(userSchema);
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         type: 'object',
         properties: {
           id: {

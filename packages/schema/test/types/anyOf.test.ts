@@ -1,5 +1,5 @@
-import { nullable, array, dict, object } from '../../src';
-import { type PartialJSONSchema, validateAndMap, validateAndUnmap } from '../../src/schema';
+import { nullable, array, dict, object, generateJSONSchema } from '../../src';
+import { type JSONSchema, validateAndMap, validateAndUnmap } from '../../src/schema';
 import { anyOf } from '../../src/types/anyOf';
 import { number } from '../../src/types/number';
 import { string } from '../../src/types/string';
@@ -341,9 +341,10 @@ describe('AnyOf', () => {
 
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema for anyOf primitive types', () => {
-      const jsonSchema = anyOf([string(), number()]).toJSONSchema();
+      const jsonSchema = generateJSONSchema(anyOf([string(), number()]));
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         anyOf: [
           {
             type: 'string'
@@ -364,9 +365,10 @@ describe('AnyOf', () => {
           title: ['title', string()],
         })
       ]);
-      const jsonSchema = schema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         anyOf: [
           {
             type: 'object',
@@ -407,9 +409,10 @@ describe('AnyOf', () => {
       };
 
       const schema = anyOf([firstSchema, secondSchema], discriminatorMap, 'type');
-      const jsonSchema = schema.toJSONSchema();
+      const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         anyOf: [
           {
             $ref: '#/$defs/schema1'
