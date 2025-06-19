@@ -1,4 +1,5 @@
-import { generateJSONSchema, type JSONSchema, validateAndMap } from '../src';
+import type { JSONSchema } from '../src';
+import { generateJSONSchema, validateAndMap } from '../src';
 import { Boss, bossSchema } from './bossSchema';
 
 describe('Self-Referencing', () => {
@@ -28,6 +29,20 @@ describe('Self-Referencing', () => {
           type: 'number',
         },
         assistant: {
+          $ref: '#/$defs/schema2',
+        },
+      },
+      $defs: {
+        schema1: {
+          type: 'object',
+          properties: {
+            promotedAt: {
+              type: 'number',
+            },
+            // TODO: Need to figure out a way to maintain circular reference here using assistant property.
+          },
+        },
+        schema2: {
           type: 'object',
           required: ['department'],
           properties: {
@@ -35,12 +50,7 @@ describe('Self-Referencing', () => {
               type: 'string',
             },
             boss: {
-              type: 'object',
-              properties: {
-                promotedAt: {
-                  type: 'number',
-                },
-              },
+              $ref: '#/$defs/schema1',
             },
           },
         },
