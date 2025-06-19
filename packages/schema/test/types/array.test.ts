@@ -1,4 +1,4 @@
-import { array, type PartialJSONSchema, string, validateAndMap, validateAndUnmap } from '../../src';
+import { array, generateJSONSchema, type JSONSchema, string, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Array', () => {
   describe('Mapping', () => {
@@ -136,9 +136,10 @@ describe('Array', () => {
 
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema for an array', () => {
-      const jsonSchema = array(string()).toJSONSchema();
+      const jsonSchema = generateJSONSchema(array(string()));
 
-      expect(jsonSchema).toStrictEqual<PartialJSONSchema>({
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
         type: 'array',
         items: {
           type: 'string'

@@ -89,10 +89,17 @@ export function array<T, S>(
           )
         : ctxt.fail();
     },
-    toJSONSchema: () => ({
-      type: 'array',
-      items: itemsSchema.toJSONSchema(),
-    }),
+    toJSONSchema: (context) => {
+      const newContext = itemsSchema.toJSONSchema(context);
+
+      return {
+        ...newContext,
+        partialJsonSchema: {
+          type: 'array',
+          items: newContext.partialJsonSchema,
+        }
+      }
+    },
   };
   return arraySchema;
 }
