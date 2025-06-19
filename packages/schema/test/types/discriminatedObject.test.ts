@@ -2,6 +2,7 @@ import {
   boolean,
   discriminatedObject,
   extendStrictObject,
+  generateJSONSchema,
   nullable,
   number,
   optional,
@@ -10,6 +11,7 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import type { JSONSchema } from '../../src';
 
 describe('Discriminated Object', () => {
   const baseType = strictObject({
@@ -270,6 +272,78 @@ describe('Discriminated Object', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema as oneOf with discriminator', () => {
+      const jsonSchema = generateJSONSchema(discriminatedSchema);
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        oneOf: [
+          {
+            $ref: '#/$defs/schema1',
+          },
+          {
+            $ref: '#/$defs/schema2',
+          },
+          {
+            $ref: '#/$defs/schema3',
+          },
+        ],
+        discriminator: {
+          propertyName: 'type mapped',
+          mapping: {
+            base: '#/$defs/schema1',
+            child1: '#/$defs/schema2',
+            child2: '#/$defs/schema3',
+          },
+        },
+        $defs: {
+          schema1: {
+            type: 'object',
+            required: ['baseField'],
+            properties: {
+              type: {
+                type: 'string',
+              },
+              baseField: {
+                type: 'number',
+              },
+            },
+          },
+          schema2: {
+            type: 'object',
+            required: ['baseField', 'child1Field'],
+            properties: {
+              type: {
+                type: 'string',
+              },
+              baseField: {
+                type: 'number',
+              },
+              child1Field: {
+                type: 'boolean',
+              },
+            },
+          },
+          schema3: {
+            type: 'object',
+            required: ['baseField', 'child2Field'],
+            properties: {
+              type: {
+                type: 'string',
+              },
+              baseField: {
+                type: 'number',
+              },
+              child2Field: {
+                type: 'boolean',
+              },
+            },
+          },
+        },
+      });
     });
   });
 });

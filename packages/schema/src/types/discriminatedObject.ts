@@ -5,6 +5,7 @@ import {
   SchemaType,
   SchemaValidationError,
 } from '../schema';
+import { toCombinatorJSONSchemaWithDiscriminator } from '../typeCombinatorUtils';
 import { objectEntries } from '../utils';
 import { ObjectXmlOptions } from './object';
 
@@ -103,12 +104,15 @@ export function discriminatedObject<
     unmapXml: (value, ctxt) => unmapSchema(value, ctxt).unmapXml(value, ctxt),
     validateBeforeMapXml: (value, ctxt) =>
       mapXmlSchema(value, ctxt).validateBeforeMapXml(value, ctxt),
-    toJSONSchema: (context) => ({
-      allOf: Object.values(discriminatorMap).map((schema) =>
-        schema.toJSONSchema(context)
-      ),
-      // TODO: HANDLE DISCRIMINATOR MAPPING
-    }),
+    toJSONSchema: (context) => {
+      return toCombinatorJSONSchemaWithDiscriminator(
+        Object.values(discriminatorMap),
+        discriminatorMap,
+        discriminatorPropName as string,  // TODO: Need some type gymnastics to remove this 'as'
+        'oneOf',
+        context
+      );
+    },
   };
 }
 
