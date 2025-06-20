@@ -6,9 +6,9 @@ const getTsPlugin = ({ declaration = true, target } = {}) =>
     tsconfigOverride: {
       compilerOptions: {
         declaration,
-        ...(target && { target })
-      }
-    }
+        ...(target && { target }),
+      },
+    },
   });
 
 const getNpmConfig = ({ input, output, external }) => ({
@@ -16,7 +16,7 @@ const getNpmConfig = ({ input, output, external }) => ({
   output,
   preserveModules: true,
   plugins: [getTsPlugin({ declaration: true })],
-  external
+  external,
 });
 
 export default [
@@ -25,8 +25,8 @@ export default [
     output: [
       {
         dir: 'es',
-        format: 'esm'
-      }
-    ]
-  })
+        format: 'esm',
+      },
+    ],
+  }),
 ];

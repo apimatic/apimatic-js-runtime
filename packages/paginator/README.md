@@ -23,13 +23,13 @@ The following environments are supported:
 
 To support multiple environments, we export various builds:
 
-| Environment | Usage |
-| --- | --- |
-| Common.js | Import like this: `require('@apimatic/test-utilities')`. |
-| ES Module | Import like this: `import { /* your imports */ } from '@apimatic/test-utilities'`. |
-| Browsers | *Use script: `https://unpkg.com/@apimatic/test-utilities@VERSION/umd/schema.js` |
-| Modern Browsers (supports ESM and uses modern JS) | *Use script: `https://unpkg.com/@apimatic/test-utilities@VERSION/umd/schema.esm.js` |
+| Environment                                       | Usage                                                                                |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Common.js                                         | Import like this: `require('@apimatic/test-utilities')`.                             |
+| ES Module                                         | Import like this: `import { /* your imports */ } from '@apimatic/test-utilities'`.   |
+| Browsers                                          | \*Use script: `https://unpkg.com/@apimatic/test-utilities@VERSION/umd/schema.js`     |
+| Modern Browsers (supports ESM and uses modern JS) | \*Use script: `https://unpkg.com/@apimatic/test-utilities@VERSION/umd/schema.esm.js` |
 
-_* Don't forget to replace VERSION with the version number._
+_\* Don't forget to replace VERSION with the version number._
 
 **Note**: We discourage importing files or modules directly from the package. These are likely to change in the future and should not be considered stable.
