@@ -48,7 +48,7 @@ export class LinkPagination implements PaginationStrategy {
 
     const [, query] = link.split('?');
 
-    const decodedEqualsQuery = query.replace(/%3D/gi, '=');
+    const decodedEqualsQuery = decodeURIComponent(query);
     const queryParams = decodedEqualsQuery.split('&');
 
     for (const queryParam of queryParams) {

@@ -22,9 +22,9 @@ export class OffsetPagination implements PaginationStrategy {
         isUpdated = true;
         if (value === undefined || value === null) {
           this.pageOffset = '0';
-          return 0;
+          return value;
         }
-        this.pageOffset = value;
+        this.pageOffset = String(value);
         return value;
       }
       const dataLength = response?.items.length ?? 0;

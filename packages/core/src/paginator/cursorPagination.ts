@@ -24,7 +24,7 @@ export class CursorPagination implements PaginationStrategy {
         isUpdated = true;
         if (value === undefined) {
           this.nextCursorValue = null;
-          return null;
+          return value;
         }
         this.nextCursorValue = value;
         return value;

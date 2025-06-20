@@ -1,6 +1,7 @@
 import {
   ApiError,
   CursorPagination,
+  PagedData,
   createCursorPagedResponse,
   createNumberPagedResponse,
   createOffsetPagedResponse,
@@ -22,7 +23,7 @@ import {
   RetryConfiguration,
 } from '../../src/coreInterfaces';
 import { object, array, string } from '@apimatic/schema';
-import { Pagination } from '../../src/paginator/pagination';
+import { PaginationStrategy } from '../../src/paginator/paginationStrategy';
 
 type PaginationType = 'page' | 'offset' | 'link' | 'cursor' | null;
 
@@ -127,7 +128,7 @@ describe('PagedData', () => {
         }
 
         case 'cursor': {
-          const cursor = params.get('cursor') || '';
+          const cursor = params.get('cursor') || 'cursor1';
           if (cursor === 'cursor1') {
             return mockResponses.page1;
           } else if (cursor === 'cursor2') {
@@ -180,16 +181,12 @@ describe('PagedData', () => {
   }
 
   function getPagedData(
-    paginationType: PaginationType,
-    pagination: Pagination<string, boolean, any, any>,
+    requestBuilder: DefaultRequestBuilder<string, any>,
+    pagination: PaginationStrategy,
     pageResponseCreator: (response: PagedResponse<any, any>) => any
   ) {
-    const requestBuilder = getRequestBuilder(paginationType);
-    requestBuilder.query('page', 1);
-    requestBuilder.query('offset', '0');
-    requestBuilder.query('cursor', 'cursor1');
-
-    return requestBuilder.paginate(
+    return new PagedData(
+      requestBuilder,
       mockSchema,
       undefined,
       pageResponseCreator,
@@ -209,10 +206,17 @@ describe('PagedData', () => {
   });
 
   describe('Page-based pagination', () => {
+    const expectedNumberPages = expectedPages.map((items, index) => ({
+      items,
+      pageNumber: `${index + 1}`,
+    }));
+
     it('should iterate through pages correctly', async () => {
+      const requestBuilder = getRequestBuilder('page');
+      requestBuilder.query('page', 1);
       const pagedData = getPagedData(
-        'page',
-        new PagePagination<string, boolean, any, any>('$request.query#/page'),
+        requestBuilder,
+        new PagePagination('$request.query#/page'),
         createNumberPagedResponse
       );
 
@@ -225,28 +229,78 @@ describe('PagedData', () => {
     });
 
     it('should iterate through pages as pages', async () => {
+      const requestBuilder = getRequestBuilder('page');
+      requestBuilder.query('page', 1);
       const pagedData = getPagedData(
-        'page',
-        new PagePagination<string, boolean, any, any>('$request.query#/page'),
+        requestBuilder,
+        new PagePagination('$request.query#/page'),
         createNumberPagedResponse
       );
 
-      const pages: any[][] = [];
+      const pages: Array<{ items: any[]; pageNumber: string }> = [];
       for await (const page of pagedData.pages()) {
-        pages.push(page.items);
+        pages.push({
+          items: page.items,
+          pageNumber: page.pageNumber,
+        });
       }
 
-      expect(pages).toEqual(expectedPages);
+      expect(pages).toEqual(expectedNumberPages);
+    });
+
+    it('should use 1 as pageNumber when it is undefined', async () => {
+      const requestBuilder = getRequestBuilder('page');
+      requestBuilder.query('page', undefined);
+      const pagedData = getPagedData(
+        requestBuilder,
+        new PagePagination('$request.query#/page'),
+        createNumberPagedResponse
+      );
+
+      const pages: Array<{ items: any[]; pageNumber: string }> = [];
+      for await (const page of pagedData.pages()) {
+        pages.push({
+          items: page.items,
+          pageNumber: page.pageNumber,
+        });
+      }
+
+      expect(pages).toEqual(expectedNumberPages);
+    });
+
+    it('should start iteration from 2nd page when pageNumber is 2', async () => {
+      const requestBuilder = getRequestBuilder('page');
+      requestBuilder.query('page', 2);
+      const pagedData = getPagedData(
+        requestBuilder,
+        new PagePagination('$request.query#/page'),
+        createNumberPagedResponse
+      );
+
+      const pages: Array<{ items: any[]; pageNumber: string }> = [];
+      for await (const page of pagedData.pages()) {
+        pages.push({
+          items: page.items,
+          pageNumber: page.pageNumber,
+        });
+      }
+
+      expect(pages).toEqual(expectedNumberPages.slice(-2));
     });
   });
 
   describe('Offset-based pagination', () => {
+    const expectedOffsetPages = expectedPages.map((items, index) => ({
+      items,
+      offset: `${index * 2}`,
+    }));
+
     it('should iterate through pages using offset', async () => {
+      const requestBuilder = getRequestBuilder('offset');
+      requestBuilder.query('offset', 0);
       const pagedData = getPagedData(
-        'offset',
-        new OffsetPagination<string, boolean, any, any>(
-          '$request.query#/offset'
-        ),
+        requestBuilder,
+        new OffsetPagination('$request.query#/offset'),
         createOffsetPagedResponse
       );
 
@@ -259,30 +313,83 @@ describe('PagedData', () => {
     });
 
     it('should iterate through pages as pages using offset', async () => {
+      const requestBuilder = getRequestBuilder('offset');
+      requestBuilder.query('offset', 0);
       const pagedData = getPagedData(
-        'offset',
-        new OffsetPagination<string, boolean, any, any>(
-          '$request.query#/offset'
-        ),
+        requestBuilder,
+        new OffsetPagination('$request.query#/offset'),
         createOffsetPagedResponse
       );
 
-      const pages: any[][] = [];
+      const pages: Array<{ items: any[]; offset: string }> = [];
       for await (const page of pagedData.pages()) {
-        pages.push(page.items);
+        pages.push({
+          items: page.items,
+          offset: page.offset,
+        });
       }
 
-      expect(pages).toEqual(expectedPages);
+      expect(pages).toEqual(expectedOffsetPages);
+    });
+
+    it('should use 0 as offset when it is undefined', async () => {
+      const requestBuilder = getRequestBuilder('offset');
+      requestBuilder.query('offset', undefined);
+      const pagedData = getPagedData(
+        requestBuilder,
+        new OffsetPagination('$request.query#/offset'),
+        createOffsetPagedResponse
+      );
+
+      const pages: Array<{ items: any[]; offset: string }> = [];
+      for await (const page of pagedData.pages()) {
+        pages.push({
+          items: page.items,
+          offset: page.offset,
+        });
+      }
+
+      expect(pages).toEqual(expectedOffsetPages);
+    });
+
+    it('should start iteration from 2nd item when offset is 2', async () => {
+      const requestBuilder = getRequestBuilder('offset');
+      requestBuilder.query('offset', 2);
+      const pagedData = getPagedData(
+        requestBuilder,
+        new OffsetPagination('$request.query#/offset'),
+        createOffsetPagedResponse
+      );
+
+      const pages: Array<{ items: any[]; offset: string }> = [];
+      for await (const page of pagedData.pages()) {
+        pages.push({
+          items: page.items,
+          offset: page.offset,
+        });
+      }
+
+      expect(pages).toEqual(expectedOffsetPages.slice(-2));
     });
   });
 
   describe('Link-based pagination', () => {
+    const expectedLinkPages = expectedPages.map((items, index) => ({
+      items,
+      nextLink:
+        index === 0
+          ? null
+          : `https://apimatic.hopto.org:3000/test/pagination?nextLink=page${
+              index + 1
+            }`,
+    }));
+
     it('should iterate through pages using next links', async () => {
+      const requestBuilder = getRequestBuilder('link');
+      requestBuilder.query('page', 1);
       const pagedData = getPagedData(
-        'link',
-        new LinkPagination<string, boolean, any, any>(
-          '$response.body#/nextLink'
-        ),
+        requestBuilder,
+        new LinkPagination('$response.body#/nextLink'),
         createLinkPagedResponse
       );
 
@@ -295,11 +402,11 @@ describe('PagedData', () => {
     });
 
     it('should iterate through pages as pages using next links', async () => {
+      const requestBuilder = getRequestBuilder('link');
+      requestBuilder.query('page', 1);
       const pagedData = getPagedData(
-        'link',
-        new LinkPagination<string, boolean, any, any>(
-          '$response.body#/nextLink'
-        ),
+        requestBuilder,
+        new LinkPagination('$response.body#/nextLink'),
         createLinkPagedResponse
       );
 
@@ -311,25 +418,22 @@ describe('PagedData', () => {
         });
       }
 
-      const expectedLinkPages = expectedPages.map((items, index) => ({
-        items,
-        nextLink:
-          index === 0
-            ? null
-            : `https://apimatic.hopto.org:3000/test/pagination?nextLink=page${
-                index + 1
-              }`,
-      }));
-
       expect(pages).toEqual(expectedLinkPages);
     });
   });
 
   describe('Cursor-based pagination', () => {
+    const expectedCursorPages = expectedPages.map((items, index) => ({
+      items,
+      nextCursor: `cursor${index + 1}`,
+    }));
+
     it('should iterate through pages using cursor', async () => {
+      const requestBuilder = getRequestBuilder('cursor');
+      requestBuilder.query('cursor', 'cursor1');
       const pagedData = getPagedData(
-        'cursor',
-        new CursorPagination<string, boolean, any, any>(
+        requestBuilder,
+        new CursorPagination(
           '$request.query#/cursor',
           '$response.body#/nextCursor'
         ),
@@ -345,9 +449,11 @@ describe('PagedData', () => {
     });
 
     it('should iterate through pages as pages using cursor', async () => {
+      const requestBuilder = getRequestBuilder('cursor');
+      requestBuilder.query('cursor', 'cursor1');
       const pagedData = getPagedData(
-        'cursor',
-        new CursorPagination<string, boolean, any, any>(
+        requestBuilder,
+        new CursorPagination(
           '$request.query#/cursor',
           '$response.body#/nextCursor'
         ),
@@ -362,12 +468,59 @@ describe('PagedData', () => {
         });
       }
 
-      const expectedCursorPages = expectedPages.map((items, index) => ({
-        items,
-        nextCursor: `cursor${index + 1}`,
-      }));
-
       expect(pages).toEqual(expectedCursorPages);
+    });
+
+    it('should return null cursor for 1st page when cursor is undefined', async () => {
+      const requestBuilder = getRequestBuilder('cursor');
+      requestBuilder.query('cursor', undefined);
+      const pagedData = getPagedData(
+        requestBuilder,
+        new CursorPagination(
+          '$request.query#/cursor',
+          '$response.body#/nextCursor'
+        ),
+        createCursorPagedResponse
+      );
+
+      const pages: Array<{ items: any[]; nextCursor: string | null }> = [];
+      for await (const page of pagedData.pages()) {
+        pages.push({
+          items: page.items,
+          nextCursor: page.nextCursor,
+        });
+      }
+      const modifiedExpectedCursorPages = expectedCursorPages.map(
+        (page, index) => ({
+          ...page,
+          nextCursor: index === 0 ? null : page.nextCursor,
+        })
+      );
+
+      expect(pages).toEqual(modifiedExpectedCursorPages);
+    });
+
+    it('should return 1st page only as nextCursor pointer is invalid', async () => {
+      const requestBuilder = getRequestBuilder('cursor');
+      requestBuilder.query('cursor', 'cursor1');
+      const pagedData = getPagedData(
+        requestBuilder,
+        new CursorPagination(
+          '$request.query#/cursor',
+          '$response.body#/next-Cursor'
+        ),
+        createCursorPagedResponse
+      );
+
+      const pages: Array<{ items: any[]; nextCursor: string | null }> = [];
+      for await (const page of pagedData.pages()) {
+        pages.push({
+          items: page.items,
+          nextCursor: page.nextCursor,
+        });
+      }
+
+      expect(pages).toEqual(expectedCursorPages.slice(0, 1));
     });
   });
 
@@ -378,7 +531,8 @@ describe('PagedData', () => {
       requestBuilder.query('offset', '0');
       requestBuilder.query('cursor', 'cursor1');
 
-      const pagedData = requestBuilder.paginate(
+      const pagedData = new PagedData(
+        requestBuilder,
         mockSchema,
         undefined,
         (p) => p,
@@ -397,9 +551,10 @@ describe('PagedData', () => {
       const originalGetData = mockGetData;
       mockGetData = jest.fn(() => undefined);
 
+      const requestBuiler = getRequestBuilder(null);
       const pagedData = getPagedData(
-        'page',
-        new PagePagination<string, boolean, any, any>('$request.query#/page'),
+        requestBuiler,
+        new PagePagination('$request.query#/page'),
         createNumberPagedResponse
       );
 
@@ -434,12 +589,13 @@ describe('PagedData', () => {
       defaultRequestBuilder.baseUrl('default');
       defaultRequestBuilder.query('page', 1);
 
-      const pagedData = defaultRequestBuilder.paginate(
+      const pagedData = new PagedData(
+        defaultRequestBuilder,
         mockSchema,
         undefined,
         createNumberPagedResponse,
         mockGetData,
-        new PagePagination<string, boolean, any, any>('$request.query#/page')
+        new PagePagination('$request.query#/page')
       );
 
       await expect(async () => {

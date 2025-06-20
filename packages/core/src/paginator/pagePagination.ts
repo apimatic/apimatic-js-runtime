@@ -21,12 +21,12 @@ export class PagePagination implements PaginationStrategy {
         isUpdated = true;
         if (value === undefined || value === null) {
           this.pageNumber = '1';
-          return 1;
+          return value;
         }
-        this.pageNumber = value;
+        this.pageNumber = String(value);
         return value;
       }
-      const numericValue = +(value ?? 0);
+      const numericValue = +(value ?? 1);
       const newPage = numericValue + 1;
       this.pageNumber = newPage.toString();
       isUpdated = true;

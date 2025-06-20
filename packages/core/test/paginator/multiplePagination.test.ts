@@ -15,6 +15,7 @@ import {
   RetryConfiguration,
 } from '../../src/coreInterfaces';
 import { object, array, string } from '@apimatic/schema';
+import { PagedData } from '../../lib';
 
 describe('Multiple Pagination Strategies', () => {
   let mockSchema: Schema<any>;
@@ -123,13 +124,14 @@ describe('Multiple Pagination Strategies', () => {
     defaultRequestBuilder.baseUrl('default');
     defaultRequestBuilder.query('page', 1);
 
-    const pagedData = defaultRequestBuilder.paginate(
+    const pagedData = new PagedData(
+      defaultRequestBuilder,
       mockSchema,
       undefined,
       createLinkPagedResponse,
       mockGetData,
-      new LinkPagination<string, boolean, any, any>('$response.body#/nextLink'),
-      new PagePagination<string, boolean, any, any>('$request.query#/page')
+      new LinkPagination('$response.body#/nextLink'),
+      new PagePagination('$request.query#/page')
     );
 
     const pages: Array<{ items: any[]; nextLink: string | null }> = [];
