@@ -3,10 +3,7 @@ import {
   LinkPagination,
   PagePagination,
 } from '../src';
-  import {
-    ApiError,
-    createRequestBuilderFactory,
-  } from '@apimatic/core'
+import { ApiError, createRequestBuilderFactory } from '@apimatic/core';
 import { Schema } from '@apimatic/core/lib/schema';
 import {
   ApiResponse,

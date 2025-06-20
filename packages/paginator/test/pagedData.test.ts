@@ -207,87 +207,72 @@ describe('PagedData', () => {
     });
   });
 
+  async function collectItems<T>(pagedData: AsyncIterable<T>): Promise<T[]> {
+    const items: T[] = [];
+    for await (const item of pagedData) {
+      items.push(item);
+    }
+    return items;
+  }
+
+  async function collectPages(
+    pagedData: PagedData<any, any, any, any, any>
+  ): Promise<any[]> {
+    const pages: any[] = [];
+    for await (const page of pagedData.pages()) {
+      pages.push(page);
+    }
+    return pages;
+  }
+
   describe('Page-based pagination', () => {
     const expectedNumberPages = expectedPages.map((items, index) => ({
       items,
       pageNumber: `${index + 1}`,
     }));
 
-    it('should iterate through pages correctly', async () => {
+    function createNumberPagedData(value: number | undefined) {
       const requestBuilder = getRequestBuilder('page');
-      requestBuilder.query('page', 1);
-      const pagedData = getPagedData(
+      requestBuilder.query('page', value);
+      return getPagedData(
         requestBuilder,
         new PagePagination('$request.query#/page'),
         createNumberPagedResponse
       );
+    }
 
-      const items: any[] = [];
-      for await (const item of pagedData) {
-        items.push(item);
-      }
+    it('should iterate through pages correctly', async () => {
+      const pagedData = createNumberPagedData(1);
+
+      const items = await collectItems(pagedData);
 
       expect(items).toEqual(expectedItems);
     });
 
     it('should iterate through pages as pages', async () => {
-      const requestBuilder = getRequestBuilder('page');
-      requestBuilder.query('page', 1);
-      const pagedData = getPagedData(
-        requestBuilder,
-        new PagePagination('$request.query#/page'),
-        createNumberPagedResponse
-      );
+      const pagedData = createNumberPagedData(1);
 
-      const pages: Array<{ items: any[]; pageNumber: string }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          pageNumber: page.pageNumber,
-        });
-      }
+      const pages = await collectPages(pagedData);
 
-      expect(pages).toEqual(expectedNumberPages);
+      expect(pages).toMatchObject(expectedNumberPages);
     });
 
     it('should use 1 as pageNumber when it is undefined', async () => {
-      const requestBuilder = getRequestBuilder('page');
-      requestBuilder.query('page', undefined);
-      const pagedData = getPagedData(
-        requestBuilder,
-        new PagePagination('$request.query#/page'),
-        createNumberPagedResponse
-      );
+      const pagedData = createNumberPagedData(undefined);
 
-      const pages: Array<{ items: any[]; pageNumber: string }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          pageNumber: page.pageNumber,
-        });
-      }
+      const pages = await collectPages(pagedData);
 
-      expect(pages).toEqual(expectedNumberPages);
+      expect(pages).toMatchObject<
+        Array<{ items: string[]; pageNumber: string }>
+      >(expectedNumberPages);
     });
 
     it('should start iteration from 2nd page when pageNumber is 2', async () => {
-      const requestBuilder = getRequestBuilder('page');
-      requestBuilder.query('page', 2);
-      const pagedData = getPagedData(
-        requestBuilder,
-        new PagePagination('$request.query#/page'),
-        createNumberPagedResponse
-      );
+      const pagedData = createNumberPagedData(2);
 
-      const pages: Array<{ items: any[]; pageNumber: string }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          pageNumber: page.pageNumber,
-        });
-      }
+      const pages = await collectPages(pagedData);
 
-      expect(pages).toEqual(expectedNumberPages.slice(-2));
+      expect(pages).toMatchObject(expectedNumberPages.slice(-2));
     });
   });
 
@@ -297,81 +282,42 @@ describe('PagedData', () => {
       offset: `${index * 2}`,
     }));
 
-    it('should iterate through pages using offset', async () => {
+    function createOffsetPagedData(value: number | undefined) {
       const requestBuilder = getRequestBuilder('offset');
-      requestBuilder.query('offset', 0);
-      const pagedData = getPagedData(
+      requestBuilder.query('offset', value);
+      return getPagedData(
         requestBuilder,
         new OffsetPagination('$request.query#/offset'),
         createOffsetPagedResponse
       );
+    }
 
-      const items: any[] = [];
-      for await (const item of pagedData) {
-        items.push(item);
-      }
+    it('should iterate through pages using offset', async () => {
+      const pagedData = createOffsetPagedData(0);
+      const items = await collectItems(pagedData);
 
       expect(items).toEqual(expectedItems);
     });
 
     it('should iterate through pages as pages using offset', async () => {
-      const requestBuilder = getRequestBuilder('offset');
-      requestBuilder.query('offset', 0);
-      const pagedData = getPagedData(
-        requestBuilder,
-        new OffsetPagination('$request.query#/offset'),
-        createOffsetPagedResponse
-      );
+      const pagedData = createOffsetPagedData(0);
+      const pages = await collectPages(pagedData);
 
-      const pages: Array<{ items: any[]; offset: string }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          offset: page.offset,
-        });
-      }
-
-      expect(pages).toEqual(expectedOffsetPages);
+      expect(pages).toMatchObject(expectedOffsetPages);
     });
 
     it('should use 0 as offset when it is undefined', async () => {
-      const requestBuilder = getRequestBuilder('offset');
-      requestBuilder.query('offset', undefined);
-      const pagedData = getPagedData(
-        requestBuilder,
-        new OffsetPagination('$request.query#/offset'),
-        createOffsetPagedResponse
-      );
+      const pagedData = createOffsetPagedData(undefined);
+      const pages = await collectPages(pagedData);
 
-      const pages: Array<{ items: any[]; offset: string }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          offset: page.offset,
-        });
-      }
-
-      expect(pages).toEqual(expectedOffsetPages);
+      expect(pages).toMatchObject(expectedOffsetPages);
     });
 
     it('should start iteration from 2nd item when offset is 2', async () => {
-      const requestBuilder = getRequestBuilder('offset');
-      requestBuilder.query('offset', 2);
-      const pagedData = getPagedData(
-        requestBuilder,
-        new OffsetPagination('$request.query#/offset'),
-        createOffsetPagedResponse
-      );
+      const pagedData = createOffsetPagedData(2);
+      const pages = await collectPages(pagedData);
 
-      const pages: Array<{ items: any[]; offset: string }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          offset: page.offset,
-        });
-      }
-
-      expect(pages).toEqual(expectedOffsetPages.slice(-2));
+      expect(pages).toMatchObject(expectedOffsetPages.slice(-2));
     });
   });
 
@@ -386,41 +332,28 @@ describe('PagedData', () => {
             }`,
     }));
 
-    it('should iterate through pages using next links', async () => {
+    function createLinkPagedData(value: number | undefined) {
       const requestBuilder = getRequestBuilder('link');
-      requestBuilder.query('page', 1);
-      const pagedData = getPagedData(
+      requestBuilder.query('page', value);
+      return getPagedData(
         requestBuilder,
         new LinkPagination('$response.body#/nextLink'),
         createLinkPagedResponse
       );
+    }
 
-      const items: any[] = [];
-      for await (const item of pagedData) {
-        items.push(item);
-      }
+    it('should iterate through pages using next links', async () => {
+      const pagedData = createLinkPagedData(1);
+      const items = await collectItems(pagedData);
 
       expect(items).toEqual(expectedItems);
     });
 
     it('should iterate through pages as pages using next links', async () => {
-      const requestBuilder = getRequestBuilder('link');
-      requestBuilder.query('page', 1);
-      const pagedData = getPagedData(
-        requestBuilder,
-        new LinkPagination('$response.body#/nextLink'),
-        createLinkPagedResponse
-      );
+      const pagedData = createLinkPagedData(1);
+      const pages = await collectPages(pagedData);
 
-      const pages: Array<{ items: any[]; nextLink: string | null }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          nextLink: page.nextLink,
-        });
-      }
-
-      expect(pages).toEqual(expectedLinkPages);
+      expect(pages).toMatchObject(expectedLinkPages);
     });
   });
 
@@ -430,10 +363,10 @@ describe('PagedData', () => {
       nextCursor: `cursor${index + 1}`,
     }));
 
-    it('should iterate through pages using cursor', async () => {
+    function createCursorPagedData(value: string | undefined) {
       const requestBuilder = getRequestBuilder('cursor');
-      requestBuilder.query('cursor', 'cursor1');
-      const pagedData = getPagedData(
+      requestBuilder.query('cursor', value);
+      return getPagedData(
         requestBuilder,
         new CursorPagination(
           '$request.query#/cursor',
@@ -441,57 +374,26 @@ describe('PagedData', () => {
         ),
         createCursorPagedResponse
       );
+    }
 
-      const items: any[] = [];
-      for await (const item of pagedData) {
-        items.push(item);
-      }
+    it('should iterate through pages using cursor', async () => {
+      const pagedData = createCursorPagedData('cursor1');
+      const items = await collectItems(pagedData);
 
       expect(items).toEqual(expectedItems);
     });
 
     it('should iterate through pages as pages using cursor', async () => {
-      const requestBuilder = getRequestBuilder('cursor');
-      requestBuilder.query('cursor', 'cursor1');
-      const pagedData = getPagedData(
-        requestBuilder,
-        new CursorPagination(
-          '$request.query#/cursor',
-          '$response.body#/nextCursor'
-        ),
-        createCursorPagedResponse
-      );
+      const pagedData = createCursorPagedData('cursor1');
+      const pages = await collectPages(pagedData);
 
-      const pages: Array<{ items: any[]; nextCursor: string | null }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          nextCursor: page.nextCursor,
-        });
-      }
-
-      expect(pages).toEqual(expectedCursorPages);
+      expect(pages).toMatchObject(expectedCursorPages);
     });
 
     it('should return null cursor for 1st page when cursor is undefined', async () => {
-      const requestBuilder = getRequestBuilder('cursor');
-      requestBuilder.query('cursor', undefined);
-      const pagedData = getPagedData(
-        requestBuilder,
-        new CursorPagination(
-          '$request.query#/cursor',
-          '$response.body#/nextCursor'
-        ),
-        createCursorPagedResponse
-      );
+      const pagedData = createCursorPagedData(undefined);
 
-      const pages: Array<{ items: any[]; nextCursor: string | null }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          nextCursor: page.nextCursor,
-        });
-      }
+      const pages = await collectPages(pagedData);
       const modifiedExpectedCursorPages = expectedCursorPages.map(
         (page, index) => ({
           ...page,
@@ -499,7 +401,7 @@ describe('PagedData', () => {
         })
       );
 
-      expect(pages).toEqual(modifiedExpectedCursorPages);
+      expect(pages).toMatchObject(modifiedExpectedCursorPages);
     });
 
     it('should return 1st page only as nextCursor pointer is invalid', async () => {
@@ -514,15 +416,9 @@ describe('PagedData', () => {
         createCursorPagedResponse
       );
 
-      const pages: Array<{ items: any[]; nextCursor: string | null }> = [];
-      for await (const page of pagedData.pages()) {
-        pages.push({
-          items: page.items,
-          nextCursor: page.nextCursor,
-        });
-      }
+      const pages = await collectPages(pagedData);
 
-      expect(pages).toEqual(expectedCursorPages.slice(0, 1));
+      expect(pages).toMatchObject(expectedCursorPages.slice(0, 1));
     });
   });
 
@@ -541,10 +437,7 @@ describe('PagedData', () => {
         mockGetData
       );
 
-      const items: any[] = [];
-      for await (const item of pagedData) {
-        items.push(item);
-      }
+      const items = await collectItems(pagedData);
 
       expect(items).toEqual([]);
     });
@@ -560,10 +453,7 @@ describe('PagedData', () => {
         createNumberPagedResponse
       );
 
-      const items: any[] = [];
-      for await (const item of pagedData) {
-        items.push(item);
-      }
+      const items = await collectItems(pagedData);
 
       expect(items).toEqual([]);
 
