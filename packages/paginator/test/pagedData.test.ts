@@ -1,17 +1,19 @@
 import {
-  ApiError,
   CursorPagination,
   PagedData,
   createCursorPagedResponse,
   createNumberPagedResponse,
   createOffsetPagedResponse,
   createLinkPagedResponse,
-  createRequestBuilderFactory,
-  DefaultRequestBuilder,
   PagePagination,
   OffsetPagination,
   PagedResponse,
   LinkPagination,
+} from '../src';
+import {
+  ApiError,
+  createRequestBuilderFactory,
+  DefaultRequestBuilder,
 } from '@apimatic/core';
 import { Schema } from '@apimatic/core/lib/schema';
 import {
