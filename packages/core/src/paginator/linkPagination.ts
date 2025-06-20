@@ -1,33 +1,27 @@
-import { Pagination } from './pagination';
-import { DefaultRequestBuilder } from '../http/requestBuilder';
+import { PaginationStrategy } from './paginationStrategy';
+import { RequestBuilder } from '../http/requestBuilder';
 import { PagedResponse } from './pagedResponse';
 import { LinkPagedResponse } from './linkPagedResponse';
 import { getValueByJsonPointer } from '../apiHelper';
 
-export class LinkPagination<
-  BaseUrlParamType,
-  AuthParams,
-  I,
-  P
-> extends Pagination<BaseUrlParamType, AuthParams, I, P> {
+export class LinkPagination implements PaginationStrategy {
   private readonly nextLinkPointer: string;
   private nextLinkValue: string | null = null;
 
   constructor(nextLinkPointer: string) {
-    super();
     this.nextLinkPointer = nextLinkPointer;
   }
 
   public isApplicable(
-    request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
-    currentData: PagedResponse<any, any> | null
+    request: RequestBuilder<any, any>,
+    response: PagedResponse<any, any> | null
   ): boolean {
-    if (currentData === null) {
+    if (response === null) {
       this.nextLinkValue = null;
       return true;
     }
 
-    const nextLink = getValueByJsonPointer(currentData, this.nextLinkPointer);
+    const nextLink = getValueByJsonPointer(response, this.nextLinkPointer);
     if (nextLink == null) {
       return false;
     }
@@ -40,7 +34,9 @@ export class LinkPagination<
     return true;
   }
 
-  public withMetadata(response: PagedResponse<I, P>): LinkPagedResponse<I, P> {
+  public withMetadata<I, P>(
+    response: PagedResponse<I, P>
+  ): LinkPagedResponse<I, P> {
     return {
       ...response,
       nextLink: this.nextLinkValue,

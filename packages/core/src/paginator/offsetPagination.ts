@@ -1,30 +1,24 @@
-import { Pagination } from './pagination';
-import { DefaultRequestBuilder } from '../http/requestBuilder';
+import { PaginationStrategy } from './paginationStrategy';
+import { RequestBuilder } from '../http/requestBuilder';
 import { PagedResponse } from './pagedResponse';
 import { OffsetPagedResponse } from './offsetPagedResponse';
 
-export class OffsetPagination<
-  BaseUrlParamType,
-  AuthParams,
-  I,
-  P
-> extends Pagination<BaseUrlParamType, AuthParams, I, P> {
+export class OffsetPagination implements PaginationStrategy {
   private readonly offsetPointer: string;
   private pageOffset: string = '0';
 
   constructor(offsetPointer: string) {
-    super();
-    this.offsetPointer = offsetPointer; // '$request.query#/offset'
+    this.offsetPointer = offsetPointer;
   }
 
   public isApplicable(
-    request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
-    currentData: PagedResponse<any, any> | null
+    request: RequestBuilder<any, any>,
+    response: PagedResponse<any, any> | null
   ): boolean {
     let isUpdated: boolean = false;
 
     request.updateParameterByJsonPointer(this.offsetPointer, (value) => {
-      if (currentData === null) {
+      if (response === null) {
         isUpdated = true;
         if (value === undefined || value === null) {
           this.pageOffset = '0';
@@ -33,7 +27,7 @@ export class OffsetPagination<
         this.pageOffset = value;
         return value;
       }
-      const dataLength = currentData?.items.length ?? 0;
+      const dataLength = response?.items.length ?? 0;
       const numericValue = +(value ?? 0);
       const newOffset = numericValue + dataLength;
       this.pageOffset = String(newOffset);
@@ -44,7 +38,7 @@ export class OffsetPagination<
     return isUpdated;
   }
 
-  public withMetadata(
+  public withMetadata<I, P>(
     response: PagedResponse<I, P>
   ): OffsetPagedResponse<I, P> {
     return {

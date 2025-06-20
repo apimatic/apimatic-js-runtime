@@ -1,9 +1,8 @@
-import { HttpResponse } from '@apimatic/core-interfaces';
+import { ApiResponse, HttpResponse } from '@apimatic/core-interfaces';
 import { getHeader } from '@apimatic/http-headers';
 import { detect } from 'detect-browser';
 import warning from 'tiny-warning';
 import { JsonPointer } from 'json-ptr';
-import { PagedResponse } from './paginator/pagedResponse';
 
 /**
  * Validates the protocol and removes duplicate forward slashes
@@ -146,7 +145,7 @@ export function updateValueByJsonPointer<T>(
 }
 
 export function getValueByJsonPointer(
-  obj: PagedResponse<any, any>,
+  obj: ApiResponse<any>,
   pointer: string
 ): any {
   const [prefix] = pointer.split('#');

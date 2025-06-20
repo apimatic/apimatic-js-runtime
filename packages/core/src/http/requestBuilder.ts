@@ -60,7 +60,7 @@ import {
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
 import { PagedAsyncIterable, PagedData } from '../paginator/pagedData';
-import { Pagination } from '../paginator/pagination';
+import { PaginationStrategy } from '../paginator/paginationStrategy';
 import { PagedResponse } from '../paginator/pagedResponse';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
@@ -188,7 +188,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     requestOptions: RequestOptions | undefined,
     pageResponseCreator: (p: PagedResponse<T, P>) => PageWrapper | undefined,
     getData: (response: ApiResponse<P>) => T[] | undefined,
-    ...paginator: Array<Pagination<BaseUrlParamType, AuthParams, T, P>>
+    ...paginator: PaginationStrategy[]
   ): PagedAsyncIterable<T, PageWrapper>;
   updateParameterByJsonPointer(
     pointer: string | null,
@@ -583,13 +583,13 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     return { ...result, result: mappingResult.result };
   }
 
-  public paginate<T, P, PageWrapper>(
+  public paginate<I, P, PageWrapper>(
     schema: Schema<P>,
     requestOptions: RequestOptions | undefined,
-    pageResponseCreator: (p: PagedResponse<T, P>) => PageWrapper | undefined,
-    getData: (response: ApiResponse<P>) => T[] | undefined,
-    ...paginator: Array<Pagination<BaseUrlParamType, AuthParams, T, P>>
-  ): PagedAsyncIterable<T, PageWrapper> {
+    pageResponseCreator: (p: PagedResponse<I, P>) => PageWrapper | undefined,
+    getData: (response: ApiResponse<P>) => I[] | undefined,
+    ...paginator: PaginationStrategy[]
+  ): PagedAsyncIterable<I, PageWrapper> {
     return new PagedData(
       this,
       schema,

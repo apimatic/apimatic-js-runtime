@@ -1,32 +1,26 @@
-import { Pagination } from './pagination';
-import { DefaultRequestBuilder } from '../http/requestBuilder';
+import { PaginationStrategy } from './paginationStrategy';
+import { RequestBuilder } from '../http/requestBuilder';
 import { PagedResponse } from './pagedResponse';
 import { CursorPagedResponse } from './cursorPagedResponse';
 import { getValueByJsonPointer } from '../apiHelper';
 
-export class CursorPagination<
-  BaseUrlParamType,
-  AuthParams,
-  I,
-  P
-> extends Pagination<BaseUrlParamType, AuthParams, I, P> {
+export class CursorPagination implements PaginationStrategy {
   private readonly currentCursorPointer: string;
   private readonly nextCursorPointer: string;
   private nextCursorValue: string | null = null;
 
   constructor(currentCursorPointer: string, nextCursorPointer: string) {
-    super();
     this.currentCursorPointer = currentCursorPointer;
     this.nextCursorPointer = nextCursorPointer;
   }
 
   public isApplicable(
-    request: DefaultRequestBuilder<BaseUrlParamType, AuthParams>,
-    currentData: PagedResponse<any, any> | null
+    request: RequestBuilder<any, any>,
+    response: PagedResponse<any, any> | null
   ): boolean {
     let isUpdated: boolean = false;
     request.updateParameterByJsonPointer(this.currentCursorPointer, (value) => {
-      if (currentData === null) {
+      if (response === null) {
         isUpdated = true;
         if (value === undefined) {
           this.nextCursorValue = null;
@@ -36,7 +30,7 @@ export class CursorPagination<
         return value;
       }
       const nextCursor = getValueByJsonPointer(
-        currentData,
+        response,
         this.nextCursorPointer
       );
       if (nextCursor === null) {
@@ -50,7 +44,7 @@ export class CursorPagination<
     return isUpdated;
   }
 
-  public withMetadata(
+  public withMetadata<I, P>(
     response: PagedResponse<I, P>
   ): CursorPagedResponse<I, P> {
     return {
