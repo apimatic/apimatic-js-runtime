@@ -52,4 +52,4 @@ export {
   NumberPagedResponse,
 } from './paginator/numberPagedResponse';
 export { PagedResponse } from './paginator/pagedResponse';
-export { PagedAsyncIterable } from './paginator/pagedData';
+export { PagedAsyncIterable, PagedData } from './paginator/pagedData';

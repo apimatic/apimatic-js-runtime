@@ -59,9 +59,6 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
-import { PagedAsyncIterable, PagedData } from '../paginator/pagedData';
-import { PaginationStrategy } from '../paginator/paginationStrategy';
-import { PagedResponse } from '../paginator/pagedResponse';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -126,6 +123,10 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
+  updateParameterByJsonPointer(
+    pointer: string | null,
+    setter: (value: any) => any
+  ): this;
   text(body: string | number | bigint | boolean | null | undefined): void;
   json(data: unknown): void;
   requestRetryOption(option: RequestRetryOption): void;
@@ -183,17 +184,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     schema: Schema<T, any>,
     requestOptions?: RequestOptions
   ): Promise<ApiResponse<T>>;
-  paginate<T, P, PageWrapper>(
-    schema: Schema<P>,
-    requestOptions: RequestOptions | undefined,
-    pageResponseCreator: (p: PagedResponse<T, P>) => PageWrapper | undefined,
-    getData: (response: ApiResponse<P>) => T[] | undefined,
-    ...paginator: PaginationStrategy[]
-  ): PagedAsyncIterable<T, PageWrapper>;
-  updateParameterByJsonPointer(
-    pointer: string | null,
-    setter: (value: any) => any
-  ): this;
+  clone(): RequestBuilder<BaseUrlParamType, AuthParams>;
 }
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
@@ -391,6 +382,36 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._formData = parameters;
     this._formDataPrefixFormat = prefixFormat;
   }
+  public updateParameterByJsonPointer(
+    pointer: string | null,
+    setter: (value: any) => any
+  ): this {
+    if (!pointer) {
+      return this;
+    }
+
+    const [prefix, point = ''] = pointer.split('#');
+
+    if (prefix === '$request.body') {
+      this.updateBody(point, setter);
+    } else if (prefix === '$request.path') {
+      this._templateParams = updateValueByJsonPointer(
+        this._templateParams,
+        point,
+        setter
+      );
+    } else if (prefix === '$request.query') {
+      this._queryParams = updateValueByJsonPointer(
+        this._queryParams,
+        point,
+        setter
+      );
+    } else if (prefix === '$request.headers') {
+      this._headers = updateValueByJsonPointer(this._headers, point, setter);
+    }
+
+    return this;
+  }
   public toRequest(): HttpRequest {
     const request: HttpRequest = {
       method: this._httpMethod,
@@ -583,54 +604,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     return { ...result, result: mappingResult.result };
   }
 
-  public paginate<I, P, PageWrapper>(
-    schema: Schema<P>,
-    requestOptions: RequestOptions | undefined,
-    pageResponseCreator: (p: PagedResponse<I, P>) => PageWrapper | undefined,
-    getData: (response: ApiResponse<P>) => I[] | undefined,
-    ...paginator: PaginationStrategy[]
-  ): PagedAsyncIterable<I, PageWrapper> {
-    return new PagedData(
-      this,
-      schema,
-      requestOptions,
-      pageResponseCreator,
-      getData,
-      ...paginator
-    );
-  }
-
-  public updateParameterByJsonPointer(
-    pointer: string | null,
-    setter: (value: any) => any
-  ): this {
-    if (!pointer) {
-      return this;
-    }
-
-    const [prefix, point = ''] = pointer.split('#');
-
-    if (prefix === '$request.body') {
-      this.updateBody(point, setter);
-    } else if (prefix === '$request.path') {
-      this._templateParams = updateValueByJsonPointer(
-        this._templateParams,
-        point,
-        setter
-      );
-    } else if (prefix === '$request.query') {
-      this._queryParams = updateValueByJsonPointer(
-        this._queryParams,
-        point,
-        setter
-      );
-    } else if (prefix === '$request.headers') {
-      this._headers = updateValueByJsonPointer(this._headers, point, setter);
-    }
-
-    return this;
-  }
-
   public clone(): DefaultRequestBuilder<BaseUrlParamType, AuthParams> {
     const cloned = new DefaultRequestBuilder(
       this._httpClient,
@@ -647,7 +620,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this.cloneParameters(cloned);
     return cloned;
   }
-
   private cloneParameters(
     cloned: DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   ) {
@@ -671,7 +643,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     cloned._apiErrorFactory = { ...this._apiErrorFactory };
     cloned._errorTypes = [...this._errorTypes];
   }
-
   private updateBody(pointer: string, setter: (value: any) => any) {
     if (this._body) {
       if (pointer === '') {
@@ -689,7 +660,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     this._formData = updateValueByJsonPointer(this._formData, pointer, setter);
   }
-
   private _setContentTypeIfNotSet(contentType: string) {
     if (!this._contentType) {
       setHeaderIfNotSet(this._headers, CONTENT_TYPE_HEADER, contentType);
