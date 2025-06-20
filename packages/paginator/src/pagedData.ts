@@ -1,5 +1,5 @@
-import { RequestBuilder } from '../http/requestBuilder';
-import { Schema } from '../schema';
+import { RequestBuilder } from '@apimatic/core/lib/http/requestBuilder';
+import { Schema } from '@apimatic/core/lib/schema';
 import { ApiResponse, RequestOptions } from '@apimatic/core-interfaces';
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedResponse } from './pagedResponse';

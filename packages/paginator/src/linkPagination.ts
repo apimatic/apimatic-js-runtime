@@ -1,8 +1,8 @@
 import { PaginationStrategy } from './paginationStrategy';
-import { RequestBuilder } from '../http/requestBuilder';
+import { RequestBuilder } from '@apimatic/core/lib/http/requestBuilder';
 import { PagedResponse } from './pagedResponse';
 import { LinkPagedResponse } from './linkPagedResponse';
-import { getValueByJsonPointer } from '../apiHelper';
+import { getValueByJsonPointer } from '@apimatic/core/lib/apiHelper';
 
 export class LinkPagination implements PaginationStrategy {
   private readonly nextLinkPointer: string;

@@ -4,8 +4,8 @@ import {
   createRequestBuilderFactory,
   LinkPagination,
   PagePagination,
-} from '../../src';
-import { Schema } from '../../src/schema';
+} from '@apimatic/core';
+import { Schema } from '@apimatic/core/lib/schema';
 import {
   ApiResponse,
   HttpRequest,
@@ -13,9 +13,9 @@ import {
   HttpMethod,
   passThroughInterceptor,
   RetryConfiguration,
-} from '../../src/coreInterfaces';
+} from '@apimatic/core/lib/coreInterfaces';
 import { object, array, string } from '@apimatic/schema';
-import { PagedData } from '../../lib';
+import { PagedData } from '@apimatic/core';
 
 describe('Multiple Pagination Strategies', () => {
   let mockSchema: Schema<any>;

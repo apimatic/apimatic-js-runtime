@@ -12,8 +12,8 @@ import {
   OffsetPagination,
   PagedResponse,
   LinkPagination,
-} from '../../src';
-import { Schema } from '../../src/schema';
+} from '@apimatic/core';
+import { Schema } from '@apimatic/core/lib/schema';
 import {
   ApiResponse,
   HttpRequest,
@@ -21,9 +21,9 @@ import {
   HttpMethod,
   passThroughInterceptor,
   RetryConfiguration,
-} from '../../src/coreInterfaces';
+} from '@apimatic/core/lib/coreInterfaces';
 import { object, array, string } from '@apimatic/schema';
-import { PaginationStrategy } from '../../src/paginator/paginationStrategy';
+import { PaginationStrategy } from '../src/paginationStrategy';
 
 type PaginationType = 'page' | 'offset' | 'link' | 'cursor' | null;
 

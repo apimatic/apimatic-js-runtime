@@ -1,4 +1,4 @@
-import { RequestBuilder } from '../http/requestBuilder';
+import { RequestBuilder } from '@apimatic/core/lib/http/requestBuilder';
 import { PagedResponse } from './pagedResponse';
 
 export interface PaginationStrategy {

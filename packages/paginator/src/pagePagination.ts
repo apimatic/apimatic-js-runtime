@@ -1,5 +1,5 @@
 import { PaginationStrategy } from './paginationStrategy';
-import { RequestBuilder } from '../http/requestBuilder';
+import { RequestBuilder } from '@apimatic/core/lib/http/requestBuilder';
 import { NumberPagedResponse } from './numberPagedResponse';
 import { PagedResponse } from './pagedResponse';
 
