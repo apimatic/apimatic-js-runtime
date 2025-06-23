@@ -1,5 +1,6 @@
 import {
   createRequestBuilderFactory,
+  RequestBuilder,
   skipEncode,
 } from '../../src/http/requestBuilder';
 import {
@@ -86,13 +87,15 @@ function mockBaseURIProvider(server: string | undefined) {
 
 const defaultRequestBuilder = (
   route?: string,
-  customResponse?: HttpResponse
+  customResponse?: HttpResponse,
+  authenticatorInterface?: AuthenticatorInterface<boolean>,
+  httpClientInterface?: HttpClientInterface
 ) => {
   const requestBuilder = createRequestBuilderFactory<string, boolean>(
-    mockHttpClientAdapter(customResponse),
+    httpClientInterface ?? mockHttpClientAdapter(customResponse),
     (server) => mockBaseURIProvider(server),
     ApiError,
-    basicAuth,
+    authenticatorInterface ?? basicAuth,
     retryConfig
   )('GET', route ?? '/test/requestBuilder');
   requestBuilder.baseUrl('default');
@@ -253,47 +256,6 @@ describe('test default request builder behavior with succesful responses', () =>
 
     return { reqBuilder, expectedResponse };
   }
-
-  function createBaseExpectedRequest(
-    url: string,
-    bodyType: 'form' | 'form-data',
-    headers: Record<string, string> = {}
-  ) {
-    return {
-      method: 'GET',
-      url,
-      headers: { 'test-header': 'test-value', ...headers },
-      body: {
-        content: [
-          { key: 'integers[0]', value: '1' },
-          { key: 'integers[1]', value: '2' },
-          { key: 'integers[2]', value: '3' },
-          { key: 'strings[0]', value: 'param1' },
-          { key: 'strings[1]', value: 'param2' },
-          { key: 'model[department]', value: 'IT' },
-        ],
-        type: bodyType,
-      },
-      auth: { username: 'maryam-adnan', password: '12345678' },
-    };
-  }
-
-  const getTestData = () => ({
-    employee: { department: 'IT' } as Employee,
-    strings: ['param1', 'param2'],
-    integers: [1, 2, 3],
-    expectedResponse: {
-      statusCode: 200,
-      headers: {
-        'test-header': 'test-value',
-        accept: 'application/json',
-        'content-type': 'application/x-www-form-urlencoded',
-      },
-      body: '{ "department": "IT", "boss": { "promotedAt" : 2 }}',
-      result: { department: 'IT', boss: { promotedAt: 2 } },
-    },
-  });
-
   it('should test request builder configured with text request body and text response body', async () => {
     const { reqBuilder, expectedResponse } = setupTextRequestTest();
     const apiResponse = await reqBuilder.callAsText();
@@ -343,74 +305,87 @@ describe('test default request builder behavior with succesful responses', () =>
       body: 'testBody result',
     });
   });
-  it('should test request builder configured with form request body and json response body', async () => {
-    const expectedRequest = createBaseExpectedRequest(
-      'https://apimatic.hopto.org:3000/test/requestBuilder?form=true',
-      'form'
-    );
-
-    const { employee, strings, integers, expectedResponse } = getTestData();
-
+  function setupFormRequestTest(
+    url: string,
+    bodyType: 'form' | 'form-data',
+    headers: Record<string, string> = {}
+  ) {
+    const expectedRequest = {
+      method: 'GET',
+      url,
+      headers: { 'test-header': 'test-value', ...headers },
+      body: {
+        content: [
+          { key: 'integers[0]', value: '1' },
+          { key: 'integers[1]', value: '2' },
+          { key: 'integers[2]', value: '3' },
+          { key: 'strings[0]', value: 'param1' },
+          { key: 'strings[1]', value: 'param2' },
+          { key: 'model[department]', value: 'IT' },
+        ],
+        type: bodyType,
+      },
+      auth: { username: 'maryam-adnan', password: '12345678' },
+    };
+    const expectedResponse = {
+      request: expectedRequest,
+      statusCode: 200,
+      headers: {
+        'test-header': 'test-value',
+        accept: 'application/json',
+        'content-type': 'application/x-www-form-urlencoded',
+      },
+      body: '{ "department": "IT", "boss": { "promotedAt" : 2 }}',
+      result: { department: 'IT', boss: { promotedAt: 2 } },
+    };
     const reqBuilder = defaultRequestBuilder();
     const mapped = reqBuilder.prepareArgs({
-      integers: [integers, array(number())],
-      model: [employee, employeeSchema],
-      strings: [strings, array(string())],
+      integers: [[1, 2, 3], array(number())],
+      model: [{ department: 'IT' } as Employee, employeeSchema],
+      strings: [['param1', 'param2'], array(string())],
     });
     reqBuilder.header('test-header', 'test-value');
-    reqBuilder.query('form', true);
     reqBuilder.deprecated(
       'EmployeesApi.listEmployees',
       'listEmployees is deprecated. use the endpoint listMembers'
     );
     reqBuilder.requestRetryOption(RequestRetryOption.Disable);
     reqBuilder.authenticate(true);
-    reqBuilder.form({
+    reqBuilder.query(bodyType, true);
+    const body = {
       integers: mapped.integers,
       strings: mapped.strings,
       model: mapped.model,
-    });
+    };
+
+    if (bodyType === 'form') {
+      reqBuilder.form(body);
+    } else {
+      reqBuilder.formData(body);
+      reqBuilder.acceptJson();
+      reqBuilder.contentType('application/x-www-form-urlencoded');
+    }
+    return { reqBuilder, expectedResponse };
+  }
+  it('should test request builder configured with form request body and json response body', async () => {
+    const { reqBuilder, expectedResponse } = setupFormRequestTest(
+      'https://apimatic.hopto.org:3000/test/requestBuilder?form=true',
+      'form'
+    );
     const apiResponse = await reqBuilder.callAsJson(employeeSchema);
-    expect(apiResponse).toEqual({
-      request: expectedRequest,
-      ...expectedResponse,
-    });
+    expect(apiResponse).toEqual(expectedResponse);
   });
   it('should test request builder with form-data request body and json response body', async () => {
-    const expectedRequest = createBaseExpectedRequest(
-      'https://apimatic.hopto.org:3000/auth/basic?form-data=true',
+    const { reqBuilder, expectedResponse } = setupFormRequestTest(
+      'https://apimatic.hopto.org:3000/test/requestBuilder?form-data=true',
       'form-data',
       {
         accept: 'application/json',
         'content-type': 'application/x-www-form-urlencoded',
       }
     );
-
-    const { employee, strings, integers, expectedResponse } = getTestData();
-
-    const reqBuilder = defaultRequestBuilder('/auth/basic');
-    const mapped = reqBuilder.prepareArgs({
-      integers: [integers, array(number())],
-      model: [employee, employeeSchema],
-      strings: [strings, array(string())],
-    });
-    reqBuilder.header('test-header', 'test-value');
-    reqBuilder.query('form-data', true);
-    reqBuilder.requestRetryOption(RequestRetryOption.Disable);
-    reqBuilder.authenticate(true);
-    reqBuilder.formData({
-      integers: mapped.integers,
-      strings: mapped.strings,
-      model: mapped.model,
-    });
-    reqBuilder.acceptJson();
-    reqBuilder.contentType('application/x-www-form-urlencoded');
-
     const apiResponse = await reqBuilder.callAsJson(employeeSchema);
-    expect(apiResponse).toEqual({
-      request: expectedRequest,
-      ...expectedResponse,
-    });
+    expect(apiResponse).toEqual(expectedResponse);
   });
   it('should test request builder to test stream request body(file) and stream response body(blob)', async () => {
     const request: HttpRequest = {
@@ -440,11 +415,6 @@ describe('test default request builder behavior with succesful responses', () =>
       headers: { 'test-header': 'test-value' },
     });
   });
-  it('should test request builder configured with text request body and text response body', async () => {
-    const { reqBuilder, expectedResponse } = await setupTextRequestTest();
-    const apiResponse = await reqBuilder.callAsText();
-    expect(apiResponse).toEqual(expectedResponse);
-  });
   it('should test request builder with undefined and null header, query, empty path', async () => {
     const reqBuilder = defaultRequestBuilder();
     reqBuilder.header('test-header');
@@ -460,6 +430,17 @@ describe('test default request builder behavior with succesful responses', () =>
       'https://apimatic.hopto.org:3000/test/requestBuilder'
     );
   });
+  it('should test request builder error factory with incorrect optional text response body', async () => {
+    const reqBuilder = defaultRequestBuilder(
+      '/test/requestBuilder/errorResponse'
+    );
+    reqBuilder.baseUrl('default');
+    reqBuilder.text('testBody');
+    reqBuilder.defaultToError(ApiError);
+    reqBuilder.validateResponse(false);
+    const apiResponse = await reqBuilder.callAsOptionalText();
+    expect(apiResponse.result).toBeUndefined();
+  });
   it('should test request builder error factory with incorrect text response body', async () => {
     try {
       const reqBuilder = defaultRequestBuilder();
@@ -472,85 +453,72 @@ describe('test default request builder behavior with succesful responses', () =>
       expect(error.message).toEqual(expectedResult);
     }
   });
-  it('should test request builder error factory with incorrect optional text response body', async () => {
-    const reqBuilder = defaultRequestBuilder(
-      '/test/requestBuilder/errorResponse'
-    );
-    reqBuilder.baseUrl('default');
-    reqBuilder.text('testBody');
-    reqBuilder.defaultToError(ApiError);
-    reqBuilder.validateResponse(false);
-    const apiResponse = await reqBuilder.callAsOptionalText();
-    expect(apiResponse.result).toBeUndefined();
-  });
-  it('should test request builder error factory with response body being empty string', async () => {
+
+  async function verifyErrorMessage(
+    runner: (req: RequestBuilder<string, boolean>) => Promise<any>,
+    expectedErrorMessage: string,
+    route?: string
+  ) {
     try {
-      const reqBuilder = defaultRequestBuilder(
-        '/test/requestBuilder/errorResponse'
-      );
+      const reqBuilder = defaultRequestBuilder(route);
       reqBuilder.defaultToError(ApiError);
       reqBuilder.validateResponse(false);
-      await reqBuilder.callAsJson(employeeSchema);
+      await runner(reqBuilder);
+      fail();
     } catch (error) {
-      const expectedResult =
-        'Could not parse body as JSON. The response body is empty.';
-      expect(error.message).toEqual(expectedResult);
+      expect(error.message.startsWith(expectedErrorMessage)).toBeTruthy();
     }
+  }
+  it('should test request builder error factory with response body being empty string', async () => {
+    await verifyErrorMessage(
+      (req) => req.callAsJson(employeeSchema),
+      'Could not parse body as JSON. The response body is empty.',
+      '/test/requestBuilder/errorResponse'
+    );
   });
   it('should test request builder error factory with incorrect json response body', async () => {
-    try {
-      const reqBuilder = defaultRequestBuilder();
-      const employee: Employee = {
-        department: 'IT',
-      };
-      const mapped = reqBuilder.prepareArgs({
-        model: [employee, employeeSchema],
-      });
+    await verifyErrorMessage(
+      (req) => {
+        const employee: Employee = {
+          department: 'IT',
+        };
+        const mapped = req.prepareArgs({
+          model: [employee, employeeSchema],
+        });
 
-      reqBuilder.formData({
-        model: mapped.model,
-      });
-      reqBuilder.defaultToError(ApiError);
-      reqBuilder.validateResponse(false);
-      await reqBuilder.callAsJson(employeeSchema);
-    } catch (error) {
-      const expectedResult = `Could not parse body as JSON.\n\nExpected 'r' instead of 'e'`;
-      expect(error.message).toEqual(expectedResult);
-    }
-  });
-  it('should test request builder error factory with response body not a string', async () => {
-    const reqBuilder = defaultRequestBuilder(
+        req.formData({
+          model: mapped.model,
+        });
+        return req.callAsJson(employeeSchema);
+      },
+      `Could not parse body as JSON.\n\nExpected 'r' instead of 'e'`,
       '/test/requestBuilder/errorResponse'
     );
-    try {
-      reqBuilder.text('testBody');
-      await reqBuilder.callAsJson(employeeSchema);
-    } catch (error) {
-      const expectedResult =
-        'Could not parse body as JSON. The response body is not a string.';
-      expect(error.message).toEqual(expectedResult);
-    }
+  });
+  it('should test request builder error factory with response body not a string', async () => {
+    await verifyErrorMessage(
+      (req) => {
+        req.text('testBody');
+        return req.callAsJson(employeeSchema);
+      },
+      'Could not parse body as JSON. The response body is not a string.',
+      '/test/requestBuilder/errorResponse'
+    );
   });
   it('should test request builder error factory with json response mapping to incorect schema', async () => {
-    try {
-      const reqBuilder = defaultRequestBuilder();
+    await verifyErrorMessage((req) => {
       const employee: Employee = {
         department: 'IT',
       };
-      const mapped = reqBuilder.prepareArgs({
+      const mapped = req.prepareArgs({
         model: [employee, employeeSchema],
       });
 
-      reqBuilder.formData({
+      req.formData({
         model: mapped.model,
       });
-      reqBuilder.defaultToError(ApiError);
-      reqBuilder.validateResponse(false);
-      await reqBuilder.callAsJson(bossSchema);
-    } catch (error) {
-      const expectedResult = 'The response did not match the response schema.';
-      expect(error.message.startsWith(expectedResult)).toBeTruthy();
-    }
+      return req.callAsJson(bossSchema);
+    }, 'The response did not match the response schema.');
   });
   it('should test request builder with 400 response code', async () => {
     try {
@@ -748,282 +716,262 @@ describe('test default request builder behavior with succesful responses', () =>
       'test-header7': 'Symbol()',
     });
   });
+});
 
-  describe('template function tests', () => {
-    it('should replace template parameters in path with provided values', async () => {
-      const expectedRequestUrl =
-        'https://apimatic.hopto.org:3000/users/123/posts/456';
+describe('template function tests', () => {
+  it('should replace template parameters in path with provided values', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/users/123/posts/456';
 
-      const reqBuilder = defaultRequestBuilder(
-        '/users/{userId}/posts/{postId}'
-      );
+    const reqBuilder = defaultRequestBuilder('/users/{userId}/posts/{postId}');
 
-      reqBuilder.template('userId', '123');
-      reqBuilder.template('postId', '456');
+    reqBuilder.template('userId', '123');
+    reqBuilder.template('postId', '456');
 
-      const apiResponse = await reqBuilder.callAsText();
-      expect(apiResponse.request.url).toEqual(expectedRequestUrl);
-    });
-
-    it('should handle template parameters with different types', async () => {
-      const expectedRequestUrl =
-        'https://apimatic.hopto.org:3000/data/123/true/3.14';
-
-      const reqBuilder = defaultRequestBuilder(
-        '/data/{number}/{boolean}/{float}'
-      );
-
-      reqBuilder.template('number', 123);
-      reqBuilder.template('boolean', true);
-      reqBuilder.template('float', 3.14);
-
-      const apiResponse = await reqBuilder.callAsText();
-      expect(apiResponse.request.url).toEqual(expectedRequestUrl);
-    });
-
-    it('should handle multiple template parameters in the same path segment', async () => {
-      const expectedRequestUrl =
-        'https://apimatic.hopto.org:3000/org/123/dept/456/emp/789';
-
-      const reqBuilder = defaultRequestBuilder(
-        '/org/{orgId}/dept/{deptId}/emp/{empId}'
-      );
-
-      reqBuilder.template('orgId', '123');
-      reqBuilder.template('deptId', '456');
-      reqBuilder.template('empId', '789');
-
-      const apiResponse = await reqBuilder.callAsText();
-      expect(apiResponse.request.url).toEqual(expectedRequestUrl);
-    });
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
   });
 
-  describe('updateParameterByJsonPointer tests', () => {
-    it('should update request body object using JSON pointer', async () => {
-      const reqBuilder = defaultRequestBuilder();
+  it('should handle template parameters with different types', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/data/123/true/3.14';
 
-      // Set initial JSON body
-      reqBuilder.json({
-        user: {
-          name: 'John',
-          age: 30,
-          address: {
-            city: 'New York',
-          },
+    const reqBuilder = defaultRequestBuilder(
+      '/data/{number}/{boolean}/{float}'
+    );
+
+    reqBuilder.template('number', 123);
+    reqBuilder.template('boolean', true);
+    reqBuilder.template('float', 3.14);
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+
+  it('should handle multiple template parameters in the same path segment', async () => {
+    const expectedRequestUrl =
+      'https://apimatic.hopto.org:3000/org/123/dept/456/emp/789';
+
+    const reqBuilder = defaultRequestBuilder(
+      '/org/{orgId}/dept/{deptId}/emp/{empId}'
+    );
+
+    reqBuilder.template('orgId', '123');
+    reqBuilder.template('deptId', '456');
+    reqBuilder.template('empId', '789');
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+  });
+});
+
+describe('updateParameterByJsonPointer tests', () => {
+  it('should update request body object using JSON pointer', async () => {
+    const reqBuilder = defaultRequestBuilder();
+
+    // Set initial JSON body
+    reqBuilder.json({
+      user: {
+        name: 'John',
+        age: 30,
+        address: {
+          city: 'New York',
         },
-      });
-
-      // Update nested value using JSON pointer
-      reqBuilder.updateParameterByJsonPointer(
-        '$request.body#/user/address/city',
-        () => 'Boston'
-      );
-
-      const apiResponse = await reqBuilder.callAsText();
-      expect(apiResponse.request.body).toBeDefined();
-      expect(apiResponse.request.body?.type).toBe('text');
-      const requestBody = JSON.parse(
-        apiResponse.request.body?.content as string
-      );
-      expect(requestBody.user.address.city).toBe('Boston');
+      },
     });
 
-    it('should update request body string using JSON pointer', async () => {
-      const reqBuilder = defaultRequestBuilder();
-      reqBuilder.appendPath('/test/requestBuilder');
-      reqBuilder.baseUrl('default');
+    // Update nested value using JSON pointer
+    reqBuilder.updateParameterByJsonPointer(
+      '$request.body#/user/address/city',
+      () => 'Boston'
+    );
 
-      // Set initial JSON body
-      reqBuilder.text('NewYork');
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.body).toBeDefined();
+    expect(apiResponse.request.body?.type).toBe('text');
+    const requestBody = JSON.parse(apiResponse.request.body?.content as string);
+    expect(requestBody.user.address.city).toBe('Boston');
+  });
 
-      // Update nested value using JSON pointer
-      reqBuilder.updateParameterByJsonPointer('$request.body', () => 'Boston');
+  it('should update request body string using JSON pointer', async () => {
+    const reqBuilder = defaultRequestBuilder();
 
-      const apiResponse = await reqBuilder.callAsText();
-      expect(apiResponse.request.body).toBeDefined();
-      expect(apiResponse.request.body?.type).toBe('text');
-      const requestBody = apiResponse.request.body?.content as string;
-      expect(requestBody).toBe('Boston');
-    });
+    // Set initial JSON body
+    reqBuilder.text('NewYork');
 
-    it('should update form using JSON pointer', async () => {
-      const reqBuilder = defaultRequestBuilder();
+    // Update nested value using JSON pointer
+    reqBuilder.updateParameterByJsonPointer('$request.body', () => 'Boston');
 
-      // Set initial form data
-      reqBuilder.form({
-        user: {
-          name: 'John',
-          age: '30',
-          address: {
-            city: 'New York',
-          },
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.body).toBeDefined();
+    expect(apiResponse.request.body?.type).toBe('text');
+    const requestBody = apiResponse.request.body?.content as string;
+    expect(requestBody).toBe('Boston');
+  });
+
+  it('should update form using JSON pointer', async () => {
+    const reqBuilder = defaultRequestBuilder();
+
+    // Set initial form data
+    reqBuilder.form({
+      user: {
+        name: 'John',
+        age: '30',
+        address: {
+          city: 'New York',
         },
-      });
-
-      // Update nested value using JSON pointer
-      reqBuilder.updateParameterByJsonPointer(
-        '$request.body#/user/address/city',
-        () => 'Boston'
-      );
-
-      const apiResponse = await reqBuilder.callAsText();
-      expect(apiResponse.request.body).toBeDefined();
-      expect(apiResponse.request.body?.type).toBe('form');
-      const form = apiResponse.request.body?.content as Array<{
-        key: string;
-        value: string;
-      }>;
-      const cityField = form.find(
-        (field) => field.key === 'user[address][city]'
-      );
-      expect(cityField?.value).toBe('Boston');
+      },
     });
 
-    it('should update form data using JSON pointer', async () => {
-      const reqBuilder = defaultRequestBuilder();
+    // Update nested value using JSON pointer
+    reqBuilder.updateParameterByJsonPointer(
+      '$request.body#/user/address/city',
+      () => 'Boston'
+    );
 
-      // Set initial form data
-      reqBuilder.formData({
-        user: {
-          name: 'John',
-          age: '30',
-          address: {
-            city: 'New York',
-          },
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.body).toBeDefined();
+    expect(apiResponse.request.body?.type).toBe('form');
+    const form = apiResponse.request.body?.content as Array<{
+      key: string;
+      value: string;
+    }>;
+    const cityField = form.find((field) => field.key === 'user[address][city]');
+    expect(cityField?.value).toBe('Boston');
+  });
+
+  it('should update form data using JSON pointer', async () => {
+    const reqBuilder = defaultRequestBuilder();
+
+    // Set initial form data
+    reqBuilder.formData({
+      user: {
+        name: 'John',
+        age: '30',
+        address: {
+          city: 'New York',
         },
-      });
-
-      // Update nested value using JSON pointer
-      reqBuilder.updateParameterByJsonPointer(
-        '$request.body#/user/address/city',
-        () => 'Boston'
-      );
-
-      const apiResponse = await reqBuilder.callAsText();
-      expect(apiResponse.request.body).toBeDefined();
-      expect(apiResponse.request.body?.type).toBe('form-data');
-      const form = apiResponse.request.body?.content as Array<{
-        key: string;
-        value: string;
-      }>;
-      const cityField = form.find(
-        (field) => field.key === 'user[address][city]'
-      );
-      expect(cityField?.value).toBe('Boston');
+      },
     });
 
-    it('should update path template parameters using JSON pointer', async () => {
-      const reqBuilder = defaultRequestBuilder(
-        '/users/{userId}/posts/{postId}'
-      );
+    // Update nested value using JSON pointer
+    reqBuilder.updateParameterByJsonPointer(
+      '$request.body#/user/address/city',
+      () => 'Boston'
+    );
 
-      // Set initial template values
-      reqBuilder.template('userId', '123');
-      reqBuilder.template('postId', '456');
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.body).toBeDefined();
+    expect(apiResponse.request.body?.type).toBe('form-data');
+    const form = apiResponse.request.body?.content as Array<{
+      key: string;
+      value: string;
+    }>;
+    const cityField = form.find((field) => field.key === 'user[address][city]');
+    expect(cityField?.value).toBe('Boston');
+  });
 
-      // Update template value using JSON pointer
-      reqBuilder.updateParameterByJsonPointer(
-        '$request.path#/userId',
-        () => '789'
-      );
+  it('should update path template parameters using JSON pointer', async () => {
+    const reqBuilder = defaultRequestBuilder('/users/{userId}/posts/{postId}');
 
-      const apiResponse = await reqBuilder.callAsText();
-      expect(apiResponse.request.url).toBe(
-        'https://apimatic.hopto.org:3000/users/789/posts/456'
-      );
+    // Set initial template values
+    reqBuilder.template('userId', '123');
+    reqBuilder.template('postId', '456');
+
+    // Update template value using JSON pointer
+    reqBuilder.updateParameterByJsonPointer(
+      '$request.path#/userId',
+      () => '789'
+    );
+
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.url).toBe(
+      'https://apimatic.hopto.org:3000/users/789/posts/456'
+    );
+  });
+
+  it('should update query parameters using JSON pointer', async () => {
+    const reqBuilder = defaultRequestBuilder();
+
+    // Set initial query parameters
+    reqBuilder.query({
+      filter: {
+        status: 'active',
+        type: 'user',
+      },
     });
 
-    it('should update query parameters using JSON pointer', async () => {
-      const reqBuilder = defaultRequestBuilder();
+    // Update nested query value using JSON pointer
+    reqBuilder.updateParameterByJsonPointer(
+      '$request.query#/filter/status',
+      () => 'inactive'
+    );
 
-      // Set initial query parameters
-      reqBuilder.query({
-        filter: {
-          status: 'active',
-          type: 'user',
-        },
-      });
+    const apiResponse = await reqBuilder.callAsText();
+    expect(decodeURIComponent(apiResponse.request.url)).toContain(
+      'filter[status]=inactive'
+    );
+  });
 
-      // Update nested query value using JSON pointer
-      reqBuilder.updateParameterByJsonPointer(
-        '$request.query#/filter/status',
-        () => 'inactive'
-      );
+  it('should update headers using JSON pointer', async () => {
+    const reqBuilder = defaultRequestBuilder();
 
-      const apiResponse = await reqBuilder.callAsText();
-      expect(decodeURIComponent(apiResponse.request.url)).toContain(
-        'filter[status]=inactive'
-      );
+    // Set initial headers
+    reqBuilder.headers({
+      'x-api-key': 'old-key',
+      'content-type': 'application/json',
     });
 
-    it('should update headers using JSON pointer', async () => {
-      const reqBuilder = defaultRequestBuilder();
+    // Update header value using JSON pointer
+    reqBuilder.updateParameterByJsonPointer(
+      '$request.headers#/x-api-key',
+      () => 'new-key'
+    );
 
-      // Set initial headers
-      reqBuilder.headers({
-        'x-api-key': 'old-key',
-        'content-type': 'application/json',
-      });
+    const apiResponse = await reqBuilder.callAsText();
+    expect(apiResponse.request.headers).toBeDefined();
+    expect(apiResponse.request.headers?.['x-api-key']).toBe('new-key');
+  });
 
-      // Update header value using JSON pointer
-      reqBuilder.updateParameterByJsonPointer(
-        '$request.headers#/x-api-key',
-        () => 'new-key'
+  it('should return builder instance for chaining', async () => {
+    const reqBuilder = defaultRequestBuilder();
+
+    const result = reqBuilder
+      .updateParameterByJsonPointer('$request.headers#/x-api-key', () => 'key1')
+      .updateParameterByJsonPointer(
+        '$request.headers#/content-type',
+        () => 'application/json'
       );
 
-      const apiResponse = await reqBuilder.callAsText();
-      expect(apiResponse.request.headers).toBeDefined();
-      expect(apiResponse.request.headers?.['x-api-key']).toBe('new-key');
-    });
+    expect(result).toBe(reqBuilder);
+  });
 
-    it('should return builder instance for chaining', async () => {
-      const reqBuilder = defaultRequestBuilder();
+  it('should handle null pointer gracefully', async () => {
+    const reqBuilder = defaultRequestBuilder();
 
-      const result = reqBuilder
-        .updateParameterByJsonPointer(
-          '$request.headers#/x-api-key',
-          () => 'key1'
-        )
-        .updateParameterByJsonPointer(
-          '$request.headers#/content-type',
-          () => 'application/json'
-        );
+    const result = reqBuilder.updateParameterByJsonPointer(null, () => 'value');
+    expect(result).toBe(reqBuilder);
+  });
 
-      expect(result).toBe(reqBuilder);
-    });
+  it('should handle invalid pointer prefix', async () => {
+    const reqBuilder = defaultRequestBuilder();
 
-    it('should handle null pointer gracefully', async () => {
-      const reqBuilder = defaultRequestBuilder();
+    const result = reqBuilder.updateParameterByJsonPointer(
+      '$invalid.prefix#/key',
+      () => 'value'
+    );
+    expect(result).toBe(reqBuilder);
+  });
 
-      const result = reqBuilder.updateParameterByJsonPointer(
-        null,
-        () => 'value'
-      );
-      expect(result).toBe(reqBuilder);
-    });
+  it('should handle invalid pointer key', async () => {
+    const reqBuilder = defaultRequestBuilder();
 
-    it('should handle invalid pointer prefix', async () => {
-      const reqBuilder = defaultRequestBuilder();
-
-      const result = reqBuilder.updateParameterByJsonPointer(
-        '$invalid.prefix#/key',
-        () => 'value'
-      );
-      expect(result).toBe(reqBuilder);
-    });
-
-    it('should handle invalid pointer key', async () => {
-      const reqBuilder = defaultRequestBuilder();
-
-      reqBuilder.updateParameterByJsonPointer(
-        '$request.query#/invalid/key',
-        () => 'value'
-      );
-      const apiResponse = await reqBuilder.callAsText();
-      expect(decodeURIComponent(apiResponse.request.url)).toContain(
-        'key=value'
-      );
-    });
+    reqBuilder.updateParameterByJsonPointer(
+      '$request.query#/invalid/key',
+      () => 'value'
+    );
+    const apiResponse = await reqBuilder.callAsText();
+    expect(decodeURIComponent(apiResponse.request.url)).toContain('key=value');
   });
 });
 
@@ -1032,10 +980,28 @@ it('should test skipEncode instance', () => {
 });
 
 describe('test default request builder behavior to test retries', () => {
+  const noneAuthenticationProvider = () => passThroughInterceptor;
+  function mockHttpClientAdapterToTestRetries(): HttpClientInterface {
+    return async (request, requestOptions) => {
+      if (request.body?.type === 'text') {
+        return {
+          statusCode: 400,
+          headers: {},
+        } as HttpResponse;
+      }
+      const statusCode = requestOptions?.abortSignal?.aborted ? 400 : 500;
+      throw new Error(
+        `Time out error against http method ${request.method} and status code ${statusCode}`
+      );
+    };
+  }
   it('should test request builder with retries and response returning 500 error code', async () => {
     try {
       const reqBuilder = defaultRequestBuilder(
-        '/test/requestBuilder/errorResponse'
+        '/test/requestBuilder/errorResponse',
+        undefined,
+        noneAuthenticationProvider,
+        mockHttpClientAdapterToTestRetries()
       );
       await reqBuilder.callAsText();
     } catch (error) {
@@ -1047,7 +1013,10 @@ describe('test default request builder behavior to test retries', () => {
   it('should test request builder with throwOn', async () => {
     try {
       const reqBuilder = defaultRequestBuilder(
-        '/test/requestBuilder/errorResponse'
+        '/test/requestBuilder/errorResponse',
+        undefined,
+        noneAuthenticationProvider,
+        mockHttpClientAdapterToTestRetries()
       );
       reqBuilder.text('result');
       reqBuilder.throwOn(
