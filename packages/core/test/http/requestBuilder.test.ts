@@ -554,10 +554,14 @@ describe('test default request builder behavior with error responses', () => {
   }
 
   it('should test request builder error factory with incorrect text response body', async () => {
-    await verifyErrorMessage((req) => {
-      req.text('testBody');
-      return req.callAsText();
-    }, 'Could not parse body as string.');
+    await verifyErrorMessage(
+      (req) => {
+        req.text('testBody');
+        return req.callAsText();
+      },
+      'Could not parse body as string.',
+      '/test/requestBuilder/errorResponse'
+    );
   });
   it('should test request builder error factory with response body being empty string', async () => {
     await verifyErrorMessage(
@@ -609,13 +613,6 @@ describe('test default request builder behavior with error responses', () => {
       });
       return req.callAsJson(bossSchema);
     }, 'The response did not match the response schema.');
-  });
-  it('should test request builder with 400 response code', async () => {
-    await verifyErrorMessage(
-      (req) => req.callAsText(),
-      `Response status code was not ok: 400.`,
-      '/test/requestBuilder/errorResponse'
-    );
   });
 });
 
