@@ -117,16 +117,16 @@ export function updateErrorMessage(
   return message;
 }
 
-export function updateValueByJsonPointer<T>(
-  obj: T,
+export function updateValueByJsonPointer(
+  obj: any,
   pointer: string,
   updater: (val: any) => any
-): T {
+): void {
   if (!obj || !pointer || !updater) {
-    return obj;
+    return;
   }
 
-  const pathParts = pointer.split('/').filter(Boolean); //
+  const pathParts = pointer.split('/').filter(Boolean);
 
   let current: any = obj;
 
@@ -141,7 +141,6 @@ export function updateValueByJsonPointer<T>(
   const lastKey = pathParts[pathParts.length - 1];
 
   current[lastKey] = updater(current[lastKey]);
-  return obj;
 }
 
 export function getValueByJsonPointer(

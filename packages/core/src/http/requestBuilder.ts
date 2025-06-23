@@ -395,19 +395,11 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (prefix === '$request.body') {
       this.updateBody(point, setter);
     } else if (prefix === '$request.path') {
-      this._templateParams = updateValueByJsonPointer(
-        this._templateParams,
-        point,
-        setter
-      );
+      updateValueByJsonPointer(this._templateParams, point, setter);
     } else if (prefix === '$request.query') {
-      this._queryParams = updateValueByJsonPointer(
-        this._queryParams,
-        point,
-        setter
-      );
+      updateValueByJsonPointer(this._queryParams, point, setter);
     } else if (prefix === '$request.headers') {
-      this._headers = updateValueByJsonPointer(this._headers, point, setter);
+      updateValueByJsonPointer(this._headers, point, setter);
     }
 
     return this;
@@ -649,16 +641,16 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         this._body = setter(this._body.toString());
         return;
       }
-      this._body = JSON.stringify(
-        updateValueByJsonPointer(JSON.parse(this._body), pointer, setter)
-      );
+      this._body = JSON.parse(this._body);
+      updateValueByJsonPointer(this._body, pointer, setter);
+      this._body = JSON.stringify(this._body);
       return;
     }
     if (this._form) {
-      this._form = updateValueByJsonPointer(this._form, pointer, setter);
+      updateValueByJsonPointer(this._form, pointer, setter);
       return;
     }
-    this._formData = updateValueByJsonPointer(this._formData, pointer, setter);
+    updateValueByJsonPointer(this._formData, pointer, setter);
   }
   private _setContentTypeIfNotSet(contentType: string) {
     if (!this._contentType) {

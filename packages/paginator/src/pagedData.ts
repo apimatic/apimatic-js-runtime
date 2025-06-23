@@ -15,16 +15,20 @@ export class PagedData<TItem, TPage, PageWrapper, BaseUrlParamType, AuthParams>
   private readonly pageResponseCreator: (
     p: PagedResponse<TItem, TPage>
   ) => PageWrapper | undefined;
-  private readonly getData: (response: ApiResponse<TPage>) => TItem[] | undefined;
+  private readonly getData: (
+    response: ApiResponse<TPage>
+  ) => TItem[] | undefined;
   private readonly paginationStrategies: PaginationStrategy[];
-  private request: RequestBuilder<BaseUrlParamType, AuthParams>;
+  private readonly request: RequestBuilder<BaseUrlParamType, AuthParams>;
   private selectedPaginationStrategy: PaginationStrategy | null;
 
   constructor(
     request: RequestBuilder<BaseUrlParamType, AuthParams>,
     schema: Schema<TPage>,
     requestOptions: RequestOptions | undefined,
-    pageResponseCreator: (p: PagedResponse<TItem, TPage>) => PageWrapper | undefined,
+    pageResponseCreator: (
+      p: PagedResponse<TItem, TPage>
+    ) => PageWrapper | undefined,
     getData: (response: ApiResponse<TPage>) => TItem[] | undefined,
     ...paginationStrategies: PaginationStrategy[]
   ) {

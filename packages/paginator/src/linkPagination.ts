@@ -43,7 +43,7 @@ export class LinkPagination implements PaginationStrategy {
     };
   }
 
-  private extractQueryParams = (link: string): Record<string, string> => {
+  private extractQueryParams(link: string): Record<string, string> {
     const result: Record<string, string> = {};
 
     const [, query] = link.split('?');
@@ -59,5 +59,5 @@ export class LinkPagination implements PaginationStrategy {
     }
 
     return result;
-  };
+  }
 }
