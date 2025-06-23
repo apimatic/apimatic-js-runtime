@@ -38,9 +38,9 @@ export class OffsetPagination implements PaginationStrategy {
     return isUpdated;
   }
 
-  public withMetadata<I, P>(
-    response: PagedResponse<I, P>
-  ): OffsetPagedResponse<I, P> {
+  public withMetadata<TItem, TPage>(
+    response: PagedResponse<TItem, TPage>
+  ): OffsetPagedResponse<TItem, TPage> {
     return {
       ...response,
       offset: this.pageOffset,

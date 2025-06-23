@@ -44,9 +44,9 @@ export class CursorPagination implements PaginationStrategy {
     return isUpdated;
   }
 
-  public withMetadata<I, P>(
-    response: PagedResponse<I, P>
-  ): CursorPagedResponse<I, P> {
+  public withMetadata<TItem, TPage>(
+    response: PagedResponse<TItem, TPage>
+  ): CursorPagedResponse<TItem, TPage> {
     return {
       ...response,
       nextCursor: this.nextCursorValue,

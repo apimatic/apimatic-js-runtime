@@ -4,28 +4,28 @@ import { ApiResponse, RequestOptions } from '@apimatic/core-interfaces';
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedResponse } from './pagedResponse';
 
-export interface PagedAsyncIterable<I, P> extends AsyncIterable<I> {
-  pages(): AsyncIterable<P>;
+export interface PagedAsyncIterable<TItem, TPage> extends AsyncIterable<TItem> {
+  pages(): AsyncIterable<TPage>;
 }
 
-export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
-  implements PagedAsyncIterable<I, PageWrapper> {
-  private readonly schema: Schema<P>;
+export class PagedData<TItem, TPage, PageWrapper, BaseUrlParamType, AuthParams>
+  implements PagedAsyncIterable<TItem, PageWrapper> {
+  private readonly schema: Schema<TPage>;
   private readonly requestOptions?: RequestOptions;
   private readonly pageResponseCreator: (
-    p: PagedResponse<I, P>
+    p: PagedResponse<TItem, TPage>
   ) => PageWrapper | undefined;
-  private readonly getData: (response: ApiResponse<P>) => I[] | undefined;
+  private readonly getData: (response: ApiResponse<TPage>) => TItem[] | undefined;
   private readonly paginationStrategies: PaginationStrategy[];
   private request: RequestBuilder<BaseUrlParamType, AuthParams>;
   private selectedPaginationStrategy: PaginationStrategy | null;
 
   constructor(
     request: RequestBuilder<BaseUrlParamType, AuthParams>,
-    schema: Schema<P>,
+    schema: Schema<TPage>,
     requestOptions: RequestOptions | undefined,
-    pageResponseCreator: (p: PagedResponse<I, P>) => PageWrapper | undefined,
-    getData: (response: ApiResponse<P>) => I[] | undefined,
+    pageResponseCreator: (p: PagedResponse<TItem, TPage>) => PageWrapper | undefined,
+    getData: (response: ApiResponse<TPage>) => TItem[] | undefined,
     ...paginationStrategies: PaginationStrategy[]
   ) {
     this.request = request;
@@ -37,12 +37,12 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
     this.selectedPaginationStrategy = null;
   }
 
-  public [Symbol.asyncIterator](): AsyncIterator<I> {
+  public [Symbol.asyncIterator](): AsyncIterator<TItem> {
     const request = this.request.clone();
     this.resetPaginationStrategy();
     const state = {
-      currentPage: null as PagedResponse<I, P> | null,
-      currentItems: [] as I[],
+      currentPage: null as PagedResponse<TItem, TPage> | null,
+      currentItems: [] as TItem[],
       currentIndex: 0,
     };
 
@@ -55,7 +55,7 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
     const request = this.request.clone();
     this.resetPaginationStrategy();
     const state = {
-      currentPage: null as PagedResponse<I, P> | null,
+      currentPage: null as PagedResponse<TItem, TPage> | null,
     };
 
     return {
@@ -68,11 +68,11 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
   private async getNextItem(
     request: RequestBuilder<BaseUrlParamType, AuthParams>,
     state: {
-      currentPage: PagedResponse<I, P> | null;
-      currentItems: I[];
+      currentPage: PagedResponse<TItem, TPage> | null;
+      currentItems: TItem[];
       currentIndex: number;
     }
-  ): Promise<IteratorResult<I>> {
+  ): Promise<IteratorResult<TItem>> {
     if (state.currentIndex < state.currentItems.length) {
       return { done: false, value: state.currentItems[state.currentIndex++] };
     }
@@ -93,7 +93,7 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
 
   private async getNextPage(
     request: RequestBuilder<BaseUrlParamType, AuthParams>,
-    state: { currentPage: PagedResponse<I, P> | null }
+    state: { currentPage: PagedResponse<TItem, TPage> | null }
   ): Promise<IteratorResult<PageWrapper>> {
     state.currentPage = await this.fetchPage(request, state.currentPage);
 
@@ -110,8 +110,8 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
 
   private async fetchPage(
     request: RequestBuilder<BaseUrlParamType, AuthParams>,
-    currentPage: PagedResponse<I, P> | null
-  ): Promise<PagedResponse<I, P> | null> {
+    currentPage: PagedResponse<TItem, TPage> | null
+  ): Promise<PagedResponse<TItem, TPage> | null> {
     const strategy = this.getApplicableStrategy(request, currentPage);
     if (!strategy) {
       return null;
@@ -122,7 +122,7 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
 
   private getApplicableStrategy(
     request: RequestBuilder<BaseUrlParamType, AuthParams>,
-    currentPage: PagedResponse<I, P> | null
+    currentPage: PagedResponse<TItem, TPage> | null
   ): PaginationStrategy | null {
     if (this.selectedPaginationStrategy) {
       return this.selectedPaginationStrategy.isApplicable(request, currentPage)
@@ -135,7 +135,7 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
 
   private selectStrategy(
     request: RequestBuilder<BaseUrlParamType, AuthParams>,
-    currentPage: PagedResponse<I, P> | null
+    currentPage: PagedResponse<TItem, TPage> | null
   ): PaginationStrategy | null {
     for (const strategy of this.paginationStrategies) {
       if (!strategy.isApplicable(request, currentPage)) {
@@ -152,7 +152,7 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
   private async executeRequest(
     request: RequestBuilder<BaseUrlParamType, AuthParams>,
     strategy: PaginationStrategy
-  ): Promise<PagedResponse<I, P> | null> {
+  ): Promise<PagedResponse<TItem, TPage> | null> {
     const response = await request.callAsJson(this.schema, this.requestOptions);
     const data = this.getData(response);
 
@@ -160,7 +160,7 @@ export class PagedData<I, P, PageWrapper, BaseUrlParamType, AuthParams>
       return null;
     }
 
-    const pagedResponse: PagedResponse<I, P> = {
+    const pagedResponse: PagedResponse<TItem, TPage> = {
       ...response,
       items: data,
     };

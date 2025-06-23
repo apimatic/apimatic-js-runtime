@@ -35,9 +35,9 @@ export class PagePagination implements PaginationStrategy {
     return isUpdated;
   }
 
-  public withMetadata<I, P>(
-    response: PagedResponse<I, P>
-  ): NumberPagedResponse<I, P> {
+  public withMetadata<TItem, TPage>(
+    response: PagedResponse<TItem, TPage>
+  ): NumberPagedResponse<TItem, TPage> {
     return {
       ...response,
       pageNumber: this.pageNumber,

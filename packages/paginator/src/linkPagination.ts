@@ -34,9 +34,9 @@ export class LinkPagination implements PaginationStrategy {
     return true;
   }
 
-  public withMetadata<I, P>(
-    response: PagedResponse<I, P>
-  ): LinkPagedResponse<I, P> {
+  public withMetadata<TItem, TPage>(
+    response: PagedResponse<TItem, TPage>
+  ): LinkPagedResponse<TItem, TPage> {
     return {
       ...response,
       nextLink: this.nextLinkValue,
