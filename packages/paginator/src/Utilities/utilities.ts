@@ -3,18 +3,18 @@ import { ApiResponse } from '@apimatic/core-interfaces';
 export function extractQueryParams(link: string): Record<string, string> {
   const result: Record<string, string> = {};
 
-const [, query] = link.split('?');
+  const [, query] = link.split('?');
 
-const decodedEqualsQuery = decodeURIComponent(query);
-const queryParams = decodedEqualsQuery.split('&');
+  const decodedEqualsQuery = decodeURIComponent(query);
+  const queryParams = decodedEqualsQuery.split('&');
 
-for (const queryParam of queryParams) {
-  const [key, value] = queryParam.split('=');
-  if (key) {
-    result[decodeURIComponent(key)] = decodeURIComponent(value || '');
+  for (const queryParam of queryParams) {
+    const [key, value] = queryParam.split('=');
+    if (key) {
+      result[decodeURIComponent(key)] = decodeURIComponent(value || '');
+    }
   }
-}
-return result;
+  return result;
 }
 
 export function getValueByJsonPointer(
