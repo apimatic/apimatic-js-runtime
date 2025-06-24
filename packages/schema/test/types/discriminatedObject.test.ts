@@ -10,7 +10,7 @@ import {
   string,
   validateAndMap,
   validateAndUnmap,
-  type JSONSchema
+  JSONSchema,
 } from '../../src';
 
 describe('Discriminated Object', () => {

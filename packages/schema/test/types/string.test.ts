@@ -1,4 +1,10 @@
-import { generateJSONSchema, JSONSchema, string, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  generateJSONSchema,
+  JSONSchema,
+  string,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
 
 describe('String', () => {
   describe('Mapping', () => {
@@ -78,12 +84,10 @@ describe('String', () => {
       const schema = string();
       const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual<JSONSchema>(
-        {
-          $schema: 'https://json-schema.org/draft-07/schema',
-          type: 'string',
-        }
-      );
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        type: 'string',
+      });
     });
   });
 });

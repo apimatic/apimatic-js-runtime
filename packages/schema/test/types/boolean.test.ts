@@ -1,4 +1,10 @@
-import { boolean, generateJSONSchema, JSONSchema, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  boolean,
+  generateJSONSchema,
+  JSONSchema,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
 
 describe('Boolean', () => {
   describe('Mapping', () => {
@@ -107,12 +113,10 @@ describe('Boolean', () => {
       const schema = boolean();
       const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual<JSONSchema>(
-        {
-          $schema: 'https://json-schema.org/draft-07/schema',
-          type: 'boolean',
-        }
-      );
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        type: 'boolean',
+      });
     });
   });
 });

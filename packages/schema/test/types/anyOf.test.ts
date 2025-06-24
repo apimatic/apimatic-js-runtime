@@ -1,11 +1,24 @@
-import { JSONSchema, nullable, array, dict, object, generateJSONSchema } from '../../src';
+import {
+  JSONSchema,
+  nullable,
+  array,
+  dict,
+  object,
+  generateJSONSchema,
+} from '../../src';
 import { validateAndMap, validateAndUnmap } from '../../src/schema';
 import { anyOf } from '../../src/types/anyOf';
 import { number } from '../../src/types/number';
 import { string } from '../../src/types/string';
 import { Boss, bossSchema } from '../bossSchema';
 import { employeeSchema } from '../employeeSchema';
-import { Human, Animal, animalSchema, humanSchema, anyOfWithDiscriminator } from '../types';
+import {
+  Human,
+  Animal,
+  animalSchema,
+  humanSchema,
+  anyOfWithDiscriminator,
+} from '../types';
 import { boolean } from '../../src/types/boolean';
 describe('AnyOf', () => {
   describe('Mapping', () => {
@@ -311,12 +324,12 @@ describe('AnyOf', () => {
         $schema: 'https://json-schema.org/draft-07/schema',
         anyOf: [
           {
-            type: 'string'
+            type: 'string',
           },
           {
-            type: 'number'
-          }
-        ]
+            type: 'number',
+          },
+        ],
       });
     });
 
@@ -327,7 +340,7 @@ describe('AnyOf', () => {
         }),
         object({
           title: ['title', string()],
-        })
+        }),
       ]);
       const jsonSchema = generateJSONSchema(schema);
 
@@ -339,20 +352,20 @@ describe('AnyOf', () => {
             required: ['name'],
             properties: {
               name: {
-                type: 'string'
-              }
-            }
+                type: 'string',
+              },
+            },
           },
           {
             type: 'object',
             required: ['title'],
             properties: {
               title: {
-                type: 'string'
-              }
-            }
-          }
-        ]
+                type: 'string',
+              },
+            },
+          },
+        ],
       });
     });
 
@@ -372,25 +385,29 @@ describe('AnyOf', () => {
         object2: secondSchema,
       };
 
-      const schema = anyOf([firstSchema, secondSchema], discriminatorMap, 'type');
+      const schema = anyOf(
+        [firstSchema, secondSchema],
+        discriminatorMap,
+        'type'
+      );
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
         $schema: 'https://json-schema.org/draft-07/schema',
         anyOf: [
           {
-            $ref: '#/$defs/schema1'
+            $ref: '#/$defs/schema1',
           },
           {
-            $ref: '#/$defs/schema2'
-          }
+            $ref: '#/$defs/schema2',
+          },
         ],
         discriminator: {
           propertyName: 'type',
           mapping: {
             object1: '#/$defs/schema1',
-            object2: '#/$defs/schema2'
-          }
+            object2: '#/$defs/schema2',
+          },
         },
         $defs: {
           schema1: {
@@ -398,26 +415,26 @@ describe('AnyOf', () => {
             required: ['type', 'name'],
             properties: {
               type: {
-                type: 'string'
+                type: 'string',
               },
               name: {
-                type: 'string'
-              }
-            }
+                type: 'string',
+              },
+            },
           },
           schema2: {
             type: 'object',
             required: ['type', 'title'],
             properties: {
               type: {
-                type: 'string'
+                type: 'string',
               },
               title: {
-                type: 'string'
-              }
-            }
-          }
-        }
+                type: 'string',
+              },
+            },
+          },
+        },
       });
     });
   });

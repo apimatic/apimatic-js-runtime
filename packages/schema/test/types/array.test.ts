@@ -1,4 +1,11 @@
-import { array, generateJSONSchema, JSONSchema, string, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  array,
+  generateJSONSchema,
+  JSONSchema,
+  string,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
 
 describe('Array', () => {
   describe('Mapping', () => {
@@ -142,8 +149,8 @@ describe('Array', () => {
         $schema: 'https://json-schema.org/draft-07/schema',
         type: 'array',
         items: {
-          type: 'string'
-        }
+          type: 'string',
+        },
       });
     });
   });

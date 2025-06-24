@@ -1,4 +1,10 @@
-import { generateJSONSchema, JSONSchema, stringEnum, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  generateJSONSchema,
+  JSONSchema,
+  stringEnum,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
 
 describe('String Enum', () => {
   enum SampleStringEnum {

@@ -1,4 +1,10 @@
-import { generateJSONSchema, JSONSchema, unknown, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  generateJSONSchema,
+  JSONSchema,
+  unknown,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
 
 describe('Unknown', () => {
   describe('Mapping', () => {
@@ -26,7 +32,7 @@ describe('Unknown', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema'
+        $schema: 'https://json-schema.org/draft-07/schema',
       });
     });
   });

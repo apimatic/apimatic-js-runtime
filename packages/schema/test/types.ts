@@ -91,6 +91,13 @@ const discriminatorMap = {
   object2: schema2,
 };
 
-
-export const anyOfWithDiscriminator = anyOf([schema1, schema2], discriminatorMap, 'type');
-export const oneOfWithDiscriminator = oneOf([schema1, schema2], discriminatorMap, 'type');
+export const anyOfWithDiscriminator = anyOf(
+  [schema1, schema2],
+  discriminatorMap,
+  'type'
+);
+export const oneOfWithDiscriminator = oneOf(
+  [schema1, schema2],
+  discriminatorMap,
+  'type'
+);

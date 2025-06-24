@@ -115,42 +115,38 @@ describe('Nullable', () => {
   });
 
   describe('To JSON Schema', () => {
-      it('should output a valid JSON Schema for nullable strings', () => {
-        const schema = nullable(string());
-        const jsonSchema = generateJSONSchema(schema);
+    it('should output a valid JSON Schema for nullable strings', () => {
+      const schema = nullable(string());
+      const jsonSchema = generateJSONSchema(schema);
 
-        expect(jsonSchema).toStrictEqual<JSONSchema>(
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        oneOf: [
           {
-            $schema: 'https://json-schema.org/draft-07/schema',
-            oneOf: [
-              {
-                type: 'null'
-              },
-              {
-                type: 'string'
-              }
-            ],
-          }
-        );
-      });
-
-      it('should output a valid JSON Schema for nullable booleans', () => {
-        const schema = nullable(boolean());
-        const jsonSchema = generateJSONSchema(schema);
-
-        expect(jsonSchema).toStrictEqual<JSONSchema>(
+            type: 'null',
+          },
           {
-            $schema: 'https://json-schema.org/draft-07/schema',
-            oneOf: [
-              {
-                type: 'null'
-              },
-              {
-                type: 'boolean'
-              }
-            ],
-          }
-        );
+            type: 'string',
+          },
+        ],
       });
     });
+
+    it('should output a valid JSON Schema for nullable booleans', () => {
+      const schema = nullable(boolean());
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        oneOf: [
+          {
+            type: 'null',
+          },
+          {
+            type: 'boolean',
+          },
+        ],
+      });
+    });
+  });
 });

@@ -1,4 +1,10 @@
-import { generateJSONSchema, JSONSchema, number, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  generateJSONSchema,
+  JSONSchema,
+  number,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
 
 describe('Number', () => {
   describe('Mapping', () => {
@@ -91,12 +97,10 @@ describe('Number', () => {
       const schema = number();
       const jsonSchema = generateJSONSchema(schema);
 
-      expect(jsonSchema).toStrictEqual<JSONSchema>(
-        {
-          $schema: 'https://json-schema.org/draft-07/schema',
-          type: 'number',
-        }
-      );
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        type: 'number',
+      });
     });
   });
 });
