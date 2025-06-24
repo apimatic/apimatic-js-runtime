@@ -1,26 +1,26 @@
-export { OffsetPagination } from './Offset/offsetPagination';
-export { CursorPagination } from './Cursor/cursorPagination';
-export { PagePagination } from './Page/pagePagination';
-export { LinkPagination } from './Link/linkPagination';
+export { OffsetPagination } from './offset/offsetPagination';
+export { CursorPagination } from './cursor/cursorPagination';
+export { PagePagination } from './page/pagePagination';
+export { LinkPagination } from './link/linkPagination';
 export {
   createOffsetPagedResponse,
   isOffsetPagedResponse,
   OffsetPagedResponse,
-} from './Offset/offsetPagedResponse';
+} from './offset/offsetPagedResponse';
 export {
   createCursorPagedResponse,
   CursorPagedResponse,
   isCursorPagedResponse,
-} from './Cursor/cursorPagedResponse';
+} from './cursor/cursorPagedResponse';
 export {
   createLinkPagedResponse,
   isLinkPagedResponse,
   LinkPagedResponse,
-} from './Link/linkPagedResponse';
+} from './link/linkPagedResponse';
 export {
   createNumberPagedResponse,
   isNumberPagedResponse,
   NumberPagedResponse,
-} from './Page/numberPagedResponse';
+} from './page/numberPagedResponse';
 export { PagedResponse } from './pagedResponse';
 export { PagedAsyncIterable, PagedData } from './pagedData';

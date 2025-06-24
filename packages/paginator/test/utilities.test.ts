@@ -1,5 +1,5 @@
 import { ApiResponse } from '@apimatic/core-interfaces';
-import { getValueByJsonPointer } from '../src/Utilities/utilities';
+import { getValueByJsonPointer } from '../src/utilities';
 
 describe('getValueByJsonPointer tests', () => {
   const mockBody = JSON.stringify({
