@@ -7,7 +7,7 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../schema';
-import { PartialJSONSchema } from '../jsonSchemaTypes';
+import { JSONSchemaContext, PartialJSONSchema } from '../jsonSchemaTypes';
 import { OptionalizeObject } from '../typeUtils';
 import {
   isOptional,
@@ -207,7 +207,10 @@ function internalObject<
   let additionalPropsSchema: Schema<any, any> | undefined;
   if (typeof mapAdditionalProps !== 'boolean') {
     additionalPropsSchema = mapAdditionalProps[1];
-    mapAdditionalProps = [mapAdditionalProps[0], optional(dict(mapAdditionalProps[1]))];
+    mapAdditionalProps = [
+      mapAdditionalProps[0],
+      optional(dict(mapAdditionalProps[1])),
+    ];
   }
 
   const keys = Object.keys(objectSchema);
@@ -240,27 +243,42 @@ function internalObject<
     mapXml: mapObjectFromXml(xmlObjectSchema, mapAdditionalProps),
     unmapXml: unmapObjectToXml(reverseXmlObjectSchema, mapAdditionalProps),
     objectSchema,
-    toJSONSchema: (context) => {
-      const entries = Object.entries(objectSchema);
-      const properties: Record<string, PartialJSONSchema> = {};
-      for (const [key, [, propSchema]] of entries) {
-        properties[key] = propSchema.toJSONSchema(context);
-      }
-      const required = entries
-        .filter(([, [, propSchema]]) => !propSchema.type().startsWith('Optional<'))
-        .map(([key]) => key);
+    toJSONSchema: (context) =>
+      generateObjectSchema(
+        context,
+        Object.entries(objectSchema).map(([key, [, propSchema]]) => ({
+          key,
+          propSchema,
+        })),
+        mapAdditionalProps,
+        additionalPropsSchema
+      ),
+  };
+}
 
-      return {
-        type: 'object',
-        ...(entries.length && { properties }),
-        ...(required.length && { required }),
-        ...(mapAdditionalProps && {
-          additionalProperties: additionalPropsSchema
-            ? additionalPropsSchema.toJSONSchema(context)
-            : true,
-        }),
-      };
-    },
+function generateObjectSchema(
+  context: JSONSchemaContext,
+  objectSchemaEntries: { key: string; propSchema: Schema<any, any> }[],
+  mapAdditionalProps: boolean | [string, Schema<any, any>],
+  additionalPropsSchema: Schema<any, any> | undefined
+): PartialJSONSchema {
+  const properties: Record<string, PartialJSONSchema> = {};
+  for (const { key, propSchema } of objectSchemaEntries) {
+    properties[key] = propSchema.toJSONSchema(context);
+  }
+  const required = objectSchemaEntries
+    .filter(({ propSchema }) => !propSchema.type().startsWith('Optional<'))
+    .map(({ key }) => key);
+
+  return {
+    type: 'object',
+    ...(objectSchemaEntries.length && { properties }),
+    ...(required.length && { required }),
+    ...(mapAdditionalProps && {
+      additionalProperties: additionalPropsSchema
+        ? additionalPropsSchema.toJSONSchema(context)
+        : true,
+    }),
   };
 }
 
