@@ -53,7 +53,7 @@ export function toCombinatorJSONSchemaWithDiscriminator<
   context: JSONSchemaContext
 ): PartialJSONSchema {
   const { schemas, discriminatorMap, discriminatorField } = discriminatorConfig;
-  const types: { $ref: SchemaRef }[] = [];
+  const types: Array<{ $ref: SchemaRef }> = [];
   const discriminatorMapping: { [val: SchemaName]: SchemaRef } = {};
   Object.keys(discriminatorMap).forEach((key, index) => {
     const schemaName = context.registerSchema(schemas[index]);

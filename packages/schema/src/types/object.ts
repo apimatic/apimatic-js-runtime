@@ -258,7 +258,7 @@ function internalObject<
 
 function generateObjectSchema(
   context: JSONSchemaContext,
-  objectSchemaEntries: { key: string; propSchema: Schema<any, any> }[],
+  objectSchemaEntries: Array<{ key: string; propSchema: Schema<any, any> }>,
   mapAdditionalProps: boolean | [string, Schema<any, any>],
   additionalPropsSchema: Schema<any, any> | undefined
 ): PartialJSONSchema {
