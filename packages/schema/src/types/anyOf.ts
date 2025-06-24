@@ -1,5 +1,5 @@
 import { Schema, SchemaContextCreator } from '../schema';
-import { PartialJSONSchema } from '../schema';
+import { PartialJSONSchema } from '../jsonSchemaTypes';
 import {
   toCombinatorJSONSchemaWithDiscriminator,
   DiscriminatorMap,

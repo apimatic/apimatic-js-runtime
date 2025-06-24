@@ -2,8 +2,9 @@ import type {
   SchemaName,
   SchemaRef,
   JSONSchemaContext,
+  PartialJSONSchema,
 } from './jsonSchemaTypes';
-import type { Schema, PartialJSONSchema } from './schema';
+import type { Schema } from './schema';
 
 // Common type utilities for combinators
 export type SchemaType<T extends Schema<any, any>> = T extends Schema<

@@ -1,5 +1,5 @@
 import type { JSONSchema7Definition } from 'json-schema';
-import type { Schema } from './schema';
+import type { JSONSchema, Schema } from './schema';
 
 export type JSONSchemaDefinition = JSONSchema7Definition;
 export type SchemaName = string;
@@ -10,3 +10,5 @@ export interface JSONSchemaContext {
   getRegisteredSchema: <T, V>(schema: Schema<T, V>) => SchemaName | false;
   addDefinition: (schemaId: SchemaName, def: JSONSchemaDefinition) => void;
 }
+export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
+

@@ -1,5 +1,4 @@
 import {
-  PartialJSONSchema,
   Schema,
   SchemaContextCreator,
   SchemaMappedType,
@@ -8,6 +7,7 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../schema';
+import { PartialJSONSchema } from '../jsonSchemaTypes';
 import { OptionalizeObject } from '../typeUtils';
 import {
   isOptional,

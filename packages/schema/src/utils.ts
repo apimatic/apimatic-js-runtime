@@ -2,13 +2,8 @@
  * Utilities for internal library usage
  */
 
-import {
-  PartialJSONSchema,
-  Schema,
-  SchemaContextCreator,
-  SchemaValidationError,
-} from './schema';
-import { JSONSchemaContext } from './jsonSchemaTypes';
+import { Schema, SchemaContextCreator, SchemaValidationError } from './schema';
+import { JSONSchemaContext, PartialJSONSchema } from './jsonSchemaTypes';
 
 export function arrayEntries<T>(arr: T[]) {
   const entries: Array<[number, T]> = [];
