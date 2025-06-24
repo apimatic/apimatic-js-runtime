@@ -30,6 +30,15 @@ export type DiscriminatorMap<T extends Array<Schema<any, any>>> = {
 type ValueOf<T> = T[keyof T];
 
 /**
+ * Config type for combinator with discriminator
+ */
+export type CombinatorDiscriminatorConfig<T extends Array<Schema<any, any>>> = {
+  schemas: T;
+  discriminatorMap: DiscriminatorMap<T>;
+  discriminatorField: string;
+};
+
+/**
  * Utility to generate JSON Schema for oneOf/anyOf with discriminators.
  */
 export function toCombinatorJSONSchemaWithDiscriminator<
@@ -91,47 +100,55 @@ export function getDiscriminatedSchema<T extends Array<Schema<any, any>>>(
 }
 
 /**
+ * Forward method calls to a schema contained within a oneOf or anyOf schema
+ */
+function forwardTo<T extends Array<Schema<any, any>>, K extends keyof Schema<ArraySchemaType<T>>>(
+  method: K,
+  methodArgs: {
+    value: unknown,
+    ctxt: SchemaContextCreator
+  },
+  config: CombinatorDiscriminatorConfig<T>,
+  combinatorWithoutDiscriminator: Schema<ArraySchemaType<T>>
+): ReturnType<Schema<ArraySchemaType<T>>[K]> {
+  const { discriminatorMap, discriminatorField } = config;
+  const { value, ctxt } = methodArgs;
+
+  const discriminatedSchema = getDiscriminatedSchema(
+    value,
+    discriminatorMap,
+    discriminatorField
+  );
+  if (discriminatedSchema) {
+    return discriminatedSchema[method](value, ctxt);
+  }
+  return combinatorWithoutDiscriminator[method](value, ctxt);
+}
+
+/**
  * Common logic for oneOf/anyOf with discriminator
  */
-export function createCombinatorWithDiscriminator<T extends Array<Schema<any, any>>>(
-  config: {
-    schemas: T,
-    discriminatorMap: DiscriminatorMap<T>,
-    discriminatorField: string,
-  },
+export function createCombinatorWithDiscriminator<
+  T extends Array<Schema<any, any>>
+>(
+  config: CombinatorDiscriminatorConfig<T>,
   combinator: 'oneOf' | 'anyOf',
   combinatorWithoutDiscriminator: Schema<ArraySchemaType<T>>
 ): Schema<ArraySchemaType<T>> {
   const { schemas, discriminatorMap, discriminatorField } = config;
 
-  /**
-   * Forward method calls to a schema contained within a oneOf or anyOf schema
-   */
-  function forwardTo<K extends keyof Schema<ArraySchemaType<T>>>(
-    method: K,
-    value: unknown,
-    ctxt: SchemaContextCreator
-  ): ReturnType<Schema<ArraySchemaType<T>>[K]> {
-    const discriminatedSchema = getDiscriminatedSchema(
-      value,
-      discriminatorMap,
-      discriminatorField
-    );
-    if (discriminatedSchema) {
-      return discriminatedSchema[method](value, ctxt);
-    }
-    return combinatorWithoutDiscriminator[method](value, ctxt);
-  }
-
   return {
-    type: () => `OneOf<${schemas.map((schema) => schema.type()).join(' | ')}>` ,
-    validateBeforeMap: (value, ctxt) => forwardTo('validateBeforeMap', value, ctxt),
-    validateBeforeUnmap: (value, ctxt) => forwardTo('validateBeforeUnmap', value, ctxt),
-    map: (value, ctxt) => forwardTo('map', value, ctxt),
-    unmap: (value, ctxt) => forwardTo('unmap', value, ctxt),
-    validateBeforeMapXml: (value, ctxt) => forwardTo('validateBeforeMapXml', value, ctxt),
-    mapXml: (value, ctxt) => forwardTo('mapXml', value, ctxt),
-    unmapXml: (value, ctxt) => forwardTo('unmapXml', value, ctxt),
+    type: () => `OneOf<${schemas.map((schema) => schema.type()).join(' | ')}>`,
+    validateBeforeMap: (value, ctxt) =>
+      forwardTo('validateBeforeMap', { value, ctxt }, config, combinatorWithoutDiscriminator),
+    validateBeforeUnmap: (value, ctxt) =>
+      forwardTo('validateBeforeUnmap', { value, ctxt }, config, combinatorWithoutDiscriminator),
+    map: (value, ctxt) => forwardTo('map', { value, ctxt }, config, combinatorWithoutDiscriminator),
+    unmap: (value, ctxt) => forwardTo('unmap', { value, ctxt }, config, combinatorWithoutDiscriminator),
+    validateBeforeMapXml: (value, ctxt) =>
+      forwardTo('validateBeforeMapXml', { value, ctxt }, config, combinatorWithoutDiscriminator),
+    mapXml: (value, ctxt) => forwardTo('mapXml', { value, ctxt }, config, combinatorWithoutDiscriminator),
+    unmapXml: (value, ctxt) => forwardTo('unmapXml', { value, ctxt }, config, combinatorWithoutDiscriminator),
     toJSONSchema: (context): PartialJSONSchema => {
       if (!(discriminatorMap && discriminatorField)) {
         return combinatorWithoutDiscriminator.toJSONSchema(context);
