@@ -1,38 +1,39 @@
+import type { JSONSchemaDefinition, SchemaName } from './jsonSchemaTypes';
 import type {
   JSONSchema,
   JSONSchemaContext,
-  JSONSchemaDefinition,
   Schema,
 } from './schema';
 
 export function generateJSONSchema<T extends Schema<any, any>>(
   schema: T
 ): JSONSchema {
-  const defsArr: JSONSchemaDefinition[] = [];
+  const schemaRegistry: Map<Schema<any,any>, SchemaName> = new Map();
+  const $defs: Record<SchemaName, JSONSchemaDefinition> = {};
   const context: JSONSchemaContext = {
-    addDefinition: (def) => {
-      const existingDefIdx = defsArr.findIndex((storedDef) => storedDef === def);
-      if (existingDefIdx !== -1) {
-        return `#/$defs/schema${existingDefIdx + 1}`;
+    getRootSchema: () => schema,
+    registerSchema: (s) => {
+      const schemaName = `schema${schemaRegistry.size + 1}`;
+      schemaRegistry.set(s, schemaName);
+      return schemaName;
+    },
+    getRegisteredSchema: (s) => schemaRegistry.get(s) ?? false,
+    addDefinition: (schemaName, def) => {
+      if ($defs[schemaName]) {
+        return;
       }
 
-      defsArr.push(def);
-      return `#/$defs/schema${defsArr.length}`;
+      $defs[schemaName] = def;
     },
   };
   const partialJsonSchema = schema.toJSONSchema(context);
 
-  if (defsArr.length === 0) {
+  if (schemaRegistry.size === 0) {
     return {
       $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
       ...partialJsonSchema,
     };
   }
-
-  const $defs = {};
-  defsArr.forEach((def, idx) => {
-    $defs[`schema${idx + 1}`] = def;
-  });
 
   return {
     $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',

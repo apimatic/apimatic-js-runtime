@@ -1,4 +1,5 @@
-import { Schema } from '../schema';
+import type { SchemaRef } from '../jsonSchemaTypes';
+import type { JSONSchemaContext, Schema } from '../schema';
 import { once } from '../utils';
 
 /**
@@ -16,12 +17,33 @@ export function lazy<T, V>(schemaFn: () => Schema<T, V>): Schema<T, V> {
     unmapXml: (...args) => getSchema().unmapXml(...args),
     validateBeforeMapXml: (...args) =>
       getSchema().validateBeforeMapXml(...args),
-    toJSONSchema: once((context) => {
-      const jsonSchema = getSchema().toJSONSchema(context);
-      const ref = context.addDefinition(jsonSchema);
-      return {
-        $ref: ref
-      }
-    }),
+    toJSONSchema: (context) => getLazyJSONSchema(context, getSchema()),
+  };
+}
+
+function getLazyJSONSchema<T, V>(
+  context: JSONSchemaContext,
+  schema: Schema<T, V>
+): {
+  $ref: SchemaRef;
+} {
+  if (schema === context.getRootSchema()) {
+    return {
+      $ref: '#',
+    };
+  }
+
+  const existingSchemaName = context.getRegisteredSchema(schema);
+  if (existingSchemaName) {
+    return {
+      $ref: `#/$defs/${existingSchemaName}`,
+    };
+  }
+
+  const schemaName = context.registerSchema(schema);
+  const jsonSchema = schema.toJSONSchema(context);
+  context.addDefinition(schemaName, jsonSchema);
+  return {
+    $ref: `#/$defs/${schemaName}`,
   };
 }

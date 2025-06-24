@@ -1,5 +1,5 @@
 import type { JSONSchema } from '../src';
-import { generateJSONSchema, validateAndMap } from '../src';
+import { generateJSONSchema, lazy, strictObject, validateAndMap } from '../src';
 import { Boss, bossSchema } from './bossSchema';
 
 describe('Self-Referencing', () => {
@@ -29,9 +29,40 @@ describe('Self-Referencing', () => {
           type: 'number',
         },
         assistant: {
-          $ref: '#/$defs/schema2',
+          $ref: '#/$defs/schema1',
         },
       },
+      $defs: {
+        schema1: {
+          type: 'object',
+          required: ['department'],
+          properties: {
+            department: {
+              type: 'string',
+            },
+            boss: {
+              $ref: '#',
+            },
+          },
+        },
+      },
+    });
+  });
+
+  it('should generate valid JSON Schema for object containing self-referencing schemas', () => {
+    const schema = strictObject({
+      senior: ['senior', lazy(() => bossSchema)],
+    });
+
+    expect(generateJSONSchema(schema)).toStrictEqual<JSONSchema>({
+      $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+      type: 'object',
+      properties: {
+        senior: {
+          $ref: '#/$defs/schema1',
+        },
+      },
+      required: ['senior'],
       $defs: {
         schema1: {
           type: 'object',
@@ -39,7 +70,9 @@ describe('Self-Referencing', () => {
             promotedAt: {
               type: 'number',
             },
-            // TODO: Need to figure out a way to maintain circular reference here using assistant property.
+            assistant: {
+              $ref: '#/$defs/schema2',
+            },
           },
         },
         schema2: {

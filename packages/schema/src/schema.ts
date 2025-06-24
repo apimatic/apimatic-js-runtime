@@ -1,5 +1,6 @@
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { JSONSchema7 } from 'json-schema';
 import { isOptionalNullable, objectKeyEncode } from './utils';
+import type { JSONSchemaDefinition, SchemaName } from './jsonSchemaTypes';
 
 /**
  * Schema defines a type and its validation and mapping functions.
@@ -28,10 +29,11 @@ export interface Schema<T, S = any> {
 }
 
 export interface JSONSchemaContext {
-  addDefinition: (def: JSONSchemaDefinition) => $ref;
+  getRootSchema: <T,V>() => Schema<T, V>
+  registerSchema: <T, V>(schema: Schema<T, V>) => SchemaName;
+  getRegisteredSchema: <T, V>(schema: Schema<T, V>) => SchemaName | false;
+  addDefinition: (schemaId: SchemaName, def: JSONSchemaDefinition) => void;
 }
-export type JSONSchemaDefinition = JSONSchema7Definition;
-type $ref = `#/$defs/${string}`;
 
 export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
 

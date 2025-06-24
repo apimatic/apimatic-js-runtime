@@ -1,3 +1,4 @@
+import type { SchemaName, SchemaRef } from './jsonSchemaTypes';
 import type { Schema, PartialJSONSchema, JSONSchemaContext } from './schema';
 
 // Common type utilities for combinators
@@ -28,12 +29,13 @@ export function toCombinatorJSONSchemaWithDiscriminator<
   oneOfOrAnyOf: 'anyOf' | 'oneOf',
   context: JSONSchemaContext
 ): PartialJSONSchema {
-  const types: { $ref: string }[] = [];
-  const discriminatorMapping: { [val: string]: string } = {};
+  const types: { $ref: SchemaRef }[] = [];
+  const discriminatorMapping: { [val: SchemaName]: SchemaRef } = {};
   Object.keys(discriminatorMap).forEach((key, index) => {
-    const schemaRef = context.addDefinition(
-      schemas[index].toJSONSchema(context)
-    );
+    const schemaName = context.registerSchema(schemas[index]);
+    context.addDefinition(schemaName, schemas[index].toJSONSchema(context));
+
+    const schemaRef: SchemaRef = `#/$defs/${schemaName}`;
     types.push({ $ref: schemaRef });
     discriminatorMapping[key] = schemaRef;
   });
