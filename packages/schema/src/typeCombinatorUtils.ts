@@ -35,12 +35,15 @@ type ValueOf<T> = T[keyof T];
 export function toCombinatorJSONSchemaWithDiscriminator<
   T extends Array<Schema<any, any>>
 >(
-  schemas: [...T],
-  discriminatorMap: DiscriminatorMap<T>,
-  discriminatorField: string,
+  discriminatorConfig: {
+    schemas: [...T];
+    discriminatorMap: DiscriminatorMap<T>;
+    discriminatorField: string;
+  },
   oneOfOrAnyOf: 'anyOf' | 'oneOf',
   context: JSONSchemaContext
 ): PartialJSONSchema {
+  const { schemas, discriminatorMap, discriminatorField } = discriminatorConfig;
   const types: { $ref: SchemaRef }[] = [];
   const discriminatorMapping: { [val: SchemaName]: SchemaRef } = {};
   Object.keys(discriminatorMap).forEach((key, index) => {
@@ -88,63 +91,53 @@ export function getDiscriminatedSchema<T extends Array<Schema<any, any>>>(
 }
 
 /**
- * Helper to forward method calls to the discriminated schema or the default schema.
- */
-function forwardToDiscriminatedOrDefault<T extends Array<Schema<any, any>>, K extends keyof Schema<ArraySchemaType<T>>>(
-  method: K,
-  value: unknown,
-  ctxt: SchemaContextCreator,
-  discriminatorMap: DiscriminatorMap<T>,
-  discriminatorField: string,
-  withoutDiscriminator: Schema<ArraySchemaType<T>>
-): ReturnType<Schema<ArraySchemaType<T>>[K]> {
-  const discriminatedSchema = getDiscriminatedSchema(
-    value,
-    discriminatorMap,
-    discriminatorField
-  );
-  if (discriminatedSchema) {
-    return discriminatedSchema[method](value, ctxt);
-  }
-  return withoutDiscriminator[method](value, ctxt);
-}
-
-/**
  * Common logic for oneOf/anyOf with discriminator
  */
 export function createCombinatorWithDiscriminator<T extends Array<Schema<any, any>>>(
-  schemas: T,
-  discriminatorMap: DiscriminatorMap<T>,
-  discriminatorField: string,
-  withoutDiscriminator: Schema<ArraySchemaType<T>>,
-  combinator: 'oneOf' | 'anyOf'
+  config: {
+    schemas: T,
+    discriminatorMap: DiscriminatorMap<T>,
+    discriminatorField: string,
+  },
+  combinator: 'oneOf' | 'anyOf',
+  combinatorWithoutDiscriminator: Schema<ArraySchemaType<T>>
 ): Schema<ArraySchemaType<T>> {
+  const { schemas, discriminatorMap, discriminatorField } = config;
+
+  /**
+   * Forward method calls to a schema contained within a oneOf or anyOf schema
+   */
+  function forwardTo<K extends keyof Schema<ArraySchemaType<T>>>(
+    method: K,
+    value: unknown,
+    ctxt: SchemaContextCreator
+  ): ReturnType<Schema<ArraySchemaType<T>>[K]> {
+    const discriminatedSchema = getDiscriminatedSchema(
+      value,
+      discriminatorMap,
+      discriminatorField
+    );
+    if (discriminatedSchema) {
+      return discriminatedSchema[method](value, ctxt);
+    }
+    return combinatorWithoutDiscriminator[method](value, ctxt);
+  }
+
   return {
     type: () => `OneOf<${schemas.map((schema) => schema.type()).join(' | ')}>` ,
-    validateBeforeMap: (value, ctxt) =>
-      forwardToDiscriminatedOrDefault('validateBeforeMap', value, ctxt, discriminatorMap, discriminatorField, withoutDiscriminator),
-    validateBeforeUnmap: (value, ctxt) =>
-      forwardToDiscriminatedOrDefault('validateBeforeUnmap', value, ctxt, discriminatorMap, discriminatorField, withoutDiscriminator),
-    map: (value, ctxt) =>
-      forwardToDiscriminatedOrDefault('map', value, ctxt, discriminatorMap, discriminatorField, withoutDiscriminator),
-    unmap: (value, ctxt) =>
-      forwardToDiscriminatedOrDefault('unmap', value, ctxt, discriminatorMap, discriminatorField, withoutDiscriminator),
-    validateBeforeMapXml: (value, ctxt) =>
-      forwardToDiscriminatedOrDefault('validateBeforeMapXml', value, ctxt, discriminatorMap, discriminatorField, withoutDiscriminator),
-    mapXml: (value, ctxt) =>
-      forwardToDiscriminatedOrDefault('mapXml', value, ctxt, discriminatorMap, discriminatorField, withoutDiscriminator),
-    unmapXml: (value, ctxt) =>
-      forwardToDiscriminatedOrDefault('unmapXml', value, ctxt, discriminatorMap, discriminatorField, withoutDiscriminator),
+    validateBeforeMap: (value, ctxt) => forwardTo('validateBeforeMap', value, ctxt),
+    validateBeforeUnmap: (value, ctxt) => forwardTo('validateBeforeUnmap', value, ctxt),
+    map: (value, ctxt) => forwardTo('map', value, ctxt),
+    unmap: (value, ctxt) => forwardTo('unmap', value, ctxt),
+    validateBeforeMapXml: (value, ctxt) => forwardTo('validateBeforeMapXml', value, ctxt),
+    mapXml: (value, ctxt) => forwardTo('mapXml', value, ctxt),
+    unmapXml: (value, ctxt) => forwardTo('unmapXml', value, ctxt),
     toJSONSchema: (context): PartialJSONSchema => {
       if (!(discriminatorMap && discriminatorField)) {
-        return {
-          [combinator]: schemas.map((schema) => schema.toJSONSchema(context)),
-        } as PartialJSONSchema;
+        return combinatorWithoutDiscriminator.toJSONSchema(context);
       }
       return toCombinatorJSONSchemaWithDiscriminator(
-        schemas,
-        discriminatorMap,
-        discriminatorField,
+        { schemas, discriminatorMap, discriminatorField },
         combinator,
         context
       );

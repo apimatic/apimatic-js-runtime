@@ -106,9 +106,11 @@ export function discriminatedObject<
       mapXmlSchema(value, ctxt).validateBeforeMapXml(value, ctxt),
     toJSONSchema: (context) => {
       return toCombinatorJSONSchemaWithDiscriminator(
-        Object.values(discriminatorMap),
-        discriminatorMap,
-        discriminatorPropName as string,  // TODO: Need some type gymnastics to remove this 'as'
+        {
+          schemas: Object.values(discriminatorMap),
+          discriminatorMap,
+          discriminatorField: discriminatorPropName as string, // TODO: Need some type gymnastics to remove this 'as'
+        },
         'anyOf',
         context
       );

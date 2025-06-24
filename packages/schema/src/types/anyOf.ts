@@ -12,11 +12,9 @@ export function anyOf<T extends Array<Schema<any, any>>>(
 ): Schema<ArraySchemaType<T>> {
   if (discriminatorMap && discriminatorField) {
     return createCombinatorWithDiscriminator(
-      schemas,
-      discriminatorMap,
-      discriminatorField,
-      createAnyOfWithoutDiscriminator(schemas),
-      'anyOf'
+      { schemas, discriminatorMap, discriminatorField },
+      'anyOf',
+      createAnyOfWithoutDiscriminator(schemas)
     );
   } else {
     return createAnyOfWithoutDiscriminator(schemas);
