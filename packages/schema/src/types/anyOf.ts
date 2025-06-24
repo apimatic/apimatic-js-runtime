@@ -4,6 +4,7 @@ import {
   toCombinatorJSONSchemaWithDiscriminator,
   DiscriminatorMap,
   ArraySchemaType,
+  getDiscriminatedSchema,
 } from '../typeCombinatorUtils';
 
 export function anyOf<T extends Array<Schema<any, any>>>(
@@ -30,63 +31,83 @@ function createAnyOfWithDiscriminator<T extends Array<Schema<any, any>>>(
   return {
     type: () => `OneOf<${schemas.map((schema) => schema.type()).join(' | ')}>`,
     validateBeforeMap: (value, ctxt) => {
-      const discriminatorValue =
-        value && typeof value === 'object' && value[discriminatorField];
-      if (discriminatorValue && discriminatorMap[discriminatorValue]) {
-        return discriminatorMap[discriminatorValue].validateBeforeMap(
-          value,
-          ctxt
-        );
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.validateBeforeMap(value, ctxt);
       }
       return matchAndValidateBeforeMap(schemas, value, ctxt);
     },
     validateBeforeUnmap: (value, ctxt) => {
-      const discriminatorValue =
-        value && typeof value === 'object' && value[discriminatorField];
-      if (discriminatorValue && discriminatorMap[discriminatorValue]) {
-        return discriminatorMap[discriminatorValue].validateBeforeUnmap(
-          value,
-          ctxt
-        );
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.validateBeforeUnmap(value, ctxt);
       }
       return matchAndValidateBeforeUnmap(schemas, value, ctxt);
     },
     map: (value, ctxt) => {
-      const discriminatorValue = value && value[discriminatorField];
-      if (discriminatorValue && discriminatorMap[discriminatorValue]) {
-        return discriminatorMap[discriminatorValue].map(value, ctxt);
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField,
+        false
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.map(value, ctxt);
       }
       return matchAndMap(schemas, value, ctxt);
     },
     unmap: (value, ctxt) => {
-      const discriminatorValue = value && value[discriminatorField];
-      if (discriminatorValue && discriminatorMap[discriminatorValue]) {
-        return discriminatorMap[discriminatorValue].unmap(value, ctxt);
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField,
+        false
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.unmap(value, ctxt);
       }
       return matchAndUnmap(schemas, value, ctxt);
     },
     validateBeforeMapXml: (value, ctxt) => {
-      const discriminatorValue =
-        value && typeof value === 'object' && value[discriminatorField];
-      if (discriminatorValue && discriminatorMap[discriminatorValue]) {
-        return discriminatorMap[discriminatorValue].validateBeforeMapXml(
-          value,
-          ctxt
-        );
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.validateBeforeMapXml(value, ctxt);
       }
       return matchAndValidateBeforeMapXml(schemas, value, ctxt);
     },
     mapXml: (value, ctxt) => {
-      const discriminatorValue = value && value[discriminatorField];
-      if (discriminatorValue && discriminatorMap[discriminatorValue]) {
-        return discriminatorMap[discriminatorValue].mapXml(value, ctxt);
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField,
+        false
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.mapXml(value, ctxt);
       }
       return matchAndMapXml(schemas, value, ctxt);
     },
     unmapXml: (value, ctxt) => {
-      const discriminatorValue = value && value[discriminatorField];
-      if (discriminatorValue && discriminatorMap[discriminatorValue]) {
-        return discriminatorMap[discriminatorValue].unmapXml(value, ctxt);
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField,
+        false
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.unmapXml(value, ctxt);
       }
       return matchAndUnmapXml(schemas, value, ctxt);
     },

@@ -17,10 +17,17 @@ export type ArraySchemaType<
   T extends Array<Schema<any, any>>
 > = T[number] extends Schema<any, any> ? SchemaType<T[number]> : never;
 
-// Common type for DiscriminatorMap
+/**
+ * Type helper to work with schemas of a discriminated oneOf or anyOf type
+ */
 export type DiscriminatorMap<T extends Array<Schema<any, any>>> = {
   [K in ArraySchemaType<T>]?: Schema<ArraySchemaType<T>>;
 };
+
+/**
+ * Utility type to extract the union of all property values of a type T.
+ */
+type ValueOf<T> = T[keyof T];
 
 /**
  * Utility to generate JSON Schema for oneOf/anyOf with discriminators.
@@ -51,4 +58,32 @@ export function toCombinatorJSONSchemaWithDiscriminator<
       mapping: discriminatorMapping,
     },
   };
+}
+
+/**
+ * Check a value's discriminator field and get its corresponding schema
+ */
+export function getDiscriminatedSchema<T extends Array<Schema<any, any>>>(
+  value: unknown,
+  discriminatorMap: DiscriminatorMap<T>,
+  discriminatorField: string,
+  useTypeOfCheck: boolean = true
+): ValueOf<DiscriminatorMap<T>> | false {
+  const discriminatorValue =
+    value &&
+    (useTypeOfCheck ? typeof value === 'object' : true) &&
+    (value as Record<string, unknown>)[discriminatorField];
+
+  if (!discriminatorValue) {
+    return false;
+  }
+
+  const schema =
+    discriminatorMap[discriminatorValue as keyof DiscriminatorMap<T>];
+
+  if (!schema) {
+    return false;
+  }
+
+  return schema;
 }
