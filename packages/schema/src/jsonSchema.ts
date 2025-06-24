@@ -19,7 +19,9 @@ export function generateJSONSchema<T extends Schema<any, any>>(
       return schemaName;
     },
     getRegisteredSchema: (s) => schemaRegistry.get(s) ?? false,
-    addDefinition: (name, def) => { $defs[name] ??= def; },
+    addDefinition: (name, def) => {
+      $defs[name] ??= def;
+    },
   };
   const partialJsonSchema = schema.toJSONSchema(context);
 
