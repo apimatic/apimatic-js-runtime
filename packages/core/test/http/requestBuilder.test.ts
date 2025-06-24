@@ -938,14 +938,20 @@ describe('test updateParameterByJsonPointer function', () => {
   it('should return null when object is empty', async () => {
     const reqBuilder = defaultRequestBuilder();
 
-    const result = reqBuilder.updateParameterByJsonPointer('$request.body#/user', () => 'value');
+    const result = reqBuilder.updateParameterByJsonPointer(
+      '$request.body#/user',
+      () => 'value'
+    );
     expect(result).toBe(reqBuilder);
   });
 
   it('should handle null pointer gracefully', async () => {
     const reqBuilder = defaultRequestBuilder();
 
-    const result = reqBuilder.updateParameterByJsonPointer('$request.headers#', () => 'value');
+    const result = reqBuilder.updateParameterByJsonPointer(
+      '$request.headers#',
+      () => 'value'
+    );
     expect(result).toBe(reqBuilder);
   });
 
@@ -1045,7 +1051,6 @@ describe('test default request builder behavior to test retries', () => {
 
 describe('test request builder clone functionality', () => {
   it('should test request builder clone creates independent copy', async () => {
-
     const originalReqBuilder = defaultRequestBuilder();
     originalReqBuilder.text('testBody');
     originalReqBuilder.header('test-header', 'test-value');
@@ -1059,7 +1064,9 @@ describe('test request builder clone functionality', () => {
     const originalResponse = await originalReqBuilder.callAsText();
     const clonedResponse = await clonedReqBuilder.callAsText();
 
-    expect(originalResponse.request.url).not.toEqual(clonedResponse.request.url);
+    expect(originalResponse.request.url).not.toEqual(
+      clonedResponse.request.url
+    );
     expect(originalResponse.request.url).toContain('newParam=newValue');
     expect(clonedResponse.request.url).not.toContain('newParam=newValue');
   });
