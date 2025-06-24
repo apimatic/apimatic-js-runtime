@@ -7,6 +7,21 @@ describe('test numer type template parameter', () => {
       '/rest/v1.0/projects/345/accident_logs',
     ],
     [
+      'test boolean true type template parameter',
+      true,
+      '/rest/v1.0/projects/true/accident_logs',
+    ],
+    [
+      'test boolean false type template parameter',
+      false,
+      '/rest/v1.0/projects/false/accident_logs',
+    ],
+    [
+      'test boolean false type template parameter',
+      [false, true],
+      '/rest/v1.0/projects/false/true/accident_logs',
+    ],
+    [
       'test string type template parameter',
       '345',
       '/rest/v1.0/projects/345/accident_logs',

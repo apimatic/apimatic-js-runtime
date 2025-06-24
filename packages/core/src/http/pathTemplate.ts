@@ -12,6 +12,8 @@ export type PathTemplatePrimitiveTypes =
   | number[]
   | bigint
   | Array<bigint>
+  | boolean
+  | boolean[]
   | unknown;
 
 /** Path template argument type */
@@ -49,7 +51,8 @@ function encodePathTemplateSegment(value: PathTemplateTypes) {
     if (
       typeof m === 'string' ||
       typeof m === 'number' ||
-      typeof m === 'bigint'
+      typeof m === 'bigint' ||
+      typeof m === 'boolean'
     ) {
       encodeParameter =
         skipEncode || typeof m === 'bigint'
@@ -64,8 +67,8 @@ function encodePathTemplateSegment(value: PathTemplateTypes) {
     skipEncode = true;
   }
   return Array.isArray(value)
-    ? (value as Array<string | number | bigint | unknown>)
-        .map<string | number | bigint | unknown>(encode)
+    ? (value as Array<string | number | bigint | boolean | unknown>)
+        .map<string | number | bigint | boolean | unknown>(encode)
         .join('/')
     : [encode(value)];
 }

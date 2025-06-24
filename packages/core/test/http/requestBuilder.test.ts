@@ -16,7 +16,7 @@ import {
 import { ApiError } from '../../src/errors/apiError';
 import { RequestRetryOption } from '../../src/http/retryConfiguration';
 import { employeeSchema, Employee } from '../../../schema/test/employeeSchema';
-import { array, number, string } from '../../../schema';
+import { array, bigint, number, string } from '../../../schema';
 import {
   FORM_URLENCODED_CONTENT_TYPE,
   TEXT_CONTENT_TYPE,
@@ -719,49 +719,70 @@ describe('test default request builder behavior with succesful responses', () =>
 });
 
 describe('template function tests', () => {
-  it('should replace template parameters in path with provided values', async () => {
+  it('should produce equivalent URLs when using appendTemplatePath vs template method', async () => {
     const expectedRequestUrl =
-      'https://apimatic.hopto.org:3000/users/123/posts/456';
+      'https://apimatic.hopto.org:3000/data/user1/123/true/3.14/9007199254740991';
 
-    const reqBuilder = defaultRequestBuilder('/users/{userId}/posts/{postId}');
+    const builderWithAppendPath = defaultRequestBuilder('/data');
+    const mappedArgs = builderWithAppendPath.prepareArgs({
+      user: ['user1', optional(string())],
+      number: [123, optional(number())],
+      bool: [true, optional(boolean())],
+      float: [3.14, optional(number())],
+      big: [9007199254740991, optional(bigint())],
+    });
+    const templateArray = Object.assign(['/', '/', '/', '/', '/']);
+    builderWithAppendPath.appendTemplatePath(
+      templateArray,
+      mappedArgs.user,
+      mappedArgs.number,
+      mappedArgs.bool,
+      mappedArgs.float,
+      mappedArgs.big
+    );
+    const responseFromAppendPath = await builderWithAppendPath.callAsText();
 
-    reqBuilder.template('userId', '123');
-    reqBuilder.template('postId', '456');
+    const builderWithTemplate = defaultRequestBuilder(
+      '/data/{string}/{number}/{boolean}/{float}/{bigInt}'
+    );
+    builderWithTemplate.template('string', mappedArgs.user);
+    builderWithTemplate.template('number', mappedArgs.number);
+    builderWithTemplate.template('boolean', mappedArgs.bool);
+    builderWithTemplate.template('float', mappedArgs.float);
+    builderWithTemplate.template('bigInt', mappedArgs.big);
+    const responseFromTemplate = await builderWithTemplate.callAsText();
 
-    const apiResponse = await reqBuilder.callAsText();
-    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
+    expect(responseFromTemplate.request.url).toEqual(expectedRequestUrl);
+    expect(responseFromTemplate.request.url).toEqual(
+      responseFromAppendPath.request.url
+    );
   });
 
-  it('should handle template parameters with different types', async () => {
+  it('should produce equivalent URLs when using appendTemplatePath vs template method with array type', async () => {
     const expectedRequestUrl =
-      'https://apimatic.hopto.org:3000/data/123/true/3.14';
+      'https://apimatic.hopto.org:3000/data/123/456/789';
 
-    const reqBuilder = defaultRequestBuilder(
-      '/data/{number}/{boolean}/{float}'
+    const builderWithAppendPath = defaultRequestBuilder('/data');
+    const integers = [123, 456, 789];
+    const mappedArgs = builderWithAppendPath.prepareArgs({
+      integers: [integers, array(number())],
+    });
+
+    const templateArray = Object.assign(['/']);
+    builderWithAppendPath.appendTemplatePath(
+      templateArray,
+      mappedArgs.integers
     );
+    const responseFromAppendPath = await builderWithAppendPath.callAsText();
 
-    reqBuilder.template('number', 123);
-    reqBuilder.template('boolean', true);
-    reqBuilder.template('float', 3.14);
+    const builderWithTemplate = defaultRequestBuilder('/data/{data}');
+    builderWithTemplate.template('data', mappedArgs.integers);
+    const responseFromTemplate = await builderWithTemplate.callAsText();
 
-    const apiResponse = await reqBuilder.callAsText();
-    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
-  });
-
-  it('should handle multiple template parameters in the same path segment', async () => {
-    const expectedRequestUrl =
-      'https://apimatic.hopto.org:3000/org/123/dept/456/emp/789';
-
-    const reqBuilder = defaultRequestBuilder(
-      '/org/{orgId}/dept/{deptId}/emp/{empId}'
+    expect(responseFromTemplate.request.url).toEqual(expectedRequestUrl);
+    expect(responseFromTemplate.request.url).toEqual(
+      responseFromAppendPath.request.url
     );
-
-    reqBuilder.template('orgId', '123');
-    reqBuilder.template('deptId', '456');
-    reqBuilder.template('empId', '789');
-
-    const apiResponse = await reqBuilder.callAsText();
-    expect(apiResponse.request.url).toEqual(expectedRequestUrl);
   });
 });
 

@@ -192,7 +192,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   protected _accept?: string;
   protected _contentType?: string;
   protected _headers: Record<string, string>;
-  protected _body?: string;
+  protected _body?: any;
+  protected _bodyType?: 'text' | 'json' | 'xml';
   protected _stream?: FileWrapper;
   protected _queryParams: Record<string, unknown>;
   protected _queryParamsPrefixFormat: Record<string, ArrayPrefixFunction>;
@@ -342,11 +343,13 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   public text(
     body: string | number | bigint | boolean | null | undefined
   ): void {
-    this._body = body?.toString() ?? undefined;
+    this._body = body;
+    this._bodyType = 'text';
     this._setContentTypeIfNotSet(TEXT_CONTENT_TYPE);
   }
   public json(data: unknown): void {
-    this._body = JSON.stringify(data);
+    this._body = data;
+    this._bodyType = 'json';
     this._setContentTypeIfNotSet(JSON_CONTENT_TYPE);
   }
   public xml<T>(
@@ -359,10 +362,11 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (mappingResult.errors) {
       throw new ArgumentsValidationError({ [argName]: mappingResult.errors });
     }
-    this._body = this._xmlSerializer.xmlSerialize(
+    this._body = {
+      data,
       rootName,
-      mappingResult.result
-    );
+    };
+    this._bodyType = 'xml';
     this._setContentTypeIfNotSet(XML_CONTENT_TYPE);
   }
   public stream(file?: FileWrapper): void {
@@ -434,7 +438,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     request.headers = headers;
 
     if (this._body !== undefined) {
-      request.body = { type: 'text', content: this._body };
+      request.body = { type: 'text', content: this.getBody() };
     } else if (this._form !== undefined) {
       request.body = {
         type: 'form',
@@ -635,15 +639,25 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     cloned._apiErrorFactory = { ...this._apiErrorFactory };
     cloned._errorTypes = [...this._errorTypes];
   }
+  private getBody(): string {
+    if (this._bodyType === 'text') {
+      return this._body?.toString();
+    }
+    if (this._bodyType === 'json') {
+      return JSON.stringify(this._body);
+    }
+    return this._xmlSerializer.xmlSerialize(
+      this._body.data,
+      this._body.rootName
+    );
+  }
   private updateBody(pointer: string, setter: (value: any) => any) {
     if (this._body) {
       if (pointer === '') {
-        this._body = setter(this._body.toString());
+        this._body = setter(this._body);
         return;
       }
-      this._body = JSON.parse(this._body);
       updateValueByJsonPointer(this._body, pointer, setter);
-      this._body = JSON.stringify(this._body);
       return;
     }
     if (this._form) {
@@ -694,10 +708,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
 
     for (const [key, value] of Object.entries(this._templateParams)) {
       if (value !== undefined && value !== null) {
-        this._path = this._path.replace(
-          `{${key}}`,
-          encodeURIComponent(String(value))
-        );
+        const encoded = pathTemplate`${value}`;
+        this._path = this._path.replace(`{${key}}`, encoded);
       }
     }
     return this._path;
