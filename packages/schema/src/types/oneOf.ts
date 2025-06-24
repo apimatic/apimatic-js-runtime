@@ -1,10 +1,8 @@
 import { Schema, SchemaContextCreator } from '../schema';
-import { PartialJSONSchema } from '../jsonSchemaTypes';
 import {
-  toCombinatorJSONSchemaWithDiscriminator,
   DiscriminatorMap,
   ArraySchemaType,
-  getDiscriminatedSchema,
+  createCombinatorWithDiscriminator,
 } from '../typeCombinatorUtils';
 
 export function oneOf<T extends Array<Schema<any, any>>>(
@@ -13,117 +11,16 @@ export function oneOf<T extends Array<Schema<any, any>>>(
   discriminatorField?: string
 ): Schema<ArraySchemaType<T>> {
   if (discriminatorMap && discriminatorField) {
-    return createOneOfWithDiscriminator(
+    return createCombinatorWithDiscriminator(
       schemas,
       discriminatorMap,
-      discriminatorField
+      discriminatorField,
+      createOneOfWithoutDiscriminator(schemas),
+      'oneOf'
     );
   } else {
     return createOneOfWithoutDiscriminator(schemas);
   }
-}
-
-function createOneOfWithDiscriminator<T extends Array<Schema<any, any>>>(
-  schemas: T,
-  discriminatorMap: DiscriminatorMap<T>,
-  discriminatorField: string
-): Schema<ArraySchemaType<T>> {
-  const oneOfWithoutDiscriminator = createOneOfWithoutDiscriminator(schemas);
-  return {
-    type: () => `OneOf<${schemas.map((schema) => schema.type()).join(' | ')}>`,
-
-    validateBeforeMap: (value, ctxt) => {
-      const discriminatedSchema = getDiscriminatedSchema<T>(
-        value,
-        discriminatorMap,
-        discriminatorField
-      );
-      if (discriminatedSchema) {
-        return discriminatedSchema.validateBeforeMap(value, ctxt);
-      }
-      return oneOfWithoutDiscriminator.validateBeforeMap(value, ctxt);
-    },
-    validateBeforeUnmap: (value, ctxt) => {
-      const discriminatedSchema = getDiscriminatedSchema<T>(
-        value,
-        discriminatorMap,
-        discriminatorField
-      );
-      if (discriminatedSchema) {
-        return discriminatedSchema.validateBeforeUnmap(value, ctxt);
-      }
-      return oneOfWithoutDiscriminator.validateBeforeUnmap(value, ctxt);
-    },
-    map: (value, ctxt) => {
-      const discriminatedSchema = getDiscriminatedSchema<T>(
-        value,
-        discriminatorMap,
-        discriminatorField
-      );
-      if (discriminatedSchema) {
-        return discriminatedSchema.map(value, ctxt);
-      }
-      return oneOfWithoutDiscriminator.map(value, ctxt);
-    },
-    unmap: (value, ctxt) => {
-      const discriminatedSchema = getDiscriminatedSchema<T>(
-        value,
-        discriminatorMap,
-        discriminatorField
-      );
-      if (discriminatedSchema) {
-        return discriminatedSchema.unmap(value, ctxt);
-      }
-      return oneOfWithoutDiscriminator.unmap(value, ctxt);
-    },
-    validateBeforeMapXml: (value, ctxt) => {
-      const discriminatedSchema = getDiscriminatedSchema<T>(
-        value,
-        discriminatorMap,
-        discriminatorField
-      );
-      if (discriminatedSchema) {
-        return discriminatedSchema.validateBeforeMapXml(value, ctxt);
-      }
-      return oneOfWithoutDiscriminator.validateBeforeMapXml(value, ctxt);
-    },
-    mapXml: (value, ctxt) => {
-      const discriminatedSchema = getDiscriminatedSchema<T>(
-        value,
-        discriminatorMap,
-        discriminatorField
-      );
-      if (discriminatedSchema) {
-        return discriminatedSchema.mapXml(value, ctxt);
-      }
-      return oneOfWithoutDiscriminator.mapXml(value, ctxt);
-    },
-    unmapXml: (value, ctxt) => {
-      const discriminatedSchema = getDiscriminatedSchema<T>(
-        value,
-        discriminatorMap,
-        discriminatorField
-      );
-      if (discriminatedSchema) {
-        return discriminatedSchema.unmapXml(value, ctxt);
-      }
-      return oneOfWithoutDiscriminator.unmapXml(value, ctxt);
-    },
-    toJSONSchema: (context): PartialJSONSchema => {
-      if (!(discriminatorMap && discriminatorField)) {
-        return {
-          oneOf: schemas.map((schema) => schema.toJSONSchema(context)),
-        };
-      }
-      return toCombinatorJSONSchemaWithDiscriminator(
-        schemas,
-        discriminatorMap,
-        discriminatorField,
-        'oneOf',
-        context
-      );
-    },
-  };
 }
 
 function createOneOfWithoutDiscriminator<T extends Array<Schema<any, any>>>(

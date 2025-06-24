@@ -86,3 +86,109 @@ export function getDiscriminatedSchema<T extends Array<Schema<any, any>>>(
 
   return schema;
 }
+
+/**
+ * Common logic for oneOf/anyOf with discriminator
+ */
+export function createCombinatorWithDiscriminator<T extends Array<Schema<any, any>>>(
+  schemas: T,
+  discriminatorMap: DiscriminatorMap<T>,
+  discriminatorField: string,
+  withoutDiscriminator: Schema<ArraySchemaType<T>>,
+  combinator: 'oneOf' | 'anyOf'
+): Schema<ArraySchemaType<T>> {
+  return {
+    type: () => `OneOf<${schemas.map((schema) => schema.type()).join(' | ')}>` ,
+    validateBeforeMap: (value, ctxt) => {
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.validateBeforeMap(value, ctxt);
+      }
+      return withoutDiscriminator.validateBeforeMap(value, ctxt);
+    },
+    validateBeforeUnmap: (value, ctxt) => {
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.validateBeforeUnmap(value, ctxt);
+      }
+      return withoutDiscriminator.validateBeforeUnmap(value, ctxt);
+    },
+    map: (value, ctxt) => {
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.map(value, ctxt);
+      }
+      return withoutDiscriminator.map(value, ctxt);
+    },
+    unmap: (value, ctxt) => {
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.unmap(value, ctxt);
+      }
+      return withoutDiscriminator.unmap(value, ctxt);
+    },
+    validateBeforeMapXml: (value, ctxt) => {
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.validateBeforeMapXml(value, ctxt);
+      }
+      return withoutDiscriminator.validateBeforeMapXml(value, ctxt);
+    },
+    mapXml: (value, ctxt) => {
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.mapXml(value, ctxt);
+      }
+      return withoutDiscriminator.mapXml(value, ctxt);
+    },
+    unmapXml: (value, ctxt) => {
+      const discriminatedSchema = getDiscriminatedSchema(
+        value,
+        discriminatorMap,
+        discriminatorField
+      );
+      if (discriminatedSchema) {
+        return discriminatedSchema.unmapXml(value, ctxt);
+      }
+      return withoutDiscriminator.unmapXml(value, ctxt);
+    },
+    toJSONSchema: (context): PartialJSONSchema => {
+      if (!(discriminatorMap && discriminatorField)) {
+        return {
+          [combinator]: schemas.map((schema) => schema.toJSONSchema(context)),
+        } as PartialJSONSchema;
+      }
+      return toCombinatorJSONSchemaWithDiscriminator(
+        schemas,
+        discriminatorMap,
+        discriminatorField,
+        combinator,
+        context
+      );
+    },
+  };
+}
