@@ -16,7 +16,14 @@ import {
 import { ApiError } from '../../src/errors/apiError';
 import { RequestRetryOption } from '../../src/http/retryConfiguration';
 import { employeeSchema, Employee } from '../../../schema/test/employeeSchema';
-import { array, number, string, boolean, nullable, optional } from '../../../schema';
+import {
+  array,
+  number,
+  string,
+  boolean,
+  nullable,
+  optional,
+} from '../../../schema';
 import {
   FORM_URLENCODED_CONTENT_TYPE,
   TEXT_CONTENT_TYPE,
