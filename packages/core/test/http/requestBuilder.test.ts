@@ -922,54 +922,32 @@ describe('test updateParameterByJsonPointer function', () => {
     expect(apiResponse.request.headers?.['x-api-key']).toBe('new-key');
   });
 
-  it('should return builder instance for chaining', async () => {
-    const reqBuilder = defaultRequestBuilder();
-
-    const result = reqBuilder
-      .updateParameterByJsonPointer('$request.headers#/x-api-key', () => 'key1')
-      .updateParameterByJsonPointer(
-        '$request.headers#/content-type',
-        () => 'application/json'
-      );
-
-    expect(result).toBe(reqBuilder);
-  });
-
   it('should return null when object is empty', async () => {
     const reqBuilder = defaultRequestBuilder();
 
-    const result = reqBuilder.updateParameterByJsonPointer(
-      '$request.body#/user',
-      () => 'value'
+    reqBuilder.updateParameterByJsonPointer('$request.body#/user', () =>
+      fail()
     );
-    expect(result).toBe(reqBuilder);
   });
 
   it('should handle null pointer gracefully', async () => {
     const reqBuilder = defaultRequestBuilder();
 
-    const result = reqBuilder.updateParameterByJsonPointer(
-      '$request.headers#',
-      () => 'value'
-    );
-    expect(result).toBe(reqBuilder);
+    reqBuilder.updateParameterByJsonPointer('$request.headers#', () => fail());
   });
 
   it('should handle empty JSON path gracefully', async () => {
     const reqBuilder = defaultRequestBuilder();
 
-    const result = reqBuilder.updateParameterByJsonPointer(null, () => 'value');
-    expect(result).toBe(reqBuilder);
+    reqBuilder.updateParameterByJsonPointer(null, () => fail());
   });
 
   it('should handle invalid pointer prefix', async () => {
     const reqBuilder = defaultRequestBuilder();
 
-    const result = reqBuilder.updateParameterByJsonPointer(
-      '$invalid.prefix#/key',
-      () => 'value'
+    reqBuilder.updateParameterByJsonPointer('$invalid.prefix#/key', () =>
+      fail()
     );
-    expect(result).toBe(reqBuilder);
   });
 
   it('should handle invalid pointer key', async () => {

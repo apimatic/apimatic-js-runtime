@@ -126,7 +126,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   updateParameterByJsonPointer(
     pointer: string | null,
     setter: (value: any) => any
-  ): this;
+  ): void;
   text(body: string | number | bigint | boolean | null | undefined): void;
   json(data: unknown): void;
   requestRetryOption(option: RequestRetryOption): void;
@@ -389,9 +389,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   public updateParameterByJsonPointer(
     pointer: string | null,
     setter: (value: any) => any
-  ): this {
+  ): void {
     if (!pointer) {
-      return this;
+      return;
     }
 
     const [prefix, point = ''] = pointer.split('#');
@@ -406,7 +406,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       updateValueByJsonPointer(this._headers, point, setter);
     }
 
-    return this;
+    return;
   }
   public toRequest(): HttpRequest {
     const request: HttpRequest = {
@@ -618,7 +618,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   private cloneParameters(
     cloned: DefaultRequestBuilder<BaseUrlParamType, AuthParams>
-  ) {
+  ): void {
     cloned._accept = this._accept;
     cloned._contentType = this._contentType;
     cloned._headers = { ...this._headers };
@@ -652,7 +652,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._body.rootName
     );
   }
-  private updateBody(pointer: string, setter: (value: any) => any) {
+  private updateBody(pointer: string, setter: (value: any) => any): void {
     if (this._body) {
       if (pointer === '') {
         this._body = setter(this._body);
