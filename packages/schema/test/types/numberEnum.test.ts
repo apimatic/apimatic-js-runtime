@@ -1,4 +1,4 @@
-import { generateJSONSchema, type JSONSchema, numberEnum } from '../../src';
+import { generateJSONSchema, JSONSchema, numberEnum } from '../../src';
 
 describe('Number Enum', () => {
   enum SampleNumberEnum {

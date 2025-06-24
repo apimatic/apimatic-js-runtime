@@ -5,7 +5,7 @@ import {
   number,
   object,
   optional,
-  type JSONSchema,
+  JSONSchema,
   SchemaMappedType,
   SchemaType,
   string,

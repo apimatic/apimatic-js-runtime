@@ -1,4 +1,4 @@
-import { boolean, generateJSONSchema, type JSONSchema, validateAndMap, validateAndUnmap } from '../../src';
+import { boolean, generateJSONSchema, JSONSchema, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Boolean', () => {
   describe('Mapping', () => {

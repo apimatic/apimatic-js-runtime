@@ -1,4 +1,4 @@
-import { generateJSONSchema, type JSONSchema, number, validateAndMap, validateAndUnmap } from '../../src';
+import { generateJSONSchema, JSONSchema, number, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Number', () => {
   describe('Mapping', () => {

@@ -10,7 +10,7 @@ import {
   typedExpandoObject,
   object,
   anyOf,
-  type JSONSchema,
+  JSONSchema,
   generateJSONSchema,
 } from '../../src';
 

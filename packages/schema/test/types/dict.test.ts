@@ -1,4 +1,4 @@
-import { dict, generateJSONSchema, type JSONSchema, string, validateAndMap, validateAndUnmap } from '../../src';
+import { dict, generateJSONSchema, JSONSchema, string, validateAndMap, validateAndUnmap } from '../../src';
 
 describe('Dictionary', () => {
   describe('Mapping', () => {

@@ -1,4 +1,4 @@
-import { bigint, generateJSONSchema, type JSONSchema, validateAndMap, validateAndUnmap } from '../../src';
+import { bigint, generateJSONSchema, JSONSchema, validateAndMap, validateAndUnmap } from '../../src';
 describe('bigint', () => {
   describe('Mapping', () => {
     it('should accept number in bigint constructor', () => {

@@ -1,4 +1,4 @@
-import { type Schema } from '../src/schema';
+import { Schema } from '../src/schema';
 import { anyOf, bigint, boolean, object, oneOf, optional } from '../src';
 import { string } from '../src/types/string';
 import { number } from '../src/types/number';
