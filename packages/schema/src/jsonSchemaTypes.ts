@@ -19,7 +19,7 @@ export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
  * draft-07 was chosen as a base type since many existing libraries already use it.
  */
 export interface JSONSchema extends JSONSchema7 {
-  $schema: 'https://spec.openapis.org/oas/3.1/dialect/base';
+  $schema: 'https://json-schema.org/draft-07/schema';
   discriminator?: {
     propertyName: string;
     mapping?: { [discriminatorValue: string]: string };

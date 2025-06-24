@@ -151,7 +151,7 @@ describe('Dictionary', () => {
       const jsonSchema = generateJSONSchema(dict(string()));
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        $schema: 'https://json-schema.org/draft-07/schema',
         type: 'object',
         additionalProperties: {
           type: 'string'

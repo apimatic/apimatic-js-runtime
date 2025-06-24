@@ -279,7 +279,7 @@ describe('Discriminated Object', () => {
     it('should output a valid JSON Schema as anyOf with discriminator', () => {
       const jsonSchema = generateJSONSchema(discriminatedSchema);
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        $schema: 'https://json-schema.org/draft-07/schema',
         anyOf: [
           {
             $ref: '#/$defs/schema1',

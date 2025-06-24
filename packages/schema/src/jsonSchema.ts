@@ -31,13 +31,13 @@ export function generateJSONSchema<T extends Schema<any, any>>(
 
   if (schemaRegistry.size === 0) {
     return {
-      $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+      $schema: 'https://json-schema.org/draft-07/schema',
       ...partialJsonSchema,
     };
   }
 
   return {
-    $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+    $schema: 'https://json-schema.org/draft-07/schema',
     ...partialJsonSchema,
     $defs: $defs,
   };

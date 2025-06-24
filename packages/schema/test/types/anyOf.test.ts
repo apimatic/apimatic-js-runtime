@@ -344,7 +344,7 @@ describe('AnyOf', () => {
       const jsonSchema = generateJSONSchema(anyOf([string(), number()]));
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        $schema: 'https://json-schema.org/draft-07/schema',
         anyOf: [
           {
             type: 'string'
@@ -368,7 +368,7 @@ describe('AnyOf', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        $schema: 'https://json-schema.org/draft-07/schema',
         anyOf: [
           {
             type: 'object',
@@ -412,7 +412,7 @@ describe('AnyOf', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        $schema: 'https://json-schema.org/draft-07/schema',
         anyOf: [
           {
             $ref: '#/$defs/schema1'

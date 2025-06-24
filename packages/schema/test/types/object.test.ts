@@ -355,7 +355,7 @@ describe('Object', () => {
       const jsonSchema = generateJSONSchema(userSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        $schema: 'https://json-schema.org/draft-07/schema',
         type: 'object',
         required: ['id', 'age'],
         properties: {
@@ -377,7 +377,7 @@ describe('Object', () => {
       const jsonSchema = generateJSONSchema(userSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        $schema: 'https://json-schema.org/draft-07/schema',
         type: 'object',
         required: ['id'],
         properties: {
@@ -398,7 +398,7 @@ describe('Object', () => {
       const jsonSchema = generateJSONSchema(userSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        $schema: 'https://json-schema.org/draft-07/schema',
         type: 'object',
         required: ['id'],
         properties: {
@@ -423,7 +423,7 @@ describe('Object', () => {
       const jsonSchema = generateJSONSchema(userSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://spec.openapis.org/oas/3.1/dialect/base',
+        $schema: 'https://json-schema.org/draft-07/schema',
         type: 'object',
         properties: {
           id: {
