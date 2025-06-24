@@ -10,8 +10,8 @@ import {
   string,
   validateAndMap,
   validateAndUnmap,
+  type JSONSchema
 } from '../../src';
-import type { JSONSchema } from '../../src';
 
 describe('Discriminated Object', () => {
   const baseType = strictObject({

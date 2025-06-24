@@ -19,3 +19,4 @@ export * from './types/string';
 export * from './types/stringEnum';
 export * from './types/unknown';
 export { generateJSONSchema } from './jsonSchema';
+export type { JSONSchema } from './jsonSchemaTypes';

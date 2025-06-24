@@ -2,8 +2,9 @@ import type {
   JSONSchemaDefinition,
   SchemaName,
   JSONSchemaContext,
+  JSONSchema,
 } from './jsonSchemaTypes';
-import type { JSONSchema, Schema } from './schema';
+import type { Schema } from './schema';
 
 export function generateJSONSchema<T extends Schema<any, any>>(
   schema: T

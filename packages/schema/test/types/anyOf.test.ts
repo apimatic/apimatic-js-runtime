@@ -1,5 +1,5 @@
-import { nullable, array, dict, object, generateJSONSchema } from '../../src';
-import { type JSONSchema, validateAndMap, validateAndUnmap } from '../../src/schema';
+import { type JSONSchema, nullable, array, dict, object, generateJSONSchema } from '../../src';
+import { validateAndMap, validateAndUnmap } from '../../src/schema';
 import { anyOf } from '../../src/types/anyOf';
 import { number } from '../../src/types/number';
 import { string } from '../../src/types/string';
