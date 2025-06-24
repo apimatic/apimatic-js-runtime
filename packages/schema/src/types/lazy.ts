@@ -1,5 +1,6 @@
 import type { SchemaRef } from '../jsonSchemaTypes';
-import type { JSONSchemaContext, Schema } from '../schema';
+import type { Schema } from '../schema';
+import type { JSONSchemaContext } from '../jsonSchemaTypes';
 import { once } from '../utils';
 
 /**

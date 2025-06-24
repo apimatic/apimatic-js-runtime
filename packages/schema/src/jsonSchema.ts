@@ -1,14 +1,14 @@
-import type { JSONSchemaDefinition, SchemaName } from './jsonSchemaTypes';
 import type {
-  JSONSchema,
+  JSONSchemaDefinition,
+  SchemaName,
   JSONSchemaContext,
-  Schema,
-} from './schema';
+} from './jsonSchemaTypes';
+import type { JSONSchema, Schema } from './schema';
 
 export function generateJSONSchema<T extends Schema<any, any>>(
   schema: T
 ): JSONSchema {
-  const schemaRegistry: Map<Schema<any,any>, SchemaName> = new Map();
+  const schemaRegistry: Map<Schema<any, any>, SchemaName> = new Map();
   const $defs: Record<SchemaName, JSONSchemaDefinition> = {};
   const context: JSONSchemaContext = {
     getRootSchema: () => schema,

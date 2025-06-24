@@ -3,12 +3,12 @@
  */
 
 import {
-  JSONSchemaContext,
   PartialJSONSchema,
   Schema,
   SchemaContextCreator,
   SchemaValidationError,
 } from './schema';
+import { JSONSchemaContext } from './jsonSchemaTypes';
 
 export function arrayEntries<T>(arr: T[]) {
   const entries: Array<[number, T]> = [];
