@@ -241,38 +241,25 @@ function internalObject<
     unmapXml: unmapObjectToXml(reverseXmlObjectSchema, mapAdditionalProps),
     objectSchema,
     toJSONSchema: (context) => {
-      const jsonSchema: PartialJSONSchema = {
+      const entries = Object.entries(objectSchema);
+      const properties: Record<string, PartialJSONSchema> = {};
+      for (const [key, [, propSchema]] of entries) {
+        properties[key] = propSchema.toJSONSchema(context);
+      }
+      const required = entries
+        .filter(([, [, propSchema]]) => !propSchema.type().startsWith('Optional<'))
+        .map(([key]) => key);
+
+      return {
         type: 'object',
+        ...(entries.length && { properties }),
+        ...(required.length && { required }),
+        ...(mapAdditionalProps && {
+          additionalProperties: additionalPropsSchema
+            ? additionalPropsSchema.toJSONSchema(context)
+            : true,
+        }),
       };
-
-      if (Object.keys(objectSchema).length) {
-        const properties = {};
-        const required: string[] = [];
-
-        for (const key of Object.keys(objectSchema)) {
-          const propSchema = objectSchema[key][1];
-          properties[key] = propSchema.toJSONSchema(context);
-
-          if (!propSchema.type().startsWith('Optional<')) {
-            required.push(key);
-          }
-        }
-
-        if (required.length) {
-          jsonSchema.required = required;
-        }
-        jsonSchema.properties = properties;
-      }
-
-      if (mapAdditionalProps) {
-        if (additionalPropsSchema) {
-          jsonSchema.additionalProperties = additionalPropsSchema.toJSONSchema(context);
-        } else {
-          jsonSchema.additionalProperties = true;
-        }
-      }
-
-      return jsonSchema;
     },
   };
 }
