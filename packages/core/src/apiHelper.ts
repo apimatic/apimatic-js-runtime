@@ -1,4 +1,4 @@
-import { ApiResponse, HttpResponse } from '@apimatic/core-interfaces';
+import { HttpResponse } from '@apimatic/core-interfaces';
 import { getHeader } from '@apimatic/http-headers';
 import { detect } from 'detect-browser';
 import warning from 'tiny-warning';
@@ -122,7 +122,7 @@ export function updateValueByJsonPointer(
   pointer: string,
   updater: (val: any) => any
 ): void {
-  if (!obj || !pointer || !updater) {
+  if (!obj || !pointer) {
     return;
   }
 
@@ -141,55 +141,6 @@ export function updateValueByJsonPointer(
   const lastKey = pathParts[pathParts.length - 1];
 
   current[lastKey] = updater(current[lastKey]);
-}
-
-export function getValueByJsonPointer(
-  obj: ApiResponse<any>,
-  pointer: string
-): any {
-  const [prefix] = pointer.split('#');
-
-  switch (prefix) {
-    case '$response.body':
-      return extractValueFromJsonPointer(obj.body, pointer);
-
-    case '$response.headers':
-      return extractValueFromJsonPointer(obj.headers, pointer);
-
-    default:
-      return this;
-  }
-}
-
-function extractValueFromJsonPointer<T>(obj: T, pointer: string): any {
-  if (!obj || !pointer) {
-    return null;
-  }
-
-  let current = obj;
-  if (typeof current === 'string') {
-    try {
-      current = JSON.parse(current);
-    } catch {
-      return null;
-    }
-  }
-
-  const [, jsonPath = ''] = pointer.split('#');
-  const pathParts = jsonPath.split('/').filter(Boolean);
-
-  return getValueAtPath(current, pathParts);
-}
-
-function getValueAtPath(obj: any, pathParts: string[]): any {
-  let result = obj;
-  for (const key of pathParts) {
-    if (!result || typeof result !== 'object' || !(key in result)) {
-      return null;
-    }
-    result = result[key];
-  }
-  return result;
 }
 
 function replaceStatusCodePlaceholder(

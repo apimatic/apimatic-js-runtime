@@ -1,4 +1,4 @@
-import { PagedResponse } from './pagedResponse';
+import { PagedResponse } from '../pagedResponse';
 
 export interface LinkPagedResponse<TItem, TPage>
   extends PagedResponse<TItem, TPage> {

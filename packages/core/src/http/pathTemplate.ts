@@ -67,8 +67,8 @@ function encodePathTemplateSegment(value: PathTemplateTypes) {
     skipEncode = true;
   }
   return Array.isArray(value)
-    ? (value as Array<string | number | bigint | boolean | unknown>)
-        .map<string | number | bigint | boolean | unknown>(encode)
+    ? (value as unknown[])
+        .map<unknown>(encode)
         .join('/')
     : [encode(value)];
 }

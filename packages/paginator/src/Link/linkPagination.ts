@@ -1,8 +1,8 @@
-import { PaginationStrategy } from './paginationStrategy';
+import { PaginationStrategy } from '../paginationStrategy';
 import { RequestBuilder } from '@apimatic/core/lib/http/requestBuilder';
-import { PagedResponse } from './pagedResponse';
+import { PagedResponse } from '../pagedResponse';
 import { LinkPagedResponse } from './linkPagedResponse';
-import { getValueByJsonPointer } from '@apimatic/core/lib/apiHelper';
+import { getValueByJsonPointer, extractQueryParams } from '../Utilities/utilities';
 
 export class LinkPagination implements PaginationStrategy {
   private readonly nextLinkPointer: string;
@@ -26,7 +26,7 @@ export class LinkPagination implements PaginationStrategy {
       return false;
     }
     this.nextLinkValue = nextLink;
-    const queryParams = this.extractQueryParams(nextLink);
+    const queryParams = extractQueryParams(nextLink);
 
     for (const [key, value] of Object.entries(queryParams)) {
       request.query(key, value);
@@ -41,23 +41,5 @@ export class LinkPagination implements PaginationStrategy {
       ...response,
       nextLink: this.nextLinkValue,
     };
-  }
-
-  private extractQueryParams(link: string): Record<string, string> {
-    const result: Record<string, string> = {};
-
-    const [, query] = link.split('?');
-
-    const decodedEqualsQuery = decodeURIComponent(query);
-    const queryParams = decodedEqualsQuery.split('&');
-
-    for (const queryParam of queryParams) {
-      const [key, value] = queryParam.split('=');
-      if (key) {
-        result[decodeURIComponent(key)] = decodeURIComponent(value || '');
-      }
-    }
-
-    return result;
   }
 }

@@ -1,7 +1,7 @@
-import { PaginationStrategy } from './paginationStrategy';
+import { PaginationStrategy } from '../paginationStrategy';
 import { RequestBuilder } from '@apimatic/core/lib/http/requestBuilder';
 import { NumberPagedResponse } from './numberPagedResponse';
-import { PagedResponse } from './pagedResponse';
+import { PagedResponse } from '../pagedResponse';
 
 export class PagePagination implements PaginationStrategy {
   private readonly pagePointer: string;

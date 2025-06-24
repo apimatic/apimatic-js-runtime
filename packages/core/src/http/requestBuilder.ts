@@ -623,6 +623,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     cloned._contentType = this._contentType;
     cloned._headers = { ...this._headers };
     cloned._body = this._body;
+    cloned._bodyType = this._bodyType;
     cloned._stream = this._stream;
     cloned._queryParams = { ...this._queryParams };
     cloned._queryParamsPrefixFormat = { ...this._queryParamsPrefixFormat };

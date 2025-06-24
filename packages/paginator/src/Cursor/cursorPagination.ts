@@ -1,8 +1,8 @@
-import { PaginationStrategy } from './paginationStrategy';
+import { PaginationStrategy } from '../paginationStrategy';
 import { RequestBuilder } from '@apimatic/core/lib/http/requestBuilder';
-import { PagedResponse } from './pagedResponse';
+import { PagedResponse } from '../pagedResponse';
 import { CursorPagedResponse } from './cursorPagedResponse';
-import { getValueByJsonPointer } from '@apimatic/core/lib/apiHelper';
+import { getValueByJsonPointer } from '../Utilities/utilities';
 
 export class CursorPagination implements PaginationStrategy {
   private readonly currentCursorPointer: string;

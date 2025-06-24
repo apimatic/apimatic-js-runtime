@@ -1,4 +1,4 @@
-import { PagedResponse } from './pagedResponse';
+import { PagedResponse } from '../pagedResponse';
 
 export interface CursorPagedResponse<TItem, TPage>
   extends PagedResponse<TItem, TPage> {

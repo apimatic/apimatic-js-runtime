@@ -935,7 +935,21 @@ describe('test updateParameterByJsonPointer function', () => {
     expect(result).toBe(reqBuilder);
   });
 
+  it('should return null when object is empty', async () => {
+    const reqBuilder = defaultRequestBuilder();
+
+    const result = reqBuilder.updateParameterByJsonPointer('$request.body#/user', () => 'value');
+    expect(result).toBe(reqBuilder);
+  });
+
   it('should handle null pointer gracefully', async () => {
+    const reqBuilder = defaultRequestBuilder();
+
+    const result = reqBuilder.updateParameterByJsonPointer('$request.headers#', () => 'value');
+    expect(result).toBe(reqBuilder);
+  });
+
+  it('should handle empty JSON path gracefully', async () => {
     const reqBuilder = defaultRequestBuilder();
 
     const result = reqBuilder.updateParameterByJsonPointer(null, () => 'value');
@@ -1026,5 +1040,27 @@ describe('test default request builder behavior to test retries', () => {
         'Time out error against http method GET and status code 500'
       );
     }
+  });
+});
+
+describe('test request builder clone functionality', () => {
+  it('should test request builder clone creates independent copy', async () => {
+
+    const originalReqBuilder = defaultRequestBuilder();
+    originalReqBuilder.text('testBody');
+    originalReqBuilder.header('test-header', 'test-value');
+    originalReqBuilder.authenticate(true);
+    originalReqBuilder.requestRetryOption(RequestRetryOption.Disable);
+
+    const clonedReqBuilder = originalReqBuilder.clone();
+
+    originalReqBuilder.query('newParam', 'newValue');
+
+    const originalResponse = await originalReqBuilder.callAsText();
+    const clonedResponse = await clonedReqBuilder.callAsText();
+
+    expect(originalResponse.request.url).not.toEqual(clonedResponse.request.url);
+    expect(originalResponse.request.url).toContain('newParam=newValue');
+    expect(clonedResponse.request.url).not.toContain('newParam=newValue');
   });
 });
