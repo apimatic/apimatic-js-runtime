@@ -56,8 +56,7 @@ function createAnyOfWithDiscriminator<T extends Array<Schema<any, any>>>(
       const discriminatedSchema = getDiscriminatedSchema(
         value,
         discriminatorMap,
-        discriminatorField,
-        false
+        discriminatorField
       );
       if (discriminatedSchema) {
         return discriminatedSchema.map(value, ctxt);
@@ -68,8 +67,7 @@ function createAnyOfWithDiscriminator<T extends Array<Schema<any, any>>>(
       const discriminatedSchema = getDiscriminatedSchema(
         value,
         discriminatorMap,
-        discriminatorField,
-        false
+        discriminatorField
       );
       if (discriminatedSchema) {
         return discriminatedSchema.unmap(value, ctxt);
@@ -91,8 +89,7 @@ function createAnyOfWithDiscriminator<T extends Array<Schema<any, any>>>(
       const discriminatedSchema = getDiscriminatedSchema(
         value,
         discriminatorMap,
-        discriminatorField,
-        false
+        discriminatorField
       );
       if (discriminatedSchema) {
         return discriminatedSchema.mapXml(value, ctxt);
@@ -103,8 +100,7 @@ function createAnyOfWithDiscriminator<T extends Array<Schema<any, any>>>(
       const discriminatedSchema = getDiscriminatedSchema(
         value,
         discriminatorMap,
-        discriminatorField,
-        false
+        discriminatorField
       );
       if (discriminatedSchema) {
         return discriminatedSchema.unmapXml(value, ctxt);

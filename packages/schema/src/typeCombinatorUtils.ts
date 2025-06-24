@@ -66,12 +66,11 @@ export function toCombinatorJSONSchemaWithDiscriminator<
 export function getDiscriminatedSchema<T extends Array<Schema<any, any>>>(
   value: unknown,
   discriminatorMap: DiscriminatorMap<T>,
-  discriminatorField: string,
-  useTypeOfCheck: boolean = true
+  discriminatorField: string
 ): ValueOf<DiscriminatorMap<T>> | false {
   const discriminatorValue =
     value &&
-    (useTypeOfCheck ? typeof value === 'object' : true) &&
+    typeof value === 'object' &&
     (value as Record<string, unknown>)[discriminatorField];
 
   if (!discriminatorValue) {
