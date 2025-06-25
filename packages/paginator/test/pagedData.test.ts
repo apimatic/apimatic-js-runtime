@@ -401,7 +401,7 @@ describe('Cursor-based pagination', () => {
 });
 
 describe('Multiple pagination', () => {
-  it('should use link pagination without falling back to page pagination ', async () => {
+  it('should use page pagination without falling back to link pagination ', async () => {
     const requestBuilder = getRequestBuilder();
     requestBuilder.query('page', 1);
 
@@ -411,7 +411,7 @@ describe('Multiple pagination', () => {
         new PagePagination('$request.query#/page'),
         mockResponsesMultiple
       ),
-      (p) => p,
+      (p) => p!,
       (res) => res.result.data,
       new LinkPagination('$response.body#/nextLink'),
       new PagePagination('$request.query#/page')
@@ -419,7 +419,7 @@ describe('Multiple pagination', () => {
 
     const pages = await collect(pagedData.pages());
 
-    expect(pages.map((p) => p?.items)).toEqual(expectedPages);
+    expect(pages.map((p) => p.items)).toEqual(expectedPages);
 
     expect(isLinkPagedResponse(pages[0])).toBeTruthy();
     expect(isNumberPagedResponse(pages[1])).toBeTruthy();
