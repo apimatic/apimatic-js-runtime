@@ -6,16 +6,16 @@ export interface OffsetPagedResponse<TItem, TPage>
 }
 
 export function createOffsetPagedResponse(
-  response: PagedResponse<any, any>
-): OffsetPagedResponse<any, any> | undefined {
+  response: PagedResponse<any, any> | null
+): OffsetPagedResponse<any, any> {
   if (isOffsetPagedResponse(response)) {
     return response;
   }
-  return undefined;
+  throw new Error('Unable to create instance of OffsetPagedResponse');
 }
 
 export function isOffsetPagedResponse(
-  response: PagedResponse<any, any>
+  response: PagedResponse<any, any> | null
 ): response is OffsetPagedResponse<any, any> {
-  return 'offset' in response;
+  return response !== null && 'offset' in response;
 }

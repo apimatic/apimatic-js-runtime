@@ -6,16 +6,16 @@ export interface CursorPagedResponse<TItem, TPage>
 }
 
 export function createCursorPagedResponse(
-  response: PagedResponse<any, any>
-): CursorPagedResponse<any, any> | undefined {
+  response: PagedResponse<any, any> | null
+): CursorPagedResponse<any, any> {
   if (isCursorPagedResponse(response)) {
     return response;
   }
-  return undefined;
+  throw new Error('Unable to create instance of CursorPagedResponse');
 }
 
 export function isCursorPagedResponse(
-  response: PagedResponse<any, any>
+  response: PagedResponse<any, any> | null
 ): response is CursorPagedResponse<any, any> {
-  return 'nextCursor' in response;
+  return response !== null && 'nextCursor' in response;
 }

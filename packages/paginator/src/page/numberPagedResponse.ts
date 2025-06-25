@@ -6,16 +6,16 @@ export interface NumberPagedResponse<TItem, TPage>
 }
 
 export function createNumberPagedResponse(
-  response: PagedResponse<any, any>
-): NumberPagedResponse<any, any> | undefined {
+  response: PagedResponse<any, any> | null
+): NumberPagedResponse<any, any> {
   if (isNumberPagedResponse(response)) {
     return response;
   }
-  return undefined;
+  throw new Error('Unable to create instance of NumberPagedResponse');
 }
 
 export function isNumberPagedResponse(
-  response: PagedResponse<any, any>
+  response: PagedResponse<any, any> | null
 ): response is NumberPagedResponse<any, any> {
-  return 'pageNumber' in response;
+  return response !== null && 'pageNumber' in response;
 }

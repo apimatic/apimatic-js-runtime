@@ -1,4 +1,4 @@
-import { RequestBuilder } from '@apimatic/core/lib/http/requestBuilder';
+import { RequestBuilder } from './core';
 import { PagedResponse } from './pagedResponse';
 
 export interface PaginationStrategy {
@@ -22,5 +22,7 @@ export interface PaginationStrategy {
    * @param response The response of the current page to be modfied with
    *                 its metadata.
    */
-  withMetadata<I, P>(response: PagedResponse<I, P>): PagedResponse<I, P>;
+  withMetadata<TItem, TPage>(
+    response: PagedResponse<TItem, TPage>
+  ): PagedResponse<TItem, TPage>;
 }

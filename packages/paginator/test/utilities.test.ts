@@ -1,17 +1,7 @@
-import { ApiResponse } from '@apimatic/core-interfaces';
+import { ApiResponse } from '../src/core';
 import { getValueByJsonPointer } from '../src/utilities';
 
 describe('getValueByJsonPointer tests', () => {
-  const mockBody = JSON.stringify({
-    user: {
-      name: 'Alice',
-      age: 25,
-      address: {
-        city: 'Islamabad',
-      },
-    },
-  });
-
   const mockResponse: ApiResponse<any> = {
     request: {} as any,
     statusCode: 200,
@@ -20,39 +10,52 @@ describe('getValueByJsonPointer tests', () => {
       'x-request-id': 'abc-123',
     },
     result: {},
-    body: mockBody,
+    body: JSON.stringify({
+      user: {
+        name: 'Alice',
+        age: 25,
+        address: {
+          city: 'Islamabad',
+        },
+      },
+    }),
   };
 
-  it('should extract a top-level value from body', () => {
-    const value = getValueByJsonPointer(
-      mockResponse,
-      '$response.body#/user/name'
-    );
-    expect(value).toBe('Alice');
-  });
-
-  it('should extract a nested value from body', () => {
-    const value = getValueByJsonPointer(
-      mockResponse,
-      '$response.body#/user/address/city'
-    );
-    expect(value).toBe('Islamabad');
-  });
-
-  it('should extract a value from headers', () => {
-    const value = getValueByJsonPointer(
-      mockResponse,
-      '$response.headers#/content-type'
-    );
-    expect(value).toBe('application/json');
-  });
-
-  it('should return null for non-existing path in body', () => {
-    const value = getValueByJsonPointer(
-      mockResponse,
-      '$response.body#/user/phone'
-    );
-    expect(value).toBeNull();
+  test.each([
+    [
+      'should extract a nested value from body',
+      '$response.body#/user/address/city',
+      'Islamabad',
+    ],
+    [
+      'should extract a value from headers',
+      '$response.headers#/content-type',
+      'application/json',
+    ],
+    [
+      'should return null for non-existing path in body',
+      '$response.body#/user/phone',
+      null,
+    ],
+    [
+      'should return null when jsonPath of pointer is empty',
+      '$response.body#',
+      null,
+    ],
+    ['should return null when pointer is empty', '', null],
+    [
+      'should return null for unsupported prefix',
+      '$request.cow#/user/name',
+      null,
+    ],
+    [
+      'should extract a top-level value from body',
+      '$response.body#/user/name',
+      'Alice',
+    ],
+  ])('%s', (_: string, jsonPointer: string, expectedResult: any) => {
+    const value = getValueByJsonPointer(mockResponse, jsonPointer);
+    expect(value).toBe(expectedResult);
   });
 
   it('should return null for malformed JSON string in body', () => {
@@ -87,24 +90,6 @@ describe('getValueByJsonPointer tests', () => {
     const value = getValueByJsonPointer(
       streamResponse,
       '$response.body#/user/name'
-    );
-    expect(value).toBeNull();
-  });
-
-  it('should return null when jsonPath of pointer is empty', () => {
-    const value = getValueByJsonPointer(mockResponse, '$response.body#');
-    expect(value).toBeNull();
-  });
-
-  it('should return null when pointer is empty', () => {
-    const value = getValueByJsonPointer(mockResponse, '');
-    expect(value).toBeNull();
-  });
-
-  it('should return null for unsupported prefix', () => {
-    const value = getValueByJsonPointer(
-      mockResponse,
-      '$request.body#/user/name'
     );
     expect(value).toBeNull();
   });

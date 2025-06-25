@@ -1,4 +1,4 @@
-import { ApiResponse } from '@apimatic/core-interfaces';
+import { ApiResponse } from './core';
 
 export function extractQueryParams(link: string): Record<string, string> {
   const result: Record<string, string> = {};

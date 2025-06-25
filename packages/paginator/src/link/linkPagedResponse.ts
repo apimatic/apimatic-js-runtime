@@ -6,16 +6,16 @@ export interface LinkPagedResponse<TItem, TPage>
 }
 
 export function createLinkPagedResponse(
-  response: PagedResponse<any, any>
-): LinkPagedResponse<any, any> | undefined {
+  response: PagedResponse<any, any> | null
+): LinkPagedResponse<any, any> {
   if (isLinkPagedResponse(response)) {
     return response;
   }
-  return undefined;
+  throw new Error('Unable to create instance of LinkPagedResponse');
 }
 
 export function isLinkPagedResponse(
-  response: PagedResponse<any, any>
+  response: PagedResponse<any, any> | null
 ): response is LinkPagedResponse<any, any> {
-  return 'nextLink' in response;
+  return response !== null && 'nextLink' in response;
 }

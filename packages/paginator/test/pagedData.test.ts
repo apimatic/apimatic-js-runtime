@@ -9,527 +9,468 @@ import {
   OffsetPagination,
   PagedResponse,
   LinkPagination,
+  isLinkPagedResponse,
+  isNumberPagedResponse,
 } from '../src';
+import { PaginationStrategy } from '../src/paginationStrategy';
+import { ApiResponse, RequestBuilder } from '../src/core';
 import {
   ApiError,
   createRequestBuilderFactory,
-  DefaultRequestBuilder,
-} from '@apimatic/core';
-import { Schema } from '@apimatic/core/lib/schema';
-import {
-  ApiResponse,
-  HttpRequest,
-  HttpClientInterface,
   HttpMethod,
+  HttpRequest,
   passThroughInterceptor,
-  RetryConfiguration,
-} from '@apimatic/core/lib/coreInterfaces';
-import { object, array, string } from '@apimatic/schema';
-import { PaginationStrategy } from '../src/paginationStrategy';
+} from '@apimatic/core';
 
-type PaginationType = 'page' | 'offset' | 'link' | 'cursor' | null;
+const expectedPages = [
+  ['item1', 'item2'],
+  ['item3', 'item4'],
+  ['item5', 'item6'],
+];
+const expectedItems = expectedPages.reduce((acc, curr) => acc.concat(curr), []);
 
-describe('PagedData', () => {
-  let mockSchema: Schema<any>;
-  let mockGetData: jest.Mock;
+const mockResponses: Record<string, string> = {
+  page1: JSON.stringify({
+    data: expectedPages[0],
+    nextLink: 'https://apimatic.hopto.org:3000/test/pagination?nextLink=page2',
+    nextCursor: 'cursor2',
+  }),
+  page2: JSON.stringify({
+    data: expectedPages[1],
+    nextLink: 'https://apimatic.hopto.org:3000/test/pagination?nextLink=page3',
+    nextCursor: 'cursor3',
+  }),
+  page3: JSON.stringify({
+    data: expectedPages[2],
+    nextLink: null,
+    nextCursor: 'cursor4',
+  }),
+  empty: JSON.stringify({ data: [], nextCursor: null }),
+  error: JSON.stringify({ error: 'Bad Request' }),
+  noData: JSON.stringify({}),
+};
 
-  const expectedPages = [
-    ['item1', 'item2'],
-    ['item3', 'item4'],
-    ['item5', 'item6'],
-  ];
-  const expectedItems = expectedPages.reduce(
-    (acc, curr) => acc.concat(curr),
-    []
-  );
+const mockResponsesMultiple: Record<string, string> = {
+  page1: JSON.stringify({
+    data: expectedPages[0],
+    nextLink: null,
+    nextCursor: 'cursor2',
+  }),
+  page2: JSON.stringify({
+    data: expectedPages[1],
+    nextLink: 'https://apimatic.hopto.org:3000/test/pagination?nextLink=page3',
+    nextCursor: 'cursor3',
+  }),
+  page3: JSON.stringify({
+    data: expectedPages[2],
+    nextLink: null,
+    nextCursor: 'cursor4',
+  }),
+  empty: JSON.stringify({ data: [], nextCursor: null }),
+};
 
-  const mockResponses = {
-    page1: {
-      statusCode: 200,
-      body: JSON.stringify({
-        data: expectedPages[0],
-        nextLink:
-          'https://apimatic.hopto.org:3000/test/pagination?nextLink=page2',
-        nextCursor: 'cursor2',
-      }),
-      headers: {},
-    },
-    page2: {
-      statusCode: 200,
-      body: JSON.stringify({
-        data: expectedPages[1],
-        nextLink:
-          'https://apimatic.hopto.org:3000/test/pagination?nextLink=page3',
-        nextCursor: 'cursor3',
-      }),
-      headers: {},
-    },
-    page3: {
-      statusCode: 200,
-      body: JSON.stringify({
-        data: expectedPages[2],
-        nextLink: null,
-        nextCursor: 'cursor4',
-      }),
-      headers: {},
-    },
-    empty: {
-      statusCode: 200,
-      body: JSON.stringify({ data: [], nextCursor: null }),
-      headers: {},
-    },
-    error: {
-      statusCode: 400,
-      body: JSON.stringify({ error: 'Bad Request' }),
-      headers: {},
-    },
-    noData: {
-      statusCode: 200,
-      body: JSON.stringify({}),
-      headers: {},
-    },
-  };
+function executor(
+  pagination: PaginationStrategy | null,
+  responses: Record<string, string> = mockResponses
+): (requestBuilder: RequestBuilder<any, any>) => Promise<ApiResponse<any>> {
+  return async (requestBuilder: RequestBuilder<any, any>) => {
+    const request = requestBuilder.toRequest();
+    const queryString = request.url.split('?')[1] || '';
+    const params = new URLSearchParams(queryString);
 
-  function createMockHttpClient(
-    paginationType: PaginationType
-  ): HttpClientInterface {
-    return async (request: HttpRequest) => {
-      const queryString = request.url.split('?')[1] || '';
-      const params = new URLSearchParams(queryString);
+    if (pagination instanceof PagePagination) {
+      const page = parseInt(params.get('page') || '1', 10);
+      const pageMap: Record<number, keyof typeof responses> = {
+        1: 'page1',
+        2: 'page2',
+        3: 'page3',
+      };
+      return createApiResponse(
+        request,
+        responses[pageMap[page]] || responses.empty
+      );
+    }
 
-      switch (paginationType) {
-        case 'page': {
-          const page = parseInt(params.get('page') || '1', 10);
-          const pageMap: Record<number, keyof typeof mockResponses> = {
-            1: 'page1',
-            2: 'page2',
-            3: 'page3',
-          };
-          return mockResponses[pageMap[page]] || mockResponses.empty;
-        }
+    if (pagination instanceof OffsetPagination) {
+      const offset = parseInt(params.get('offset') || '0', 10);
+      const offsetMap: Record<number, keyof typeof responses> = {
+        0: 'page1',
+        2: 'page2',
+        4: 'page3',
+      };
+      return createApiResponse(
+        request,
+        responses[offsetMap[offset]] || responses.empty
+      );
+    }
 
-        case 'offset': {
-          const offset = parseInt(params.get('offset') || '0', 10);
-          const offsetMap: Record<number, keyof typeof mockResponses> = {
-            0: 'page1',
-            2: 'page2',
-            4: 'page3',
-          };
-          return mockResponses[offsetMap[offset]] || mockResponses.empty;
-        }
+    if (pagination instanceof LinkPagination) {
+      const nextLink = params.get('nextLink');
+      const linkMap: Record<string, keyof typeof responses> = {
+        page2: 'page2',
+        page3: 'page3',
+      };
+      return nextLink
+        ? createApiResponse(
+            request,
+            responses[linkMap[nextLink]] || responses.empty
+          )
+        : createApiResponse(request, responses.page1);
+    }
 
-        case 'link': {
-          const nextLink = params.get('nextLink');
-          const linkMap: Record<string, keyof typeof mockResponses> = {
-            page2: 'page2',
-            page3: 'page3',
-          };
-          return nextLink
-            ? mockResponses[linkMap[nextLink]] || mockResponses.empty
-            : mockResponses.page1;
-        }
-
-        case 'cursor': {
-          const cursor = params.get('cursor') || 'cursor1';
-          if (cursor === 'cursor1') {
-            return mockResponses.page1;
-          } else if (cursor === 'cursor2') {
-            return mockResponses.page2;
-          } else if (cursor === 'cursor3') {
-            return mockResponses.page3;
-          } else {
-            return mockResponses.empty;
-          }
-        }
-
-        default:
-          return mockResponses.empty;
+    if (pagination instanceof CursorPagination) {
+      const cursor = params.get('cursor') || 'cursor1';
+      if (cursor === 'cursor1') {
+        return createApiResponse(request, mockResponses.page1);
+      } else if (cursor === 'cursor2') {
+        return createApiResponse(request, mockResponses.page2);
+      } else if (cursor === 'cursor3') {
+        return createApiResponse(request, mockResponses.page3);
+      } else {
+        return createApiResponse(request, mockResponses.empty);
       }
-    };
-  }
+    }
 
-  function mockBaseURIProvider() {
-    return 'https://apimatic.hopto.org:3000';
-  }
-  const noneAuthenticationProvider = () => passThroughInterceptor;
-  const retryConfig: RetryConfiguration = {
-    maxNumberOfRetries: 3,
-    retryOnTimeout: false,
-    retryInterval: 1,
-    maximumRetryWaitTime: 3,
-    backoffFactor: 2,
-    httpStatusCodesToRetry: [408, 413, 429, 500, 502, 503, 504, 521, 522, 524],
-    httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
+    return createApiResponse(request, responses.empty);
   };
+}
 
-  function getRequestBuilder(
-    paginationType: PaginationType
-  ): DefaultRequestBuilder<string, boolean> {
-    const defaultRequestBuilder = createRequestBuilderFactory<string, boolean>(
-      createMockHttpClient(paginationType),
-      mockBaseURIProvider,
-      ApiError,
-      noneAuthenticationProvider,
-      retryConfig
-    ) as (
-      httpMethod: HttpMethod,
-      path?: string
-    ) => DefaultRequestBuilder<string, boolean>;
+function createApiResponse(
+  request: HttpRequest,
+  body: string,
+  success: boolean = true
+): ApiResponse<any> {
+  return {
+    request,
+    body,
+    statusCode: success ? 200 : 400,
+    headers: {},
+    result: JSON.parse(body),
+  };
+}
 
-    const requestBuilder = defaultRequestBuilder('GET', '/test/pagination');
-    requestBuilder.baseUrl('default');
+function getRequestBuilder(): RequestBuilder<string, boolean> {
+  const defaultRequestBuilder = createRequestBuilderFactory<string, boolean>(
+    async (_) => ({ statusCode: 200, body: '', headers: {} }),
+    () => 'https://apimatic.hopto.org:3000',
+    ApiError,
+    () => passThroughInterceptor,
+    {
+      maxNumberOfRetries: 3,
+      retryOnTimeout: false,
+      retryInterval: 1,
+      maximumRetryWaitTime: 3,
+      backoffFactor: 2,
+      httpStatusCodesToRetry: [
+        408,
+        413,
+        429,
+        500,
+        502,
+        503,
+        504,
+        521,
+        522,
+        524,
+      ],
+      httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
+    }
+  );
+  const requestBuilder = defaultRequestBuilder('GET', '/test/pagination');
+  requestBuilder.baseUrl('default');
+  return requestBuilder;
+}
 
-    return requestBuilder;
+function getPagedData(
+  requestBuilder: RequestBuilder<string, any>,
+  pagination: PaginationStrategy,
+  pageResponseCreator: (response: PagedResponse<any, any> | null) => any
+) {
+  return new PagedData(
+    requestBuilder,
+    executor(pagination),
+    pageResponseCreator,
+    (res) => res.result.data,
+    pagination
+  );
+}
+
+async function collect<T>(iterable: AsyncIterable<T>): Promise<T[]> {
+  const values: T[] = [];
+  for await (const item of iterable) {
+    values.push(item);
   }
+  return values;
+}
 
-  function getPagedData(
-    requestBuilder: DefaultRequestBuilder<string, any>,
-    pagination: PaginationStrategy,
-    pageResponseCreator: (response: PagedResponse<any, any>) => any
-  ) {
-    return new PagedData(
+describe('Page-based pagination', () => {
+  const expectedNumberPages = expectedPages.map((items, index) => ({
+    items,
+    pageNumber: `${index + 1}`,
+  }));
+
+  function createNumberPagedData(value: number | undefined) {
+    const requestBuilder = getRequestBuilder();
+    requestBuilder.query('page', value);
+    return getPagedData(
       requestBuilder,
-      mockSchema,
-      undefined,
-      pageResponseCreator,
-      mockGetData,
-      pagination
+      new PagePagination('$request.query#/page'),
+      createNumberPagedResponse
     );
   }
 
-  beforeEach(() => {
-    mockSchema = object({
-      data: ['data', array(string())],
-    });
-    mockGetData = jest.fn((response: ApiResponse<any>) => {
-      const body = JSON.parse(response.body as string);
-      return body.data;
-    });
+  it('should iterate through pages correctly', async () => {
+    const pagedData = createNumberPagedData(1);
+
+    const items = await collect(pagedData);
+
+    expect(items).toEqual(expectedItems);
   });
 
-  async function collectItems<T>(pagedData: AsyncIterable<T>): Promise<T[]> {
-    const items: T[] = [];
-    for await (const item of pagedData) {
-      items.push(item);
-    }
-    return items;
-  }
+  it('should iterate through pages as pages', async () => {
+    const pagedData = createNumberPagedData(1);
 
-  async function collectPages(
-    pagedData: PagedData<any, any, any, any, any>
-  ): Promise<any[]> {
-    const pages: any[] = [];
-    for await (const page of pagedData.pages()) {
-      pages.push(page);
-    }
-    return pages;
-  }
+    const pages = await collect(pagedData.pages());
 
-  describe('Page-based pagination', () => {
-    const expectedNumberPages = expectedPages.map((items, index) => ({
-      items,
-      pageNumber: `${index + 1}`,
-    }));
-
-    function createNumberPagedData(value: number | undefined) {
-      const requestBuilder = getRequestBuilder('page');
-      requestBuilder.query('page', value);
-      return getPagedData(
-        requestBuilder,
-        new PagePagination('$request.query#/page'),
-        createNumberPagedResponse
-      );
-    }
-
-    it('should iterate through pages correctly', async () => {
-      const pagedData = createNumberPagedData(1);
-
-      const items = await collectItems(pagedData);
-
-      expect(items).toEqual(expectedItems);
-    });
-
-    it('should iterate through pages as pages', async () => {
-      const pagedData = createNumberPagedData(1);
-
-      const pages = await collectPages(pagedData);
-
-      expect(pages).toMatchObject(expectedNumberPages);
-    });
-
-    it('should use 1 as pageNumber when it is undefined', async () => {
-      const pagedData = createNumberPagedData(undefined);
-
-      const pages = await collectPages(pagedData);
-
-      expect(pages).toMatchObject<
-        Array<{ items: string[]; pageNumber: string }>
-      >(expectedNumberPages);
-    });
-
-    it('should start iteration from 2nd page when pageNumber is 2', async () => {
-      const pagedData = createNumberPagedData(2);
-
-      const pages = await collectPages(pagedData);
-
-      expect(pages).toMatchObject(expectedNumberPages.slice(-2));
-    });
+    expect(pages).toMatchObject(expectedNumberPages);
   });
 
-  describe('Offset-based pagination', () => {
-    const expectedOffsetPages = expectedPages.map((items, index) => ({
-      items,
-      offset: `${index * 2}`,
-    }));
+  it('should use 1 as pageNumber when it is undefined', async () => {
+    const pagedData = createNumberPagedData(undefined);
 
-    function createOffsetPagedData(value: number | undefined) {
-      const requestBuilder = getRequestBuilder('offset');
-      requestBuilder.query('offset', value);
-      return getPagedData(
-        requestBuilder,
-        new OffsetPagination('$request.query#/offset'),
-        createOffsetPagedResponse
-      );
-    }
+    const pages = await collect(pagedData.pages());
 
-    it('should iterate through pages using offset', async () => {
-      const pagedData = createOffsetPagedData(0);
-      const items = await collectItems(pagedData);
-
-      expect(items).toEqual(expectedItems);
-    });
-
-    it('should iterate through pages as pages using offset', async () => {
-      const pagedData = createOffsetPagedData(0);
-      const pages = await collectPages(pagedData);
-
-      expect(pages).toMatchObject(expectedOffsetPages);
-    });
-
-    it('should use 0 as offset when it is undefined', async () => {
-      const pagedData = createOffsetPagedData(undefined);
-      const pages = await collectPages(pagedData);
-
-      expect(pages).toMatchObject(expectedOffsetPages);
-    });
-
-    it('should start iteration from 2nd item when offset is 2', async () => {
-      const pagedData = createOffsetPagedData(2);
-      const pages = await collectPages(pagedData);
-
-      expect(pages).toMatchObject(expectedOffsetPages.slice(-2));
-    });
+    expect(pages).toMatchObject<Array<{ items: string[]; pageNumber: string }>>(
+      expectedNumberPages
+    );
   });
 
-  describe('Link-based pagination', () => {
-    const expectedLinkPages = expectedPages.map((items, index) => ({
-      items,
-      nextLink:
-        index === 0
-          ? null
-          : `https://apimatic.hopto.org:3000/test/pagination?nextLink=page${
-              index + 1
-            }`,
-    }));
+  it('should start iteration from 2nd page when pageNumber is 2', async () => {
+    const pagedData = createNumberPagedData(2);
 
-    function createLinkPagedData(value: number | undefined) {
-      const requestBuilder = getRequestBuilder('link');
-      requestBuilder.query('page', value);
-      return getPagedData(
-        requestBuilder,
-        new LinkPagination('$response.body#/nextLink'),
-        createLinkPagedResponse
-      );
-    }
+    const pages = await collect(pagedData.pages());
 
-    it('should iterate through pages using next links', async () => {
-      const pagedData = createLinkPagedData(1);
-      const items = await collectItems(pagedData);
-
-      expect(items).toEqual(expectedItems);
-    });
-
-    it('should iterate through pages as pages using next links', async () => {
-      const pagedData = createLinkPagedData(1);
-      const pages = await collectPages(pagedData);
-
-      expect(pages).toMatchObject(expectedLinkPages);
-    });
-  });
-
-  describe('Cursor-based pagination', () => {
-    const expectedCursorPages = expectedPages.map((items, index) => ({
-      items,
-      nextCursor: `cursor${index + 1}`,
-    }));
-
-    function createCursorPagedData(value: string | undefined) {
-      const requestBuilder = getRequestBuilder('cursor');
-      requestBuilder.query('cursor', value);
-      return getPagedData(
-        requestBuilder,
-        new CursorPagination(
-          '$request.query#/cursor',
-          '$response.body#/nextCursor'
-        ),
-        createCursorPagedResponse
-      );
-    }
-
-    it('should iterate through pages using cursor', async () => {
-      const pagedData = createCursorPagedData('cursor1');
-      const items = await collectItems(pagedData);
-
-      expect(items).toEqual(expectedItems);
-    });
-
-    it('should iterate through pages as pages using cursor', async () => {
-      const pagedData = createCursorPagedData('cursor1');
-      const pages = await collectPages(pagedData);
-
-      expect(pages).toMatchObject(expectedCursorPages);
-    });
-
-    it('should return null cursor for 1st page when cursor is undefined', async () => {
-      const pagedData = createCursorPagedData(undefined);
-
-      const pages = await collectPages(pagedData);
-      const modifiedExpectedCursorPages = expectedCursorPages.map(
-        (page, index) => ({
-          ...page,
-          nextCursor: index === 0 ? null : page.nextCursor,
-        })
-      );
-
-      expect(pages).toMatchObject(modifiedExpectedCursorPages);
-    });
-
-    it('should return 1st page only as nextCursor pointer is invalid', async () => {
-      const requestBuilder = getRequestBuilder('cursor');
-      requestBuilder.query('cursor', 'cursor1');
-      const pagedData = getPagedData(
-        requestBuilder,
-        new CursorPagination(
-          '$request.query#/cursor',
-          '$response.body#/next-Cursor'
-        ),
-        createCursorPagedResponse
-      );
-
-      const pages = await collectPages(pagedData);
-
-      expect(pages).toMatchObject(expectedCursorPages.slice(0, 1));
-    });
-  });
-
-  describe('Error handling', () => {
-    it('should handle none paginationStrategies in arguments', async () => {
-      const requestBuilder = getRequestBuilder(null);
-      requestBuilder.query('page', 1);
-      requestBuilder.query('offset', '0');
-      requestBuilder.query('cursor', 'cursor1');
-
-      const pagedData = new PagedData(
-        requestBuilder,
-        mockSchema,
-        undefined,
-        (p) => p,
-        mockGetData
-      );
-
-      const items = await collectItems(pagedData);
-
-      expect(items).toEqual([]);
-    });
-
-    it('should handle undefined data from getData', async () => {
-      const originalGetData = mockGetData;
-      mockGetData = jest.fn(() => undefined);
-
-      const requestBuiler = getRequestBuilder(null);
-      const pagedData = getPagedData(
-        requestBuiler,
-        new PagePagination('$request.query#/page'),
-        createNumberPagedResponse
-      );
-
-      const items = await collectItems(pagedData);
-
-      expect(items).toEqual([]);
-
-      mockGetData = originalGetData;
-    });
-
-    it('should handle 400 status code from callAsJson', async () => {
-      const errorHttpClient: HttpClientInterface = async () => ({
-        statusCode: 400,
-        body: JSON.stringify({ error: 'Bad Request' }),
-        headers: {},
-      });
-
-      const defaultRequestBuilder = createRequestBuilderFactory<
-        string,
-        boolean
-      >(
-        errorHttpClient,
-        mockBaseURIProvider,
-        ApiError,
-        noneAuthenticationProvider,
-        retryConfig
-      )('GET', '/test/pagination');
-
-      defaultRequestBuilder.baseUrl('default');
-      defaultRequestBuilder.query('page', 1);
-
-      const pagedData = new PagedData(
-        defaultRequestBuilder,
-        mockSchema,
-        undefined,
-        createNumberPagedResponse,
-        mockGetData,
-        new PagePagination('$request.query#/page')
-      );
-
-      await expect(async () => {
-        for await (const _ of pagedData) {
-          // iterating to trigger the error condition
-        }
-      }).rejects.toThrow();
-    });
+    expect(pages).toMatchObject(expectedNumberPages.slice(-2));
   });
 });
 
-describe('Paged Response Creator Functions', () => {
-  const basePagedResponse: PagedResponse<any, any> = {
-    request: {
-      method: 'GET',
-      url: 'https://example.com',
-      headers: {},
-    },
-    statusCode: 200,
-    headers: {},
-    body: '{}',
-    result: {},
-    items: [],
-  };
+describe('Offset-based pagination', () => {
+  const expectedOffsetPages = expectedPages.map((items, index) => ({
+    items,
+    offset: `${index * 2}`,
+  }));
 
-  it('createOffsetPagedResponse should return undefined for non-offset paged response', () => {
-    const result = createOffsetPagedResponse(basePagedResponse);
-    expect(result).toBeUndefined();
+  function createOffsetPagedData(value: number | undefined) {
+    const requestBuilder = getRequestBuilder();
+    requestBuilder.query('offset', value);
+    return getPagedData(
+      requestBuilder,
+      new OffsetPagination('$request.query#/offset'),
+      createOffsetPagedResponse
+    );
+  }
+
+  it('should iterate through pages using offset', async () => {
+    const pagedData = createOffsetPagedData(0);
+    const items = await collect(pagedData);
+
+    expect(items).toEqual(expectedItems);
   });
 
-  it('createNumberPagedResponse should return undefined for non-number paged response', () => {
-    const result = createNumberPagedResponse(basePagedResponse);
-    expect(result).toBeUndefined();
+  it('should iterate through pages as pages using offset', async () => {
+    const pagedData = createOffsetPagedData(0);
+    const pages = await collect(pagedData.pages());
+
+    expect(pages).toMatchObject(expectedOffsetPages);
   });
 
-  it('createLinkPagedResponse should return undefined for non-link paged response', () => {
-    const result = createLinkPagedResponse(basePagedResponse);
-    expect(result).toBeUndefined();
+  it('should use 0 as offset when it is undefined', async () => {
+    const pagedData = createOffsetPagedData(undefined);
+    const pages = await collect(pagedData.pages());
+
+    expect(pages).toMatchObject(expectedOffsetPages);
   });
 
-  it('createCursorPagedResponse should return undefined for non-cursor paged response', () => {
-    const result = createCursorPagedResponse(basePagedResponse);
-    expect(result).toBeUndefined();
+  it('should start iteration from 2nd item when offset is 2', async () => {
+    const pagedData = createOffsetPagedData(2);
+    const pages = await collect(pagedData.pages());
+
+    expect(pages).toMatchObject(expectedOffsetPages.slice(-2));
+  });
+});
+
+describe('Link-based pagination', () => {
+  const expectedLinkPages = expectedPages.map((items, index) => ({
+    items,
+    nextLink:
+      index === 0
+        ? null
+        : `https://apimatic.hopto.org:3000/test/pagination?nextLink=page${
+            index + 1
+          }`,
+  }));
+
+  function createLinkPagedData(value: number | undefined) {
+    const requestBuilder = getRequestBuilder();
+    requestBuilder.query('page', value);
+    return getPagedData(
+      requestBuilder,
+      new LinkPagination('$response.body#/nextLink'),
+      createLinkPagedResponse
+    );
+  }
+
+  it('should iterate through pages using next links', async () => {
+    const pagedData = createLinkPagedData(1);
+    const items = await collect(pagedData);
+
+    expect(items).toEqual(expectedItems);
+  });
+
+  it('should iterate through pages as pages using next links', async () => {
+    const pagedData = createLinkPagedData(1);
+    const pages = await collect(pagedData.pages());
+
+    expect(pages).toMatchObject(expectedLinkPages);
+  });
+});
+
+describe('Cursor-based pagination', () => {
+  const expectedCursorPages = expectedPages.map((items, index) => ({
+    items,
+    nextCursor: `cursor${index + 1}`,
+  }));
+
+  function createCursorPagedData(value: string | undefined) {
+    const requestBuilder = getRequestBuilder();
+    requestBuilder.query('cursor', value);
+    return getPagedData(
+      requestBuilder,
+      new CursorPagination(
+        '$request.query#/cursor',
+        '$response.body#/nextCursor'
+      ),
+      createCursorPagedResponse
+    );
+  }
+
+  it('should iterate through pages using cursor', async () => {
+    const pagedData = createCursorPagedData('cursor1');
+    const items = await collect(pagedData);
+
+    expect(items).toEqual(expectedItems);
+  });
+
+  it('should iterate through pages as pages using cursor', async () => {
+    const pagedData = createCursorPagedData('cursor1');
+    const pages = await collect(pagedData.pages());
+
+    expect(pages).toMatchObject(expectedCursorPages);
+  });
+
+  it('should return null cursor for 1st page when cursor is undefined', async () => {
+    const pagedData = createCursorPagedData(undefined);
+
+    const pages = await collect(pagedData.pages());
+    const modifiedExpectedCursorPages = expectedCursorPages.map(
+      (page, index) => ({
+        ...page,
+        nextCursor: index === 0 ? null : page.nextCursor,
+      })
+    );
+
+    expect(pages).toMatchObject(modifiedExpectedCursorPages);
+  });
+
+  it('should return 1st page only as nextCursor pointer is invalid', async () => {
+    const requestBuilder = getRequestBuilder();
+    requestBuilder.query('cursor', 'cursor1');
+    const pagedData = getPagedData(
+      requestBuilder,
+      new CursorPagination(
+        '$request.query#/cursor',
+        '$response.body#/next-Cursor'
+      ),
+      createCursorPagedResponse
+    );
+
+    const pages = await collect(pagedData.pages());
+
+    expect(pages).toMatchObject(expectedCursorPages.slice(0, 1));
+  });
+});
+
+describe('Multiple pagination', () => {
+  it('should use link pagination without falling back to page pagination ', async () => {
+    const requestBuilder = getRequestBuilder();
+    requestBuilder.query('page', 1);
+
+    const pagedData = new PagedData(
+      requestBuilder,
+      executor(
+        new PagePagination('$request.query#/page'),
+        mockResponsesMultiple
+      ),
+      (p) => p,
+      (res) => res.result.data,
+      new LinkPagination('$response.body#/nextLink'),
+      new PagePagination('$request.query#/page')
+    );
+
+    const pages = await collect(pagedData.pages());
+
+    expect(pages.map((p) => p?.items)).toEqual([
+      ['item1', 'item2'],
+      ['item3', 'item4'],
+      ['item5', 'item6'],
+    ]);
+
+    expect(isLinkPagedResponse(pages[0])).toBeTruthy();
+    expect(isNumberPagedResponse(pages[1])).toBeTruthy();
+    expect(isNumberPagedResponse(pages[2])).toBeTruthy();
+  });
+});
+
+describe('Error handling', () => {
+  it('should handle none paginationStrategies in arguments', async () => {
+    const pagedData = new PagedData(
+      getRequestBuilder(),
+      executor(null),
+      (p) => p,
+      (res) => res.result.data
+    );
+
+    const items = await collect(pagedData);
+
+    expect(items).toEqual([]);
+  });
+
+  it('should handle undefined data from getData', async () => {
+    const requestBuilder = getRequestBuilder();
+    requestBuilder.query('offset', 0);
+    const pagedData = new PagedData(
+      getRequestBuilder(),
+      executor(new OffsetPagination('$request.query#/offset')),
+      createOffsetPagedResponse,
+      (_) => undefined
+    );
+
+    const items = await collect(pagedData);
+
+    expect(items).toEqual([]);
+  });
+
+  it('should handle 400 status code from callAsJson', async () => {
+    const pagedData = new PagedData(
+      getRequestBuilder(),
+      async (_: RequestBuilder<any, any>) => {
+        throw new Error();
+      },
+      createNumberPagedResponse,
+      (res) => res.result.data,
+      new PagePagination('$request.query#/page')
+    );
+
+    await expect(async () => collect(pagedData)).rejects.toThrow();
   });
 });
