@@ -35,8 +35,7 @@
     }
   ],
   "dependencies": {
-    "@apimatic/core": "^0.10.19",
-    "@apimatic/core-interfaces": "^0.2.9"
+    "@apimatic/core": "^0.10.19"
   },
   "publishConfig": {
     "access": "public"

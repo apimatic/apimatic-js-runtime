@@ -419,11 +419,7 @@ describe('Multiple pagination', () => {
 
     const pages = await collect(pagedData.pages());
 
-    expect(pages.map((p) => p?.items)).toEqual([
-      ['item1', 'item2'],
-      ['item3', 'item4'],
-      ['item5', 'item6'],
-    ]);
+    expect(pages.map((p) => p?.items)).toEqual(expectedPages);
 
     expect(isLinkPagedResponse(pages[0])).toBeTruthy();
     expect(isNumberPagedResponse(pages[1])).toBeTruthy();

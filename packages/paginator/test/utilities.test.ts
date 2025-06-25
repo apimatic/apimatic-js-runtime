@@ -43,11 +43,7 @@ describe('getValueByJsonPointer tests', () => {
       null,
     ],
     ['should return null when pointer is empty', '', null],
-    [
-      'should return null for unsupported prefix',
-      '$request.cow#/user/name',
-      null,
-    ],
+    ['should return null for unsupported prefix', '$invalid#/user/name', null],
     [
       'should extract a top-level value from body',
       '$response.body#/user/name',
