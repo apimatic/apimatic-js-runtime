@@ -405,8 +405,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     } else if (prefix === '$request.headers') {
       updateValueByJsonPointer(this._headers, point, setter);
     }
-
-    return;
   }
   public toRequest(): HttpRequest {
     const request: HttpRequest = {

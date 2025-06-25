@@ -46,8 +46,8 @@ const mockResponses: Record<string, string> = {
     nextCursor: 'cursor4',
   }),
   empty: JSON.stringify({ data: [], nextCursor: null }),
-  error: JSON.stringify({ error: 'Bad Request' }),
-  noData: JSON.stringify({}),
+  undefinedData: JSON.stringify({}),
+  nullData: JSON.stringify({ data: null }),
 };
 
 const mockResponsesMultiple: Record<string, string> = {
@@ -59,14 +59,12 @@ const mockResponsesMultiple: Record<string, string> = {
   page2: JSON.stringify({
     data: expectedPages[1],
     nextLink: 'https://apimatic.hopto.org:3000/test/pagination?nextLink=page3',
-    nextCursor: 'cursor3',
   }),
   page3: JSON.stringify({
     data: expectedPages[2],
     nextLink: null,
-    nextCursor: 'cursor4',
   }),
-  empty: JSON.stringify({ data: [], nextCursor: null }),
+  empty: JSON.stringify({ data: [] }),
 };
 
 function executor(
@@ -80,7 +78,7 @@ function executor(
 
     if (pagination instanceof PagePagination) {
       const page = parseInt(params.get('page') || '1', 10);
-      const pageMap: Record<number, keyof typeof responses> = {
+      const pageMap: Record<number, string> = {
         1: 'page1',
         2: 'page2',
         3: 'page3',
@@ -93,7 +91,7 @@ function executor(
 
     if (pagination instanceof OffsetPagination) {
       const offset = parseInt(params.get('offset') || '0', 10);
-      const offsetMap: Record<number, keyof typeof responses> = {
+      const offsetMap: Record<number, string> = {
         0: 'page1',
         2: 'page2',
         4: 'page3',
@@ -106,7 +104,7 @@ function executor(
 
     if (pagination instanceof LinkPagination) {
       const nextLink = params.get('nextLink');
-      const linkMap: Record<string, keyof typeof responses> = {
+      const linkMap: Record<string, string> = {
         page2: 'page2',
         page3: 'page3',
       };
@@ -137,13 +135,12 @@ function executor(
 
 function createApiResponse(
   request: HttpRequest,
-  body: string,
-  success: boolean = true
+  body: string
 ): ApiResponse<any> {
   return {
     request,
     body,
-    statusCode: success ? 200 : 400,
+    statusCode: 200,
     headers: {},
     result: JSON.parse(body),
   };
@@ -428,45 +425,56 @@ describe('Multiple pagination', () => {
 });
 
 describe('Error handling', () => {
-  it('should handle none paginationStrategies in arguments', async () => {
+  it('should have no pages when paginationStrategies are missing', async () => {
     const pagedData = new PagedData(
       getRequestBuilder(),
-      executor(null),
-      (p) => p,
-      (res) => res.result.data
+      async (_) => fail(),
+      (_) => fail(),
+      (_) => fail()
     );
 
-    const items = await collect(pagedData);
-
-    expect(items).toEqual([]);
+    expect(await collect(pagedData.pages())).toEqual([]);
   });
 
-  it('should handle undefined data from getData', async () => {
+  async function verifyNoPages(responseBody: string) {
     const requestBuilder = getRequestBuilder();
     requestBuilder.query('offset', 0);
     const pagedData = new PagedData(
       getRequestBuilder(),
-      executor(new OffsetPagination('$request.query#/offset')),
-      createOffsetPagedResponse,
-      (_) => undefined
+      async (req) => createApiResponse(req.toRequest(), responseBody),
+      (_) => fail(),
+      (res) => res.result.data,
+      new OffsetPagination('$request.query#/offset')
     );
 
-    const items = await collect(pagedData);
+    expect(await collect(pagedData.pages())).toEqual([]);
+  }
 
-    expect(items).toEqual([]);
+  it('should have no pages for undefined data', async () => {
+    verifyNoPages(mockResponses.undefinedData);
   });
 
-  it('should handle 400 status code from callAsJson', async () => {
+  it('should have no pages for null data', async () => {
+    verifyNoPages(mockResponses.nullData);
+  });
+
+  it('should have no pages for empty data', async () => {
+    verifyNoPages(mockResponses.empty);
+  });
+
+  it('should throw errors from executor', async () => {
     const pagedData = new PagedData(
       getRequestBuilder(),
       async (_: RequestBuilder<any, any>) => {
-        throw new Error();
+        throw new Error('executor error');
       },
       createNumberPagedResponse,
       (res) => res.result.data,
       new PagePagination('$request.query#/page')
     );
 
-    await expect(async () => collect(pagedData)).rejects.toThrow();
+    await expect(async () => collect(pagedData)).rejects.toThrow(
+      'executor error'
+    );
   });
 });
