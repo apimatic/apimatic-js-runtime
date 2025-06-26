@@ -1,4 +1,4 @@
-import { ApiResponse } from '../src/core';
+import { ApiResponse } from '../src/coreInterfaces';
 import { getValueByJsonPointer } from '../src/utilities';
 
 describe('getValueByJsonPointer tests', () => {

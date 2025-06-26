@@ -13,13 +13,14 @@ import {
   isNumberPagedResponse,
 } from '../src';
 import { PaginationStrategy } from '../src/paginationStrategy';
-import { ApiResponse, RequestBuilder } from '../src/core';
+import { ApiResponse } from '../src/coreInterfaces';
 import {
   ApiError,
   createRequestBuilderFactory,
   HttpMethod,
   HttpRequest,
   passThroughInterceptor,
+  RequestBuilder,
 } from '@apimatic/core';
 
 const expectedPages = [
@@ -67,11 +68,11 @@ const mockResponsesMultiple: Record<string, string> = {
   empty: JSON.stringify({ data: [] }),
 };
 
-function executor(
+function executor<TRequest extends RequestBuilder<string, boolean>>(
   pagination: PaginationStrategy | null,
   responses: Record<string, string> = mockResponses
-): (requestBuilder: RequestBuilder<any, any>) => Promise<ApiResponse<any>> {
-  return async (requestBuilder: RequestBuilder<any, any>) => {
+): (requestBuilder: TRequest) => Promise<ApiResponse<any>> {
+  return async (requestBuilder) => {
     const request = requestBuilder.toRequest();
     const queryString = request.url.split('?')[1] || '';
     const params = new URLSearchParams(queryString);

@@ -1,7 +1,7 @@
 import { PaginationStrategy } from '../paginationStrategy';
-import { RequestBuilder } from '../core';
 import { NumberPagedResponse } from './numberPagedResponse';
 import { PagedResponse } from '../pagedResponse';
+import { RequestBuilder } from '../pagedData';
 
 export class PagePagination implements PaginationStrategy {
   private readonly pagePointer: string;
@@ -11,9 +11,9 @@ export class PagePagination implements PaginationStrategy {
     this.pagePointer = pagePointer;
   }
 
-  public isApplicable(
-    request: RequestBuilder<any, any>,
-    response: PagedResponse<any, any> | null
+  public isApplicable<TItem, TPage, TRequest extends RequestBuilder<TRequest>>(
+    request: TRequest,
+    response: PagedResponse<TItem, TPage> | null
   ): boolean {
     let isUpdated: boolean = false;
     request.updateParameterByJsonPointer(this.pagePointer, (value) => {

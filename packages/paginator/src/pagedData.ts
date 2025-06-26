@@ -1,4 +1,4 @@
-import { ApiResponse, RequestBuilder } from './core';
+import { ApiResponse } from './coreInterfaces';
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedResponse } from './pagedResponse';
 
@@ -6,20 +6,31 @@ export interface PagedAsyncIterable<TItem, TPage> extends AsyncIterable<TItem> {
   pages(): AsyncIterable<TPage>;
 }
 
-interface PagedDataState<TItem, TPage> {
-  request: RequestBuilder<any, any>;
+export interface RequestBuilder<TRequest> {
+  query(parameters: Record<string, unknown>): void;
+  updateParameterByJsonPointer(
+    pointer: string | null,
+    setter: (value: any) => any
+  ): void;
+  clone(): TRequest;
+}
+
+interface PagedDataState<TItem, TPage, TRequest> {
+  request: TRequest;
   lastResponse: PagedResponse<TItem, TPage> | null;
   items: TItem[];
   itemIndex: number;
   strategy: PaginationStrategy | null;
 }
 
-export class PagedData<TItem, TPage, TPagedResponse>
-  implements PagedAsyncIterable<TItem, TPagedResponse> {
-  private readonly request: RequestBuilder<any, any>;
-  private readonly executor: (
-    req: RequestBuilder<any, any>
-  ) => Promise<ApiResponse<TPage>>;
+export class PagedData<
+  TItem,
+  TPage,
+  TRequest extends RequestBuilder<TRequest>,
+  TPagedResponse
+> implements PagedAsyncIterable<TItem, TPagedResponse> {
+  private readonly request: TRequest;
+  private readonly executor: (req: TRequest) => Promise<ApiResponse<TPage>>;
   private readonly pagedResponseCreator: (
     p: PagedResponse<TItem, TPage> | null
   ) => TPagedResponse;
@@ -29,8 +40,8 @@ export class PagedData<TItem, TPage, TPagedResponse>
   private readonly paginationStrategies: PaginationStrategy[];
 
   constructor(
-    request: RequestBuilder<any, any>,
-    executor: (req: RequestBuilder<any, any>) => Promise<ApiResponse<TPage>>,
+    request: TRequest,
+    executor: (req: TRequest) => Promise<ApiResponse<TPage>>,
     pagedResponseCreator: (
       p: PagedResponse<TItem, TPage> | null
     ) => TPagedResponse,
@@ -56,9 +67,11 @@ export class PagedData<TItem, TPage, TPagedResponse>
   }
 
   private createAsyncIterator<T>(
-    getNext: (state: PagedDataState<TItem, TPage>) => Promise<IteratorResult<T>>
+    getNext: (
+      state: PagedDataState<TItem, TPage, TRequest>
+    ) => Promise<IteratorResult<T>>
   ): AsyncIterator<T> {
-    const state: PagedDataState<TItem, TPage> = {
+    const state: PagedDataState<TItem, TPage, TRequest> = {
       request: this.request.clone(),
       lastResponse: null,
       itemIndex: 0,
@@ -69,7 +82,7 @@ export class PagedData<TItem, TPage, TPagedResponse>
   }
 
   private async getNextItem(
-    state: PagedDataState<TItem, TPage>
+    state: PagedDataState<TItem, TPage, TRequest>
   ): Promise<IteratorResult<TItem>> {
     if (state.itemIndex < state.items.length) {
       return { done: false, value: state.items[state.itemIndex++] };
@@ -83,7 +96,7 @@ export class PagedData<TItem, TPage, TPagedResponse>
   }
 
   private async getNextPage(
-    state: PagedDataState<TItem, TPage>
+    state: PagedDataState<TItem, TPage, TRequest>
   ): Promise<IteratorResult<TPagedResponse, any>> {
     if (await this.tryFetchingPage(state)) {
       return {
@@ -96,7 +109,7 @@ export class PagedData<TItem, TPage, TPagedResponse>
   }
 
   private async tryFetchingPage(
-    state: PagedDataState<TItem, TPage>
+    state: PagedDataState<TItem, TPage, TRequest>
   ): Promise<boolean> {
     const strategy = this.getApplicableStrategy(state);
     if (strategy === null) {
@@ -121,7 +134,7 @@ export class PagedData<TItem, TPage, TPagedResponse>
   }
 
   private getApplicableStrategy(
-    state: PagedDataState<TItem, TPage>
+    state: PagedDataState<TItem, TPage, TRequest>
   ): PaginationStrategy | null {
     if (state.strategy === null) {
       return this.selectStrategy(state);
@@ -133,7 +146,7 @@ export class PagedData<TItem, TPage, TPagedResponse>
   }
 
   private selectStrategy(
-    state: PagedDataState<TItem, TPage>
+    state: PagedDataState<TItem, TPage, TRequest>
   ): PaginationStrategy | null {
     for (const strategy of this.paginationStrategies) {
       if (!strategy.isApplicable(state.request, state.lastResponse)) {

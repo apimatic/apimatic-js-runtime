@@ -1,7 +1,7 @@
 import { PaginationStrategy } from '../paginationStrategy';
-import { RequestBuilder } from '../core';
 import { PagedResponse } from '../pagedResponse';
 import { OffsetPagedResponse } from './offsetPagedResponse';
+import { RequestBuilder } from '../pagedData';
 
 export class OffsetPagination implements PaginationStrategy {
   private readonly offsetPointer: string;
@@ -11,9 +11,9 @@ export class OffsetPagination implements PaginationStrategy {
     this.offsetPointer = offsetPointer;
   }
 
-  public isApplicable(
-    request: RequestBuilder<any, any>,
-    response: PagedResponse<any, any> | null
+  public isApplicable<TItem, TPage, TRequest extends RequestBuilder<TRequest>>(
+    request: TRequest,
+    response: PagedResponse<TItem, TPage> | null
   ): boolean {
     let isUpdated: boolean = false;
 

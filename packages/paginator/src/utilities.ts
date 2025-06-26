@@ -1,4 +1,4 @@
-import { ApiResponse } from './core';
+import { ApiResponse } from './coreInterfaces';
 
 export function extractQueryParams(link: string): Record<string, string> {
   const result: Record<string, string> = {};

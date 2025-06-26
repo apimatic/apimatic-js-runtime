@@ -34,8 +34,11 @@
       "limit": "5 KB"
     }
   ],
-  "dependencies": {
+  "devDependencies": {
     "@apimatic/core": "^0.10.19"
+  },
+  "dependencies": {
+    "@apimatic/core-interfaces": "^0.2.9"
   },
   "publishConfig": {
     "access": "public"
