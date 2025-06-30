@@ -14,10 +14,11 @@ export class CursorPagination implements PaginationStrategy {
     this.nextCursorPointer = nextCursorPointer;
   }
 
-  public isApplicable<TItem, TPage, TRequest extends RequestBuilder<TRequest>>(
-    request: TRequest,
-    response: PagedResponse<TItem, TPage> | null
-  ): boolean {
+  public tryPreparingRequest<
+    TItem,
+    TPage,
+    TRequest extends RequestBuilder<TRequest>
+  >(request: TRequest, response: PagedResponse<TItem, TPage> | null): boolean {
     let isUpdated: boolean = false;
     request.updateParameterByJsonPointer(this.currentCursorPointer, (value) => {
       if (response === null) {
@@ -44,7 +45,7 @@ export class CursorPagination implements PaginationStrategy {
     return isUpdated;
   }
 
-  public withMetadata<TItem, TPage>(
+  public applyMetaData<TItem, TPage>(
     response: PagedResponse<TItem, TPage>
   ): CursorPagedResponse<TItem, TPage> {
     return {

@@ -14,8 +14,8 @@ export function createNumberPagedResponse(
   throw new Error('Unable to create instance of NumberPagedResponse');
 }
 
-export function isNumberPagedResponse(
-  response: PagedResponse<any, any> | null
-): response is NumberPagedResponse<any, any> {
+export function isNumberPagedResponse<TItem, TPage>(
+  response: PagedResponse<TItem, TPage> | null
+): response is NumberPagedResponse<TItem, TPage> {
   return response !== null && 'pageNumber' in response;
 }

@@ -5,17 +5,17 @@ export interface LinkPagedResponse<TItem, TPage>
   nextLink: string | null;
 }
 
-export function createLinkPagedResponse(
-  response: PagedResponse<any, any> | null
-): LinkPagedResponse<any, any> {
+export function createLinkPagedResponse<TItem, TPage>(
+  response: PagedResponse<TItem, TPage> | null
+): LinkPagedResponse<TItem, TPage> {
   if (isLinkPagedResponse(response)) {
     return response;
   }
   throw new Error('Unable to create instance of LinkPagedResponse');
 }
 
-export function isLinkPagedResponse(
-  response: PagedResponse<any, any> | null
-): response is LinkPagedResponse<any, any> {
+export function isLinkPagedResponse<TItem, TPage>(
+  response: PagedResponse<TItem, TPage> | null
+): response is LinkPagedResponse<TItem, TPage> {
   return response !== null && 'nextLink' in response;
 }

@@ -11,7 +11,7 @@ export interface PaginationStrategy {
    * @param response The response of the last page.
    * @returns True if this strategy is applicable on the given request.
    */
-  isApplicable<TItem, TPage, TRequest extends RequestBuilder<TRequest>>(
+  tryPreparingRequest<TItem, TPage, TRequest extends RequestBuilder<TRequest>>(
     request: TRequest,
     response: PagedResponse<TItem, TPage> | null
   ): boolean;
@@ -22,7 +22,7 @@ export interface PaginationStrategy {
    * @param response The response of the current page to be modfied with
    *                 its metadata.
    */
-  withMetadata<TItem, TPage>(
+  applyMetaData<TItem, TPage>(
     response: PagedResponse<TItem, TPage>
   ): PagedResponse<TItem, TPage>;
 }

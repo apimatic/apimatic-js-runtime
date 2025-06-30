@@ -23,7 +23,7 @@ They provide common runtime utilities needed by SDKs to make API calls and handl
 | [@apimatic/oauth-adapters](packages/oauth-adapters)                   | [![npm shield](https://img.shields.io/npm/v/@apimatic/oauth-adapters)](https://www.npmjs.com/package/@apimatic/oauth-adapters) | Provides pluggable adapters for OAuth 2.0 authentication schemes. |
 | [@apimatic/xml-adapter](packages/xml-adapter)                         | [![npm shield](https://img.shields.io/npm/v/@apimatic/xml-adapter)](https://www.npmjs.com/package/@apimatic/xml-adapter) | Provides XML serialization and deserialization utilities for apimatic-js-runtime libraries. |
 | [@apimatic/test-utilities](packages/test-utilities)                   | [![npm shield](https://img.shields.io/npm/v/@apimatic/test-utilities)](https://www.npmjs.com/package/@apimatic/test-utilities) | Provides assertion utilities for testing api calls. It can be plugged in as dev dependency to any library. |
-| [@apimatic/paginator](packages/paginator)                             | [![npm shield](https://img.shields.io/npm/v/@apimatic/paginator)](https://www.npmjs.com/package/@apimatic/paginator) | Provides utilities to handle paginated API responses, including support for asynchronous iteration over pages or items. |
+| [@apimatic/pagination](packages/pagination)                           | [![npm shield](https://img.shields.io/npm/v/@apimatic/pagination)](https://www.npmjs.com/package/@apimatic/pagination) | Provides utilities to handle paginated API responses, including support for asynchronous iteration over pages or items. |
 
 
 [ci-badge]: https://github.com/apimatic/apimatic-js-runtime/actions/workflows/main.yml/badge.svg

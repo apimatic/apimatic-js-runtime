@@ -1,4 +1,4 @@
-# APIMatic Paginator Libary for JavaScript
+# APIMatic pagination Libary for JavaScript
 
 > This library is currently in preview.
 
@@ -24,12 +24,12 @@ The following environments are supported:
 
 To support multiple environments, we export various builds:
 
-| Environment                                       | Usage                                                                           |
-| ------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Common.js                                         | Import like this: `require('@apimatic/paginator')`.                             |
-| ES Module                                         | Import like this: `import { /* your imports */ } from '@apimatic/paginator'`.   |
-| Browsers                                          | \*Use script: `https://unpkg.com/@apimatic/paginator@VERSION/umd/schema.js`     |
-| Modern Browsers (supports ESM and uses modern JS) | \*Use script: `https://unpkg.com/@apimatic/paginator@VERSION/umd/schema.esm.js` |
+| Environment                                       | Usage                                                                            |
+| ------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Common.js                                         | Import like this: `require('@apimatic/pagination')`.                             |
+| ES Module                                         | Import like this: `import { /* your imports */ } from '@apimatic/pagination'`.   |
+| Browsers                                          | \*Use script: `https://unpkg.com/@apimatic/pagination@VERSION/umd/schema.js`     |
+| Modern Browsers (supports ESM and uses modern JS) | \*Use script: `https://unpkg.com/@apimatic/pagination@VERSION/umd/schema.esm.js` |
 
 _\* Don't forget to replace VERSION with the version number._
 

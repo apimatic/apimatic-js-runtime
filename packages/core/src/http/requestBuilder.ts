@@ -1,11 +1,6 @@
 import JSONBig from '@apimatic/json-bigint';
 import { FileWrapper } from '@apimatic/file-wrapper';
-import {
-  deprecated,
-  sanitizeUrl,
-  updateErrorMessage,
-  updateValueByJsonPointer,
-} from '../apiHelper';
+import { deprecated, sanitizeUrl, updateErrorMessage } from '../apiHelper';
 import {
   ApiResponse,
   AuthenticatorInterface,
@@ -59,6 +54,7 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
+import { ParameterUpdateStrategyFactory } from './request-updaters/parameterUpdater';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -396,23 +392,27 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
 
     const [prefix, point = ''] = pointer.split('#');
 
-    if (prefix === '$request.body') {
-      this.updateBody(point, setter);
-    } else if (prefix === '$request.path') {
-      updateValueByJsonPointer(this._templateParams, point, setter);
-    } else if (prefix === '$request.query') {
-      updateValueByJsonPointer(this._queryParams, point, setter);
-    } else if (prefix === '$request.headers') {
-      updateValueByJsonPointer(this._headers, point, setter);
-    }
+    const strategy = ParameterUpdateStrategyFactory.getStrategy(prefix);
+
+    const context = {
+      queryParams: this._queryParams,
+      templateParams: this._templateParams,
+      setBody: (body: any) => (this._body = body),
+      getBody: () => this._body,
+      form: this._form,
+      formData: this._formData,
+      headers: this._headers,
+    };
+    strategy.update(context, point, setter);
   }
+
   public toRequest(): HttpRequest {
     const request: HttpRequest = {
       method: this._httpMethod,
       url: mergePath(this._baseUrlProvider(this._baseUrlArg), this.buildPath()),
     };
 
-    const queryString = this._convertQueryParamsToString();
+    const queryString = this.convertQueryParamsToString();
     if (queryString.length > 0) {
       request.url +=
         (request.url.indexOf('?') === -1 ? '?' : '&') + queryString;
@@ -624,7 +624,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     cloned._bodyType = this._bodyType;
     cloned._stream = this._stream;
     cloned._queryParams = { ...this._queryParams };
-    cloned._queryParamsPrefixFormat = { ...this._queryParamsPrefixFormat };
+    // cloned._queryParamsPrefixFormat = { ...this._queryParamsPrefixFormat };
     cloned._templateParams = { ...this._templateParams };
     cloned._form = this._form ? { ...this._form } : undefined;
     cloned._formPrefixFormat = this._formPrefixFormat;
@@ -650,21 +650,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._body.rootName
     );
   }
-  private updateBody(pointer: string, setter: (value: any) => any): void {
-    if (this._body) {
-      if (pointer === '') {
-        this._body = setter(this._body);
-        return;
-      }
-      updateValueByJsonPointer(this._body, pointer, setter);
-      return;
-    }
-    if (this._form) {
-      updateValueByJsonPointer(this._form, pointer, setter);
-      return;
-    }
-    updateValueByJsonPointer(this._formData, pointer, setter);
-  }
+
   private _setContentTypeIfNotSet(contentType: string) {
     if (!this._contentType) {
       setHeaderIfNotSet(this._headers, CONTENT_TYPE_HEADER, contentType);
@@ -785,17 +771,14 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return context;
     });
   }
-  private _convertQueryParamsToString(): string {
+  private convertQueryParamsToString(): string {
     const queryParts: string[] = [];
 
     for (const [key, value] of Object.entries(this._queryParams)) {
       const formatter = this._queryParamsPrefixFormat?.[key];
 
       const encoded = urlEncodeObject({ [key]: value }, formatter);
-
-      if (encoded) {
-        queryParts.push(encoded);
-      }
+      queryParts.push(encoded);
     }
 
     return queryParts.join('&');

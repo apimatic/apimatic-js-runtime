@@ -1,6 +1,7 @@
 import { ApiResponse } from './coreInterfaces';
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedResponse } from './pagedResponse';
+import { StrategySelector } from './strategySelector';
 
 export interface PagedAsyncIterable<TItem, TPage> extends AsyncIterable<TItem> {
   pages(): AsyncIterable<TPage>;
@@ -15,12 +16,16 @@ export interface RequestBuilder<TRequest> {
   clone(): TRequest;
 }
 
-interface PagedDataState<TItem, TPage, TRequest> {
+interface PagedDataState<
+  TItem,
+  TPage,
+  TRequest extends RequestBuilder<TRequest>
+> {
   request: TRequest;
   lastResponse: PagedResponse<TItem, TPage> | null;
   items: TItem[];
   itemIndex: number;
-  strategy: PaginationStrategy | null;
+  strategySelector: StrategySelector<TItem, TPage, TRequest>;
 }
 
 export class PagedData<
@@ -76,7 +81,7 @@ export class PagedData<
       lastResponse: null,
       itemIndex: 0,
       items: [],
-      strategy: null,
+      strategySelector: new StrategySelector(this.paginationStrategies),
     };
     return { next: () => getNext(state) };
   }
@@ -111,7 +116,10 @@ export class PagedData<
   private async tryFetchingPage(
     state: PagedDataState<TItem, TPage, TRequest>
   ): Promise<boolean> {
-    const strategy = this.getApplicableStrategy(state);
+    const strategy = state.strategySelector.getApplicableStrategy(
+      state.request,
+      state.lastResponse
+    );
     if (strategy === null) {
       return false;
     }
@@ -125,39 +133,11 @@ export class PagedData<
 
     state.itemIndex = 0;
     state.items = items;
-    state.lastResponse = strategy.withMetadata({
+    state.lastResponse = strategy.applyMetaData({
       ...response,
       items,
     });
 
     return true;
-  }
-
-  private getApplicableStrategy(
-    state: PagedDataState<TItem, TPage, TRequest>
-  ): PaginationStrategy | null {
-    if (state.strategy === null) {
-      return this.selectStrategy(state);
-    }
-
-    return state.strategy.isApplicable(state.request, state.lastResponse)
-      ? state.strategy
-      : null;
-  }
-
-  private selectStrategy(
-    state: PagedDataState<TItem, TPage, TRequest>
-  ): PaginationStrategy | null {
-    for (const strategy of this.paginationStrategies) {
-      if (!strategy.isApplicable(state.request, state.lastResponse)) {
-        continue;
-      }
-      if (state.lastResponse !== null) {
-        // update the state only if not the first API call.
-        state.strategy = strategy;
-      }
-      return strategy;
-    }
-    return null;
   }
 }

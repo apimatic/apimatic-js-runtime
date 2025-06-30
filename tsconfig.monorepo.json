@@ -38,7 +38,7 @@
       "path": "./packages/test-utilities"
     },
     {
-      "path": "./packages/paginator"
+      "path": "./packages/pagination"
     }
   ]
 }

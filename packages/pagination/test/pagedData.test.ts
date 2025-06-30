@@ -422,6 +422,14 @@ describe('Multiple pagination', () => {
     expect(isLinkPagedResponse(pages[0])).toBeTruthy();
     expect(isNumberPagedResponse(pages[1])).toBeTruthy();
     expect(isNumberPagedResponse(pages[2])).toBeTruthy();
+
+    const pages2 = await collect(pagedData.pages());
+
+    expect(pages2.map((p) => p.items)).toEqual(expectedPages);
+
+    expect(isLinkPagedResponse(pages2[0])).toBeTruthy();
+    expect(isNumberPagedResponse(pages2[1])).toBeTruthy();
+    expect(isNumberPagedResponse(pages2[2])).toBeTruthy();
   });
 });
 
@@ -466,11 +474,11 @@ describe('Error handling', () => {
   it('should throw errors from executor', async () => {
     const pagedData = new PagedData(
       getRequestBuilder(),
-      async (_: RequestBuilder<any, any>) => {
+      async (_: RequestBuilder<string, boolean>) => {
         throw new Error('executor error');
       },
       createNumberPagedResponse,
-      (res) => res.result.data,
+      (_) => fail(),
       new PagePagination('$request.query#/page')
     );
 

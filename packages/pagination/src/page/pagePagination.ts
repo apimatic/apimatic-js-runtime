@@ -11,10 +11,11 @@ export class PagePagination implements PaginationStrategy {
     this.pagePointer = pagePointer;
   }
 
-  public isApplicable<TItem, TPage, TRequest extends RequestBuilder<TRequest>>(
-    request: TRequest,
-    response: PagedResponse<TItem, TPage> | null
-  ): boolean {
+  public tryPreparingRequest<
+    TItem,
+    TPage,
+    TRequest extends RequestBuilder<TRequest>
+  >(request: TRequest, response: PagedResponse<TItem, TPage> | null): boolean {
     let isUpdated: boolean = false;
     request.updateParameterByJsonPointer(this.pagePointer, (value) => {
       if (response === null) {
@@ -35,7 +36,7 @@ export class PagePagination implements PaginationStrategy {
     return isUpdated;
   }
 
-  public withMetadata<TItem, TPage>(
+  public applyMetaData<TItem, TPage>(
     response: PagedResponse<TItem, TPage>
   ): NumberPagedResponse<TItem, TPage> {
     return {

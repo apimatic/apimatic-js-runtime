@@ -52,4 +52,4 @@ jobs:
             ${{github.workspace}}/packages/oauth-adapters/coverage/lcov.info:lcov
             ${{github.workspace}}/packages/schema/coverage/lcov.info:lcov
             ${{github.workspace}}/packages/test-utilities/coverage/lcov.info:lcov
-            ${{github.workspace}}/packages/paginator/coverage/lcov.info:lcov
+            ${{github.workspace}}/packages/pagination/coverage/lcov.info:lcov

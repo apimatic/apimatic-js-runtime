@@ -11,10 +11,11 @@ export class OffsetPagination implements PaginationStrategy {
     this.offsetPointer = offsetPointer;
   }
 
-  public isApplicable<TItem, TPage, TRequest extends RequestBuilder<TRequest>>(
-    request: TRequest,
-    response: PagedResponse<TItem, TPage> | null
-  ): boolean {
+  public tryPreparingRequest<
+    TItem,
+    TPage,
+    TRequest extends RequestBuilder<TRequest>
+  >(request: TRequest, response: PagedResponse<TItem, TPage> | null): boolean {
     let isUpdated: boolean = false;
 
     request.updateParameterByJsonPointer(this.offsetPointer, (value) => {
@@ -38,7 +39,7 @@ export class OffsetPagination implements PaginationStrategy {
     return isUpdated;
   }
 
-  public withMetadata<TItem, TPage>(
+  public applyMetaData<TItem, TPage>(
     response: PagedResponse<TItem, TPage>
   ): OffsetPagedResponse<TItem, TPage> {
     return {

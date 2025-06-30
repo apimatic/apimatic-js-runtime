@@ -12,10 +12,11 @@ export class LinkPagination implements PaginationStrategy {
     this.nextLinkPointer = nextLinkPointer;
   }
 
-  public isApplicable<TItem, TPage, TRequest extends RequestBuilder<TRequest>>(
-    request: TRequest,
-    response: PagedResponse<TItem, TPage> | null
-  ): boolean {
+  public tryPreparingRequest<
+    TItem,
+    TPage,
+    TRequest extends RequestBuilder<TRequest>
+  >(request: TRequest, response: PagedResponse<TItem, TPage> | null): boolean {
     if (response === null) {
       this.nextLinkValue = null;
       return true;
@@ -30,7 +31,7 @@ export class LinkPagination implements PaginationStrategy {
     return true;
   }
 
-  public withMetadata<TItem, TPage>(
+  public applyMetaData<TItem, TPage>(
     response: PagedResponse<TItem, TPage>
   ): LinkPagedResponse<TItem, TPage> {
     return {

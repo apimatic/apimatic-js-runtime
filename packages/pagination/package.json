@@ -1,6 +1,6 @@
 {
-  "name": "@apimatic/paginator",
-  "version": "0.0.0",
+  "name": "@apimatic/pagination",
+  "version": "0.1.0",
   "description": "provides the async utilities for handling paginated API responses.",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -46,6 +46,6 @@
   "repository": {
     "type": "git",
     "url": "git@github.com:apimatic/apimatic-js-runtime.git",
-    "directory": "packages/paginator"
+    "directory": "packages/pagination"
   }
 }
