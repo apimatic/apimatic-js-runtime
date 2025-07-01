@@ -2,7 +2,7 @@ import { PaginationStrategy } from '../paginationStrategy';
 import { PagedResponse } from '../pagedResponse';
 import { LinkPagedResponse } from './linkPagedResponse';
 import { getValueByJsonPointer, extractQueryParams } from '../utilities';
-import { RequestBuilder } from '../pagedData';
+import { RequestBuilder } from '../requestBuilder';
 
 export class LinkPagination implements PaginationStrategy {
   private readonly nextLinkPointer: string;

@@ -1,7 +1,7 @@
 import { PaginationStrategy } from '../paginationStrategy';
 import { PagedResponse } from '../pagedResponse';
 import { OffsetPagedResponse } from './offsetPagedResponse';
-import { RequestBuilder } from '../pagedData';
+import { RequestBuilder } from '../requestBuilder';
 
 export class OffsetPagination implements PaginationStrategy {
   private readonly offsetPointer: string;

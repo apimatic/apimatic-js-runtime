@@ -1,6 +1,6 @@
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedResponse } from './pagedResponse';
-import { RequestBuilder } from './pagedData';
+import { RequestBuilder } from './requestBuilder';
 
 export class StrategySelector<
   TItem,
@@ -11,11 +11,7 @@ export class StrategySelector<
 
   constructor(private readonly strategies: PaginationStrategy[]) {}
 
-  public reset(): void {
-    this.selectedStrategy = null;
-  }
-
-  public getApplicableStrategy(
+  public select(
     request: TRequest,
     lastResponse: PagedResponse<TItem, TPage> | null
   ): PaginationStrategy | null {
@@ -37,7 +33,7 @@ export class StrategySelector<
         continue;
       }
       if (lastResponse !== null) {
-        // update the state only if not the first API call.
+        // select strategy, if not the first API call i.e. response received.
         this.selectedStrategy = strategy;
       }
       return strategy;

@@ -2,7 +2,7 @@ import { PaginationStrategy } from '../paginationStrategy';
 import { PagedResponse } from '../pagedResponse';
 import { CursorPagedResponse } from './cursorPagedResponse';
 import { getValueByJsonPointer } from '../utilities';
-import { RequestBuilder } from '../pagedData';
+import { RequestBuilder } from '../requestBuilder';
 
 export class CursorPagination implements PaginationStrategy {
   private readonly currentCursorPointer: string;

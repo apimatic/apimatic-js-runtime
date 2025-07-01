@@ -25,7 +25,16 @@ export function getValueByJsonPointer(
 
   switch (prefix) {
     case '$response.body':
-      return extractValueFromJsonPointer(obj.body, jsonPath);
+      let body = obj.body;
+      if (typeof body === 'string') {
+        try {
+          body = JSON.parse(body);
+        } catch {
+          // ignore error
+        }
+        return extractValueFromJsonPointer(body, jsonPath);
+      }
+      return null;
 
     case '$response.headers':
       return extractValueFromJsonPointer(obj.headers, jsonPath);
@@ -35,26 +44,13 @@ export function getValueByJsonPointer(
   }
 }
 
-function extractValueFromJsonPointer<T>(obj: T, pointer: string): any {
-  if (!pointer) {
-    return null;
-  }
-
-  let current = obj;
-  if (typeof current === 'string') {
-    try {
-      current = JSON.parse(current);
-    } catch {
-      return null;
-    }
+function extractValueFromJsonPointer(obj: any, pointer: string): any {
+  if (pointer === '') {
+    return obj;
   }
 
   const pathParts = pointer.split('/').filter(Boolean);
 
-  return getValueAtPath(current, pathParts);
-}
-
-function getValueAtPath(obj: any, pathParts: string[]): any {
   let result = obj;
   for (const key of pathParts) {
     if (!result || typeof result !== 'object' || !(key in result)) {

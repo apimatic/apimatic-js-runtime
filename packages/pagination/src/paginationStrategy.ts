@@ -1,4 +1,4 @@
-import { RequestBuilder } from './pagedData';
+import { RequestBuilder } from './requestBuilder';
 import { PagedResponse } from './pagedResponse';
 
 export interface PaginationStrategy {

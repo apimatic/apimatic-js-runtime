@@ -2,18 +2,10 @@ import { ApiResponse } from './coreInterfaces';
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedResponse } from './pagedResponse';
 import { StrategySelector } from './strategySelector';
+import { RequestBuilder } from './requestBuilder';
 
 export interface PagedAsyncIterable<TItem, TPage> extends AsyncIterable<TItem> {
-  pages(): AsyncIterable<TPage>;
-}
-
-export interface RequestBuilder<TRequest> {
-  query(parameters: Record<string, unknown>): void;
-  updateParameterByJsonPointer(
-    pointer: string | null,
-    setter: (value: any) => any
-  ): void;
-  clone(): TRequest;
+  pages: AsyncIterable<TPage>;
 }
 
 interface PagedDataState<
@@ -34,29 +26,18 @@ export class PagedData<
   TRequest extends RequestBuilder<TRequest>,
   TPagedResponse
 > implements PagedAsyncIterable<TItem, TPagedResponse> {
-  private readonly request: TRequest;
-  private readonly executor: (req: TRequest) => Promise<ApiResponse<TPage>>;
-  private readonly pagedResponseCreator: (
-    p: PagedResponse<TItem, TPage> | null
-  ) => TPagedResponse;
-  private readonly itemsCreator: (
-    response: ApiResponse<TPage>
-  ) => TItem[] | undefined;
   private readonly paginationStrategies: PaginationStrategy[];
-
   constructor(
-    request: TRequest,
-    executor: (req: TRequest) => Promise<ApiResponse<TPage>>,
-    pagedResponseCreator: (
+    private readonly request: TRequest,
+    private readonly executor: (req: TRequest) => Promise<ApiResponse<TPage>>,
+    private readonly pagedResponseCreator: (
       p: PagedResponse<TItem, TPage> | null
     ) => TPagedResponse,
-    itemsCreator: (response: ApiResponse<TPage>) => TItem[] | undefined,
+    private readonly itemsCreator: (
+      response: ApiResponse<TPage>
+    ) => TItem[] | undefined,
     ...paginationStrategies: PaginationStrategy[]
   ) {
-    this.request = request;
-    this.executor = executor;
-    this.pagedResponseCreator = pagedResponseCreator;
-    this.itemsCreator = itemsCreator;
     this.paginationStrategies = paginationStrategies;
   }
 
@@ -64,12 +45,10 @@ export class PagedData<
     return this.createAsyncIterator(this.getNextItem.bind(this));
   }
 
-  public pages(): AsyncIterable<TPagedResponse> {
-    return {
-      [Symbol.asyncIterator]: () =>
-        this.createAsyncIterator(this.getNextPage.bind(this)),
-    };
-  }
+  public pages: AsyncIterable<TPagedResponse> = {
+    [Symbol.asyncIterator]: () =>
+      this.createAsyncIterator(this.getNextPage.bind(this)),
+  };
 
   private createAsyncIterator<T>(
     getNext: (
@@ -89,12 +68,11 @@ export class PagedData<
   private async getNextItem(
     state: PagedDataState<TItem, TPage, TRequest>
   ): Promise<IteratorResult<TItem>> {
-    if (state.itemIndex < state.items.length) {
+    if (
+      state.itemIndex < state.items.length ||
+      (await this.tryFetchingPage(state))
+    ) {
       return { done: false, value: state.items[state.itemIndex++] };
-    }
-
-    if (await this.tryFetchingPage(state)) {
-      return this.getNextItem(state);
     }
 
     return { done: true, value: undefined };
@@ -116,7 +94,7 @@ export class PagedData<
   private async tryFetchingPage(
     state: PagedDataState<TItem, TPage, TRequest>
   ): Promise<boolean> {
-    const strategy = state.strategySelector.getApplicableStrategy(
+    const strategy = state.strategySelector.select(
       state.request,
       state.lastResponse
     );

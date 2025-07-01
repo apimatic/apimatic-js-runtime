@@ -228,7 +228,7 @@ describe('Page-based pagination', () => {
   it('should iterate through pages as pages', async () => {
     const pagedData = createNumberPagedData(1);
 
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages).toMatchObject(expectedNumberPages);
   });
@@ -236,7 +236,7 @@ describe('Page-based pagination', () => {
   it('should use 1 as pageNumber when it is undefined', async () => {
     const pagedData = createNumberPagedData(undefined);
 
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages).toMatchObject<Array<{ items: string[]; pageNumber: string }>>(
       expectedNumberPages
@@ -246,7 +246,7 @@ describe('Page-based pagination', () => {
   it('should start iteration from 2nd page when pageNumber is 2', async () => {
     const pagedData = createNumberPagedData(2);
 
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages).toMatchObject(expectedNumberPages.slice(-2));
   });
@@ -277,21 +277,21 @@ describe('Offset-based pagination', () => {
 
   it('should iterate through pages as pages using offset', async () => {
     const pagedData = createOffsetPagedData(0);
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages).toMatchObject(expectedOffsetPages);
   });
 
   it('should use 0 as offset when it is undefined', async () => {
     const pagedData = createOffsetPagedData(undefined);
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages).toMatchObject(expectedOffsetPages);
   });
 
   it('should start iteration from 2nd item when offset is 2', async () => {
     const pagedData = createOffsetPagedData(2);
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages).toMatchObject(expectedOffsetPages.slice(-2));
   });
@@ -327,7 +327,7 @@ describe('Link-based pagination', () => {
 
   it('should iterate through pages as pages using next links', async () => {
     const pagedData = createLinkPagedData(1);
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages).toMatchObject(expectedLinkPages);
   });
@@ -361,7 +361,7 @@ describe('Cursor-based pagination', () => {
 
   it('should iterate through pages as pages using cursor', async () => {
     const pagedData = createCursorPagedData('cursor1');
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages).toMatchObject(expectedCursorPages);
   });
@@ -369,7 +369,7 @@ describe('Cursor-based pagination', () => {
   it('should return null cursor for 1st page when cursor is undefined', async () => {
     const pagedData = createCursorPagedData(undefined);
 
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
     const modifiedExpectedCursorPages = expectedCursorPages.map(
       (page, index) => ({
         ...page,
@@ -392,7 +392,7 @@ describe('Cursor-based pagination', () => {
       createCursorPagedResponse
     );
 
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages).toMatchObject(expectedCursorPages.slice(0, 1));
   });
@@ -415,7 +415,7 @@ describe('Multiple pagination', () => {
       new PagePagination('$request.query#/page')
     );
 
-    const pages = await collect(pagedData.pages());
+    const pages = await collect(pagedData.pages);
 
     expect(pages.map((p) => p.items)).toEqual(expectedPages);
 
@@ -423,7 +423,7 @@ describe('Multiple pagination', () => {
     expect(isNumberPagedResponse(pages[1])).toBeTruthy();
     expect(isNumberPagedResponse(pages[2])).toBeTruthy();
 
-    const pages2 = await collect(pagedData.pages());
+    const pages2 = await collect(pagedData.pages);
 
     expect(pages2.map((p) => p.items)).toEqual(expectedPages);
 
@@ -442,7 +442,7 @@ describe('Error handling', () => {
       (_) => fail()
     );
 
-    expect(await collect(pagedData.pages())).toEqual([]);
+    expect(await collect(pagedData.pages)).toEqual([]);
   });
 
   async function verifyNoPages(responseBody: string) {
@@ -456,7 +456,7 @@ describe('Error handling', () => {
       new OffsetPagination('$request.query#/offset')
     );
 
-    expect(await collect(pagedData.pages())).toEqual([]);
+    expect(await collect(pagedData.pages)).toEqual([]);
   }
 
   it('should have no pages for undefined data', async () => {

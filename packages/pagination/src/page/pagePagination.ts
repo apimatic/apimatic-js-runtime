@@ -1,7 +1,7 @@
 import { PaginationStrategy } from '../paginationStrategy';
 import { NumberPagedResponse } from './numberPagedResponse';
 import { PagedResponse } from '../pagedResponse';
-import { RequestBuilder } from '../pagedData';
+import { RequestBuilder } from '../requestBuilder';
 
 export class PagePagination implements PaginationStrategy {
   private readonly pagePointer: string;
