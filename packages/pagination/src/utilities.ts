@@ -25,15 +25,17 @@ export function getValueByJsonPointer(
 
   if (prefix === '$response.body') {
     let body = obj.body;
-    if (typeof body === 'string') {
-      try {
-        body = JSON.parse(body);
-      } catch {
-        // ignore error
-      }
-      return extractValueFromJsonPointer(body, jsonPath);
+    if (typeof body !== 'string') {
+      return null;
     }
-  } else if (prefix === '$response.headers') {
+    try {
+      body = JSON.parse(body);
+    } catch {
+      // ignore error
+    }
+    return extractValueFromJsonPointer(body, jsonPath);
+  }
+  if (prefix === '$response.headers') {
     return extractValueFromJsonPointer(obj.headers, jsonPath);
   }
   return null;
