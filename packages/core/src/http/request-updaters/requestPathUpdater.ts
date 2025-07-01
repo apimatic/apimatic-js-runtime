@@ -37,15 +37,22 @@ export class RequestPathUpdater implements ParameterUpdater {
     }
 
     for (const arg of context.pathArgs) {
-      if (
-        arg instanceof SkipEncode &&
-        arg.key !== undefined &&
-        arg.key in argsObject
-      ) {
-        arg.value = argsObject[arg.key];
-      } else if (arg instanceof PathParam && arg.key in argsObject) {
-        arg.value = argsObject[arg.key];
-      }
+      this.assignPathArgValue(arg, argsObject);
+    }
+  }
+
+  private assignPathArgValue(
+    arg: unknown,
+    argsObject: Record<string, unknown>
+  ): void {
+    if (
+      arg instanceof SkipEncode &&
+      arg.key !== undefined &&
+      arg.key in argsObject
+    ) {
+      arg.value = argsObject[arg.key];
+    } else if (arg instanceof PathParam && arg.key in argsObject) {
+      arg.value = argsObject[arg.key];
     }
   }
 }

@@ -23,25 +23,20 @@ export function getValueByJsonPointer(
 ): any {
   const [prefix, jsonPath] = pointer.split('#');
 
-  switch (prefix) {
-    case '$response.body':
-      let body = obj.body;
-      if (typeof body === 'string') {
-        try {
-          body = JSON.parse(body);
-        } catch {
-          // ignore error
-        }
-        return extractValueFromJsonPointer(body, jsonPath);
+  if (prefix === '$response.body') {
+    let body = obj.body;
+    if (typeof body === 'string') {
+      try {
+        body = JSON.parse(body);
+      } catch {
+        // ignore error
       }
-      return null;
-
-    case '$response.headers':
-      return extractValueFromJsonPointer(obj.headers, jsonPath);
-
-    default:
-      return null;
+      return extractValueFromJsonPointer(body, jsonPath);
+    }
+  } else if (prefix === '$response.headers') {
+    return extractValueFromJsonPointer(obj.headers, jsonPath);
   }
+  return null;
 }
 
 function extractValueFromJsonPointer(obj: any, pointer: string): any {

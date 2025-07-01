@@ -52,19 +52,17 @@ export function pathTemplate(
 function encodePathTemplateSegment(value: PathTemplateTypes) {
   let skipEncode = false;
   const encode = (m: string | number | bigint | unknown) => {
-    let encodeParameter = '';
     if (
       typeof m === 'string' ||
       typeof m === 'number' ||
       typeof m === 'bigint' ||
       typeof m === 'boolean'
     ) {
-      encodeParameter =
-        skipEncode || typeof m === 'bigint'
-          ? m.toString()
-          : encodeURIComponent(m);
+      return skipEncode || typeof m === 'bigint'
+        ? m.toString()
+        : encodeURIComponent(m);
     }
-    return encodeParameter;
+    return '';
   };
 
   if (value instanceof SkipEncode) {
