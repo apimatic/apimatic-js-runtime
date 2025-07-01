@@ -7,8 +7,6 @@ import {
   HttpContext,
   HttpMethod,
   HttpRequest,
-  HttpRequestMultipartFormBody,
-  HttpRequestUrlEncodedFormBody,
   HttpInterceptorInterface,
   RequestOptions,
   RetryConfiguration,
@@ -56,6 +54,7 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
+import { ParameterUpdateStrategyFactory } from './request-updaters/parameterUpdater';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -119,6 +118,10 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void;
+  updateParameterByJsonPointer(
+    pointer: string | null,
+    setter: (value: any) => any
+  ): void;
   text(body: string | number | bigint | boolean | null | undefined): void;
   json(data: unknown): void;
   requestRetryOption(option: RequestRetryOption): void;
@@ -176,6 +179,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     schema: Schema<T, any>,
     requestOptions?: RequestOptions
   ): Promise<ApiResponse<T>>;
+  clone(): RequestBuilder<BaseUrlParamType, AuthParams>;
 }
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
@@ -183,11 +187,17 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   protected _accept?: string;
   protected _contentType?: string;
   protected _headers: Record<string, string>;
-  protected _body?: string;
+  protected _body?: any;
+  protected _bodyType?: 'text' | 'json' | 'xml';
   protected _stream?: FileWrapper;
-  protected _query: string[];
-  protected _form?: HttpRequestUrlEncodedFormBody['content'];
-  protected _formData?: HttpRequestMultipartFormBody['content'];
+  protected _queryParams: Record<string, unknown>;
+  protected _queryParamsPrefixFormat: Record<string, ArrayPrefixFunction>;
+  protected _pathStrings?: TemplateStringsArray;
+  protected _pathArgs?: PathTemplateTypes[];
+  protected _form?: Record<string, PathTemplateTypes>;
+  protected _formPrefixFormat: ArrayPrefixFunction | undefined;
+  protected _formData?: Record<string, PathTemplateTypes>;
+  protected _formDataPrefixFormat: ArrayPrefixFunction | undefined;
   protected _baseUrlArg: BaseUrlParamType | undefined;
   protected _validateResponse: boolean;
   protected _interceptors: Array<
@@ -211,7 +221,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _apiLogger?: ApiLoggerInterface
   ) {
     this._headers = {};
-    this._query = [];
+    this._queryParams = {};
+    this._queryParamsPrefixFormat = {};
     this._interceptors = [];
     this._errorTypes = [];
     this._validateResponse = true;
@@ -238,8 +249,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     strings: TemplateStringsArray,
     ...args: PathTemplateTypes[]
   ): void {
-    const pathSegment = pathTemplate(strings, ...args);
-    this.appendPath(pathSegment);
+    this._pathStrings = strings;
+    this._pathArgs = args;
   }
   public method(httpMethodName: HttpMethod): void {
     this._httpMethod = httpMethodName;
@@ -290,27 +301,47 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (nameOrParameters === null || nameOrParameters === undefined) {
       return;
     }
-    const queryString =
-      typeof nameOrParameters === 'string'
-        ? urlEncodeObject(
-            {
-              [nameOrParameters]: value,
-            },
-            prefixFormat
-          )
-        : urlEncodeObject(nameOrParameters, prefixFormat);
-    if (queryString) {
-      this._query.push(queryString);
+
+    if (typeof nameOrParameters === 'string') {
+      this._queryParams[nameOrParameters] = value;
+      if (prefixFormat) {
+        this._queryParamsPrefixFormat[nameOrParameters] = prefixFormat;
+      }
+      return;
+    }
+    this.setPrefixFormats(nameOrParameters, prefixFormat);
+    this.setQueryParams(nameOrParameters);
+  }
+
+  private setPrefixFormats(
+    parameters: Record<string, unknown>,
+    prefixFormat?: ArrayPrefixFunction
+  ): void {
+    if (!prefixFormat) {
+      return;
+    }
+    for (const key of Object.keys(parameters)) {
+      this._queryParamsPrefixFormat[key] = prefixFormat;
+    }
+  }
+
+  private setQueryParams(parameters: Record<string, unknown>): void {
+    for (const [key, val] of Object.entries(parameters)) {
+      if (val !== undefined && val !== null) {
+        this._queryParams[key] = val;
+      }
     }
   }
   public text(
     body: string | number | bigint | boolean | null | undefined
   ): void {
-    this._body = body?.toString() ?? undefined;
+    this._body = body;
+    this._bodyType = 'text';
     this._setContentTypeIfNotSet(TEXT_CONTENT_TYPE);
   }
   public json(data: unknown): void {
-    this._body = JSON.stringify(data);
+    this._body = data;
+    this._bodyType = 'json';
     this._setContentTypeIfNotSet(JSON_CONTENT_TYPE);
   }
   public xml<T>(
@@ -323,10 +354,11 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (mappingResult.errors) {
       throw new ArgumentsValidationError({ [argName]: mappingResult.errors });
     }
-    this._body = this._xmlSerializer.xmlSerialize(
+    this._body = {
+      data,
       rootName,
-      mappingResult.result
-    );
+    };
+    this._bodyType = 'xml';
     this._setContentTypeIfNotSet(XML_CONTENT_TYPE);
   }
   public stream(file?: FileWrapper): void {
@@ -336,24 +368,49 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void {
-    this._form = filterFileWrapperFromKeyValuePairs(
-      formDataEncodeObject(parameters, prefixFormat)
-    );
+    this._form = parameters;
+    this._formPrefixFormat = prefixFormat;
   }
   public formData(
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void {
-    this._formData = formDataEncodeObject(parameters, prefixFormat);
+    this._formData = parameters;
+    this._formDataPrefixFormat = prefixFormat;
   }
+  public updateParameterByJsonPointer(
+    pointer: string | null,
+    setter: (value: any) => any
+  ): void {
+    if (!pointer) {
+      return;
+    }
+
+    const [prefix, point = ''] = pointer.split('#');
+
+    const strategy = ParameterUpdateStrategyFactory.getStrategy(prefix);
+
+    const context = {
+      queryParams: this._queryParams,
+      pathArgs: this._pathArgs,
+      setBody: (body: any) => (this._body = body),
+      getBody: () => this._body,
+      form: this._form,
+      formData: this._formData,
+      headers: this._headers,
+    };
+    strategy.update(context, point, setter);
+  }
+
   public toRequest(): HttpRequest {
+    this.buildPath();
     const request: HttpRequest = {
       method: this._httpMethod,
       url: mergePath(this._baseUrlProvider(this._baseUrlArg), this._path),
     };
 
-    if (this._query.length > 0) {
-      const queryString = this._query.join('&');
+    const queryString = this.convertQueryParamsToString();
+    if (queryString.length > 0) {
       request.url +=
         (request.url.indexOf('?') === -1 ? '?' : '&') + queryString;
     }
@@ -376,11 +433,22 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     request.headers = headers;
 
     if (this._body !== undefined) {
-      request.body = { type: 'text', content: this._body };
+      request.body = { type: 'text', content: this.getBody() };
     } else if (this._form !== undefined) {
-      request.body = { type: 'form', content: this._form };
+      request.body = {
+        type: 'form',
+        content: filterFileWrapperFromKeyValuePairs(
+          formDataEncodeObject(this._form, this._formPrefixFormat)
+        ),
+      };
     } else if (this._formData !== undefined) {
-      request.body = { type: 'form-data', content: this._formData };
+      request.body = {
+        type: 'form-data',
+        content: formDataEncodeObject(
+          this._formData,
+          this._formDataPrefixFormat
+        ),
+      };
     } else if (this._stream !== undefined) {
       request.body = { type: 'stream', content: this._stream };
     }
@@ -526,6 +594,58 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     return { ...result, result: mappingResult.result };
   }
+
+  public clone(): DefaultRequestBuilder<BaseUrlParamType, AuthParams> {
+    const cloned = new DefaultRequestBuilder(
+      this._httpClient,
+      this._baseUrlProvider,
+      this._apiErrorCtr,
+      this._authenticationProvider,
+      this._httpMethod,
+      this._xmlSerializer,
+      this._retryConfig,
+      this._path,
+      this._apiLogger
+    );
+
+    this.cloneParameters(cloned);
+    return cloned;
+  }
+  private cloneParameters(
+    cloned: DefaultRequestBuilder<BaseUrlParamType, AuthParams>
+  ): void {
+    cloned._accept = this._accept;
+    cloned._contentType = this._contentType;
+    cloned._headers = { ...this._headers };
+    cloned._body = this._body;
+    cloned._bodyType = this._bodyType;
+    cloned._stream = this._stream;
+    cloned._queryParams = { ...this._queryParams };
+    cloned._form = this._form ? { ...this._form } : undefined;
+    cloned._formPrefixFormat = this._formPrefixFormat;
+    cloned._formData = this._formData ? { ...this._formData } : undefined;
+    cloned._formDataPrefixFormat = this._formDataPrefixFormat;
+    cloned._baseUrlArg = this._baseUrlArg;
+    cloned._validateResponse = this._validateResponse;
+    cloned._interceptors = [...this._interceptors];
+    cloned._authParams = this._authParams;
+    cloned._retryOption = this._retryOption;
+    cloned._apiErrorFactory = { ...this._apiErrorFactory };
+    cloned._errorTypes = [...this._errorTypes];
+  }
+  private getBody(): string {
+    if (this._bodyType === 'text') {
+      return this._body?.toString();
+    }
+    if (this._bodyType === 'json') {
+      return JSON.stringify(this._body);
+    }
+    return this._xmlSerializer.xmlSerialize(
+      this._body.data,
+      this._body.rootName
+    );
+  }
+
   private _setContentTypeIfNotSet(contentType: string) {
     if (!this._contentType) {
       setHeaderIfNotSet(this._headers, CONTENT_TYPE_HEADER, contentType);
@@ -559,6 +679,11 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         apiLogger.logResponse(context.response);
         return context;
       });
+    }
+  }
+  private buildPath(): void {
+    if (this._pathStrings !== undefined && this._pathArgs !== undefined) {
+      this._path = pathTemplate(this._pathStrings, ...this._pathArgs);
     }
   }
   private _addAuthentication() {
@@ -632,6 +757,18 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       }
       return context;
     });
+  }
+  private convertQueryParamsToString(): string {
+    const queryParts: string[] = [];
+
+    for (const [key, value] of Object.entries(this._queryParams)) {
+      const formatter = this._queryParamsPrefixFormat?.[key];
+
+      const encoded = urlEncodeObject({ [key]: value }, formatter);
+      queryParts.push(encoded);
+    }
+
+    return queryParts.join('&');
   }
 }
 
