@@ -1,5 +1,5 @@
 import flatMap from 'lodash.flatmap';
-import { PathParam } from '../pathParam';
+import { PathParam } from './pathParam';
 
 /** Marker for skipping URL-encoding when used with Path templating */
 export class SkipEncode<T extends PathTemplatePrimitiveTypes> {

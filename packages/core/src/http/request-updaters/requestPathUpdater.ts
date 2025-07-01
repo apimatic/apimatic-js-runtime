@@ -1,6 +1,6 @@
 import { ParameterContext, ParameterUpdater } from './parameterUpdater';
 import { updateValueByJsonPointer } from '../../apiHelper';
-import { PathParam } from '../../pathParam';
+import { PathParam } from '../pathParam';
 import { SkipEncode } from '../pathTemplate';
 
 export class RequestPathUpdater implements ParameterUpdater {
@@ -28,13 +28,20 @@ export class RequestPathUpdater implements ParameterUpdater {
     return argsObject;
   }
 
-  private updatePathArgs(context: ParameterContext, argsObject: Record<string, unknown>): void {
+  private updatePathArgs(
+    context: ParameterContext,
+    argsObject: Record<string, unknown>
+  ): void {
     if (!context.pathArgs) {
       return;
     }
 
     for (const arg of context.pathArgs) {
-      if (arg instanceof SkipEncode && arg.key !== undefined && arg.key in argsObject) {
+      if (
+        arg instanceof SkipEncode &&
+        arg.key !== undefined &&
+        arg.key in argsObject
+      ) {
         arg.value = argsObject[arg.key];
       } else if (arg instanceof PathParam && arg.key in argsObject) {
         arg.value = argsObject[arg.key];

@@ -1,5 +1,5 @@
 import { pathTemplate, SkipEncode } from '../../src/http/pathTemplate';
-import { PathParam } from '../../src/pathParam';
+import { PathParam } from '../../src/http/pathParam';
 test.each([
   [
     'test number type template parameter',
@@ -72,25 +72,40 @@ test.each([
     const encodedTemplatePath = pathTemplate`/rest/v1.0/projects/${companyIdMap}/accident_logs`;
     expect(encodedTemplatePath).toStrictEqual(expectedResult);
 
-    const encodedTemplatePathWithSkipEncoding = pathTemplate`/rest/v1.0/projects/${new SkipEncode(companyIdMap, 'key')}/accident_logs`;
+    const encodedTemplatePathWithSkipEncoding = pathTemplate`/rest/v1.0/projects/${new SkipEncode(
+      companyIdMap,
+      'key'
+    )}/accident_logs`;
     expect(encodedTemplatePathWithSkipEncoding).toStrictEqual(expectedResult);
 
-    const encodedTemplatePathWithPathParam = pathTemplate`/rest/v1.0/projects/${new PathParam(companyIdMap, 'key')}/accident_logs`;
+    const encodedTemplatePathWithPathParam = pathTemplate`/rest/v1.0/projects/${new PathParam(
+      companyIdMap,
+      'key'
+    )}/accident_logs`;
     expect(encodedTemplatePathWithPathParam).toStrictEqual(expectedResult);
   }
 );
 
 it('test string with special characters template parameter', () => {
   const expectedResult = '/rest/v1.0/projects/%24he%5B%5Dllo%25/accident_logs';
-  const expectedResultWithSkipEncoding = '/rest/v1.0/projects/$he[]llo%/accident_logs';
+  const expectedResultWithSkipEncoding =
+    '/rest/v1.0/projects/$he[]llo%/accident_logs';
 
   const specialCharString = '$he[]llo%';
 
   const encodedTemplatePath = pathTemplate`/rest/v1.0/projects/${specialCharString}/accident_logs`;
-  const encodedTemplatePathWithPathParam = pathTemplate`/rest/v1.0/projects/${new PathParam(specialCharString, 'key')}/accident_logs`;
-  const encodedTemplatePathWithSkipEncoding = pathTemplate`/rest/v1.0/projects/${new SkipEncode(specialCharString, 'key')}/accident_logs`;
+  const encodedTemplatePathWithPathParam = pathTemplate`/rest/v1.0/projects/${new PathParam(
+    specialCharString,
+    'key'
+  )}/accident_logs`;
+  const encodedTemplatePathWithSkipEncoding = pathTemplate`/rest/v1.0/projects/${new SkipEncode(
+    specialCharString,
+    'key'
+  )}/accident_logs`;
 
   expect(encodedTemplatePath).toStrictEqual(expectedResult);
   expect(encodedTemplatePathWithPathParam).toStrictEqual(expectedResult);
-  expect(encodedTemplatePathWithSkipEncoding).toStrictEqual(expectedResultWithSkipEncoding);
+  expect(encodedTemplatePathWithSkipEncoding).toStrictEqual(
+    expectedResultWithSkipEncoding
+  );
 });

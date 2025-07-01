@@ -35,7 +35,7 @@ import {
   tabPrefix,
   unindexedPrefix,
 } from '@apimatic/http-query';
-import { PathParam } from '../../src/pathParam';
+import { PathParam } from '../../src/http/pathParam';
 
 const authParams = {
   username: 'maryam-adnan',
@@ -717,7 +717,7 @@ describe('test template function', () => {
       float: [3.14, optional(number())],
       big: [9007199254740991, optional(bigint())],
     });
-    const templateArray = Object.assign(['data/', '/', '/', '/', '/',]);
+    const templateArray = Object.assign(['data/', '/', '/', '/', '/']);
     builderWithAppendPath.appendTemplatePath(
       templateArray,
       new PathParam(mappedArgs.user, 'user'),
@@ -730,9 +730,14 @@ describe('test template function', () => {
 
     expect(responseFromAppendPath.request.url).toEqual(expectedRequestUrl);
 
-    builderWithAppendPath.updateParameterByJsonPointer('$request.path#/data/boolean', () => false);
+    builderWithAppendPath.updateParameterByJsonPointer(
+      '$request.path#/data/boolean',
+      () => false
+    );
     const responseAfterUpdate = await builderWithAppendPath.callAsText();
-    expect(responseAfterUpdate.request.url).toEqual('https://apimatic.hopto.org:3000/data/user1/123/false/3.14/9007199254740991');
+    expect(responseAfterUpdate.request.url).toEqual(
+      'https://apimatic.hopto.org:3000/data/user1/123/false/3.14/9007199254740991'
+    );
   });
 
   it('should produce correct URL when using appendTemplatePath with array type', async () => {
@@ -850,7 +855,7 @@ describe('test updateParameterByJsonPointer function', () => {
 
     const mappedArgs = reqBuilder.prepareArgs({
       user: ['123', optional(string())],
-      post: ['456', optional(string())]
+      post: ['456', optional(string())],
     });
     const templateArray = Object.assign(['/users/', '/posts/']);
     reqBuilder.appendTemplatePath(
