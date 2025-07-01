@@ -35,6 +35,7 @@ import {
   tabPrefix,
   unindexedPrefix,
 } from '@apimatic/http-query';
+import { PathParam } from '../../src/pathParam';
 
 const authParams = {
   username: 'maryam-adnan',
@@ -704,11 +705,11 @@ describe('test default request builder with prefix formats', () => {
 });
 
 describe('test template function', () => {
-  it('should produce equivalent URLs when using appendTemplatePath vs template method', async () => {
+  it('should produce correct URL when using appendTemplatePath', async () => {
     const expectedRequestUrl =
       'https://apimatic.hopto.org:3000/data/user1/123/true/3.14/9007199254740991';
 
-    const builderWithAppendPath = defaultRequestBuilder('/data');
+    const builderWithAppendPath = defaultRequestBuilder('');
     const mappedArgs = builderWithAppendPath.prepareArgs({
       user: ['user1', optional(string())],
       number: [123, optional(number())],
@@ -716,58 +717,42 @@ describe('test template function', () => {
       float: [3.14, optional(number())],
       big: [9007199254740991, optional(bigint())],
     });
-    const templateArray = Object.assign(['/', '/', '/', '/', '/']);
+    const templateArray = Object.assign(['data/', '/', '/', '/', '/',]);
     builderWithAppendPath.appendTemplatePath(
       templateArray,
-      mappedArgs.user,
-      mappedArgs.number,
-      mappedArgs.bool,
-      mappedArgs.float,
-      mappedArgs.big
+      new PathParam(mappedArgs.user, 'user'),
+      new PathParam(mappedArgs.number, 'number'),
+      new PathParam(mappedArgs.bool, 'boolean'),
+      new PathParam(mappedArgs.float, 'float'),
+      new PathParam(mappedArgs.big, 'bigInt')
     );
     const responseFromAppendPath = await builderWithAppendPath.callAsText();
 
-    const builderWithTemplate = defaultRequestBuilder(
-      '/data/{string}/{number}/{boolean}/{float}/{bigInt}'
-    );
-    builderWithTemplate.template('string', mappedArgs.user);
-    builderWithTemplate.template('number', mappedArgs.number);
-    builderWithTemplate.template('boolean', mappedArgs.bool);
-    builderWithTemplate.template('float', mappedArgs.float);
-    builderWithTemplate.template('bigInt', mappedArgs.big);
-    const responseFromTemplate = await builderWithTemplate.callAsText();
+    expect(responseFromAppendPath.request.url).toEqual(expectedRequestUrl);
 
-    expect(responseFromTemplate.request.url).toEqual(expectedRequestUrl);
-    expect(responseFromTemplate.request.url).toEqual(
-      responseFromAppendPath.request.url
-    );
+    builderWithAppendPath.updateParameterByJsonPointer('$request.path#/data/boolean', () => false);
+    const responseAfterUpdate = await builderWithAppendPath.callAsText();
+    expect(responseAfterUpdate.request.url).toEqual('https://apimatic.hopto.org:3000/data/user1/123/false/3.14/9007199254740991');
   });
 
-  it('should produce equivalent URLs when using appendTemplatePath vs template method with array type', async () => {
+  it('should produce correct URL when using appendTemplatePath with array type', async () => {
     const expectedRequestUrl =
       'https://apimatic.hopto.org:3000/data/123/456/789';
 
-    const builderWithAppendPath = defaultRequestBuilder('/data');
+    const builderWithAppendPath = defaultRequestBuilder('');
     const integers = [123, 456, 789];
     const mappedArgs = builderWithAppendPath.prepareArgs({
       integers: [integers, array(number())],
     });
 
-    const templateArray = Object.assign(['/']);
+    const templateArray = Object.assign(['data/']);
     builderWithAppendPath.appendTemplatePath(
       templateArray,
       mappedArgs.integers
     );
     const responseFromAppendPath = await builderWithAppendPath.callAsText();
 
-    const builderWithTemplate = defaultRequestBuilder('/data/{data}');
-    builderWithTemplate.template('data', mappedArgs.integers);
-    const responseFromTemplate = await builderWithTemplate.callAsText();
-
-    expect(responseFromTemplate.request.url).toEqual(expectedRequestUrl);
-    expect(responseFromTemplate.request.url).toEqual(
-      responseFromAppendPath.request.url
-    );
+    expect(responseFromAppendPath.request.url).toEqual(expectedRequestUrl);
   });
 });
 
@@ -863,9 +848,18 @@ describe('test updateParameterByJsonPointer function', () => {
   it('should update path template parameters using JSON pointer', async () => {
     const reqBuilder = defaultRequestBuilder('/users/{userId}/posts/{postId}');
 
-    // Set initial template values
-    reqBuilder.template('userId', '123');
-    reqBuilder.template('postId', '456');
+    const mappedArgs = reqBuilder.prepareArgs({
+      user: ['123', optional(string())],
+      post: ['456', optional(string())]
+    });
+    const templateArray = Object.assign(['/users/', '/posts/']);
+    reqBuilder.appendTemplatePath(
+      templateArray,
+      new PathParam(mappedArgs.user, 'userId'),
+      new PathParam(mappedArgs.post, 'postId')
+    );
+
+    // reqBuilder.appendTemplatePath`/users/${new PathParam(mappedArgs.user, 'userId')}/posts/${new PathParam(mappedArgs.post, 'postId')}`;
 
     // Update template value using JSON pointer
     reqBuilder.updateParameterByJsonPointer(

@@ -110,7 +110,6 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     parameters?: Record<string, unknown> | null,
     prefixFormat?: ArrayPrefixFunction
   ): void;
-  template(name: string, value: PathTemplateTypes): void;
   form(
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
@@ -193,7 +192,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   protected _stream?: FileWrapper;
   protected _queryParams: Record<string, unknown>;
   protected _queryParamsPrefixFormat: Record<string, ArrayPrefixFunction>;
-  protected _templateParams: Record<string, PathTemplateTypes>;
+  protected _pathStrings?: TemplateStringsArray;
+  protected _pathArgs?: PathTemplateTypes[];
   protected _form?: Record<string, PathTemplateTypes>;
   protected _formPrefixFormat: ArrayPrefixFunction | undefined;
   protected _formData?: Record<string, PathTemplateTypes>;
@@ -223,7 +223,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this._headers = {};
     this._queryParams = {};
     this._queryParamsPrefixFormat = {};
-    this._templateParams = {};
     this._interceptors = [];
     this._errorTypes = [];
     this._validateResponse = true;
@@ -250,8 +249,8 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     strings: TemplateStringsArray,
     ...args: PathTemplateTypes[]
   ): void {
-    const pathSegment = pathTemplate(strings, ...args);
-    this.appendPath(pathSegment);
+    this._pathStrings = strings;
+    this._pathArgs = args;
   }
   public method(httpMethodName: HttpMethod): void {
     this._httpMethod = httpMethodName;
@@ -333,9 +332,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       }
     }
   }
-  public template(name: string, value: PathTemplateTypes): void {
-    this._templateParams[name] = value;
-  }
   public text(
     body: string | number | bigint | boolean | null | undefined
   ): void {
@@ -396,7 +392,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
 
     const context = {
       queryParams: this._queryParams,
-      templateParams: this._templateParams,
+      pathArgs: this._pathArgs,
       setBody: (body: any) => (this._body = body),
       getBody: () => this._body,
       form: this._form,
@@ -407,9 +403,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
 
   public toRequest(): HttpRequest {
+    this.buildPath();
     const request: HttpRequest = {
       method: this._httpMethod,
-      url: mergePath(this._baseUrlProvider(this._baseUrlArg), this.buildPath()),
+      url: mergePath(this._baseUrlProvider(this._baseUrlArg), this._path),
     };
 
     const queryString = this.convertQueryParamsToString();
@@ -624,8 +621,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     cloned._bodyType = this._bodyType;
     cloned._stream = this._stream;
     cloned._queryParams = { ...this._queryParams };
-    // cloned._queryParamsPrefixFormat = { ...this._queryParamsPrefixFormat };
-    cloned._templateParams = { ...this._templateParams };
     cloned._form = this._form ? { ...this._form } : undefined;
     cloned._formPrefixFormat = this._formPrefixFormat;
     cloned._formData = this._formData ? { ...this._formData } : undefined;
@@ -686,18 +681,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       });
     }
   }
-  private buildPath(): string {
-    if (!this._path) {
-      return '';
+  private buildPath(): void {
+    if (this._pathStrings !== undefined && this._pathArgs !== undefined) {
+      this._path = pathTemplate(this._pathStrings, ...this._pathArgs);
     }
-
-    for (const [key, value] of Object.entries(this._templateParams)) {
-      if (value !== undefined && value !== null) {
-        const encoded = pathTemplate`${value}`;
-        this._path = this._path.replace(`{${key}}`, encoded);
-      }
-    }
-    return this._path;
   }
   private _addAuthentication() {
     this.intercept((...args) => {

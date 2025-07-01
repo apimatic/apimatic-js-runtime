@@ -7,7 +7,7 @@ import { NullParameterUpdater } from './nullParameterUpdater';
 
 export interface ParameterContext {
   queryParams: Record<string, unknown>;
-  templateParams: Record<string, PathTemplateTypes>;
+  pathArgs: PathTemplateTypes[] | undefined;
   setBody: (body: any) => void;
   getBody: () => any;
   form: Record<string, PathTemplateTypes> | undefined;
@@ -24,9 +24,9 @@ export interface ParameterUpdater {
 }
 
 export class ParameterUpdateStrategyFactory {
-  private static nullStrategy = new NullParameterUpdater();
+  private static readonly nullStrategy = new NullParameterUpdater();
 
-  private static strategies = new Map<string, ParameterUpdater>([
+  private static readonly strategies = new Map<string, ParameterUpdater>([
     ['$request.body', new RequestBodyUpdater()],
     ['$request.path', new RequestPathUpdater()],
     ['$request.query', new RequestQueryUpdater()],

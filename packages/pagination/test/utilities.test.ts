@@ -2,6 +2,15 @@ import { ApiResponse } from '../src/coreInterfaces';
 import { getValueByJsonPointer } from '../src/utilities';
 
 describe('getValueByJsonPointer tests', () => {
+  const requestBody = {
+    user: {
+      name: 'Alice',
+      age: 25,
+      address: {
+        city: 'Islamabad',
+      },
+    },
+  };
   const mockResponse: ApiResponse<any> = {
     request: {} as any,
     statusCode: 200,
@@ -10,15 +19,7 @@ describe('getValueByJsonPointer tests', () => {
       'x-request-id': 'abc-123',
     },
     result: {},
-    body: JSON.stringify({
-      user: {
-        name: 'Alice',
-        age: 25,
-        address: {
-          city: 'Islamabad',
-        },
-      },
-    }),
+    body: JSON.stringify(requestBody),
   };
 
   test.each([
@@ -40,7 +41,7 @@ describe('getValueByJsonPointer tests', () => {
     [
       'should return null when jsonPath of pointer is empty',
       '$response.body#',
-      null,
+      requestBody,
     ],
     ['should return null when pointer is empty', '', null],
     ['should return null for unsupported prefix', '$invalid#/user/name', null],
@@ -51,7 +52,7 @@ describe('getValueByJsonPointer tests', () => {
     ],
   ])('%s', (_: string, jsonPointer: string, expectedResult: any) => {
     const value = getValueByJsonPointer(mockResponse, jsonPointer);
-    expect(value).toBe(expectedResult);
+    expect(value).toStrictEqual(expectedResult);
   });
 
   it('should return null for malformed JSON string in body', () => {

@@ -1,8 +1,12 @@
 import flatMap from 'lodash.flatmap';
+import { PathParam } from '../pathParam';
 
 /** Marker for skipping URL-encoding when used with Path templating */
 export class SkipEncode<T extends PathTemplatePrimitiveTypes> {
-  constructor(public value: T) {}
+  public key?: string;
+  constructor(public value: T, key?: string) {
+    this.key = key;
+  }
 }
 
 export type PathTemplatePrimitiveTypes =
@@ -19,7 +23,8 @@ export type PathTemplatePrimitiveTypes =
 /** Path template argument type */
 export type PathTemplateTypes =
   | PathTemplatePrimitiveTypes
-  | SkipEncode<PathTemplatePrimitiveTypes>;
+  | SkipEncode<PathTemplatePrimitiveTypes>
+  | PathParam<PathTemplatePrimitiveTypes>;
 
 /**
  * URL path templating method.
@@ -65,6 +70,9 @@ function encodePathTemplateSegment(value: PathTemplateTypes) {
   if (value instanceof SkipEncode) {
     value = value.value;
     skipEncode = true;
+  }
+  if (value instanceof PathParam) {
+    value = value.value;
   }
   return Array.isArray(value)
     ? (value as unknown[]).map<unknown>(encode).join('/')
