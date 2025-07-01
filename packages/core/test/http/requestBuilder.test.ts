@@ -864,8 +864,6 @@ describe('test updateParameterByJsonPointer function', () => {
       new PathParam(mappedArgs.post, 'postId')
     );
 
-    // reqBuilder.appendTemplatePath`/users/${new PathParam(mappedArgs.user, 'userId')}/posts/${new PathParam(mappedArgs.post, 'postId')}`;
-
     // Update template value using JSON pointer
     reqBuilder.updateParameterByJsonPointer(
       '$request.path#/userId',
@@ -958,6 +956,18 @@ describe('test updateParameterByJsonPointer function', () => {
     );
     const apiResponse = await reqBuilder.callAsText();
     expect(decodeURIComponent(apiResponse.request.url)).toContain('key=value');
+  });
+
+  it('should not add new path parameter with updateParameterByJsonPointer', async () => {
+    const reqBuilder = defaultRequestBuilder('');
+    const expectedRequestUrl = (await reqBuilder.callAsText()).request.url;
+
+    reqBuilder.updateParameterByJsonPointer(
+      '$request.path#/data/boolean',
+      () => false
+    );
+    const responseAfterUpdate = await reqBuilder.callAsText();
+    expect(responseAfterUpdate.request.url).toEqual(expectedRequestUrl);
   });
 });
 

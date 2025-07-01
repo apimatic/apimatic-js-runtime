@@ -18,9 +18,10 @@ export class RequestPathUpdater implements ParameterUpdater {
     const argsObject: Record<string, unknown> = {};
 
     context.pathArgs?.forEach((arg) => {
-      if (arg instanceof PathParam) {
-        argsObject[arg.key] = arg.value;
-      } else if (arg instanceof SkipEncode && arg.key !== undefined) {
+      if (
+        (arg instanceof PathParam || arg instanceof SkipEncode) &&
+        arg.key !== undefined
+      ) {
         argsObject[arg.key] = arg.value;
       }
     });
@@ -46,12 +47,10 @@ export class RequestPathUpdater implements ParameterUpdater {
     argsObject: Record<string, unknown>
   ): void {
     if (
-      arg instanceof SkipEncode &&
+      (arg instanceof SkipEncode || arg instanceof PathParam) &&
       arg.key !== undefined &&
       arg.key in argsObject
     ) {
-      arg.value = argsObject[arg.key];
-    } else if (arg instanceof PathParam && arg.key in argsObject) {
       arg.value = argsObject[arg.key];
     }
   }
