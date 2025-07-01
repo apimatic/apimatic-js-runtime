@@ -24,21 +24,27 @@ export function getValueByJsonPointer(
   const [prefix, jsonPath] = pointer.split('#');
 
   if (prefix === '$response.body') {
-    let body = obj.body;
-    if (typeof body !== 'string') {
-      return null;
-    }
-    try {
-      body = JSON.parse(body);
-    } catch {
-      // ignore error
-    }
-    return extractValueFromJsonPointer(body, jsonPath);
+    return extractFromResponseBody(obj.body, jsonPath);
   }
+
   if (prefix === '$response.headers') {
     return extractValueFromJsonPointer(obj.headers, jsonPath);
   }
+
   return null;
+}
+
+function extractFromResponseBody(body: any, jsonPath: string): any {
+  if (typeof body !== 'string') {
+    return null;
+  }
+
+  try {
+    body = JSON.parse(body);
+  } catch {
+    // ignore error
+  }
+  return extractValueFromJsonPointer(body, jsonPath);
 }
 
 function extractValueFromJsonPointer(obj: any, pointer: string): any {
