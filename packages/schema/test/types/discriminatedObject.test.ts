@@ -15,23 +15,23 @@ import {
 
 describe('Discriminated Object', () => {
   const baseType = strictObject({
-    type: ['type mapped', optional(string())],
+    type: ['type unmapped', optional(string())],
     baseField: ['base field', number()],
   });
 
   const childType1 = extendStrictObject(baseType, {
-    type: ['type mapped', optional(string())],
+    type: ['type unmapped', optional(string())],
     child1Field: ['child1 field', boolean()],
   });
 
   const childType2 = extendStrictObject(baseType, {
-    type: ['type mapped', optional(string())],
+    type: ['type unmapped', optional(string())],
     child2Field: ['child2 field', boolean()],
   });
 
   const discriminatedSchema = discriminatedObject(
     'type',
-    'type mapped',
+    'type unmapped',
     {
       base: baseType,
       child1: childType1,
@@ -47,7 +47,7 @@ describe('Discriminated Object', () => {
   describe('Mapping', () => {
     it('should map to child type on discriminator match', () => {
       const input = {
-        'type mapped': 'child1',
+        'type unmapped': 'child1',
         'base field': 123123,
         'child1 field': true,
       };
@@ -62,7 +62,7 @@ describe('Discriminated Object', () => {
 
     it('should map to child type without discriminator match', () => {
       const input = {
-        'type mapped': 'hello world',
+        'type unmapped': 'hello world',
         'base field': 123123,
         'child1 field': true,
       };
@@ -90,7 +90,7 @@ describe('Discriminated Object', () => {
 
     it('should map to base type on discriminator match', () => {
       const input = {
-        'type mapped': 'base',
+        'type unmapped': 'base',
         'base field': 123123,
       };
       const output = validateAndMap(input, discriminatedSchema);
@@ -103,7 +103,7 @@ describe('Discriminated Object', () => {
 
     it('should map to base type without discriminator match', () => {
       const input = {
-        'type mapped': 'hello world',
+        'type unmapped': 'hello world',
         'base field': 123123,
       };
       const output = validateAndMap(input, discriminatedSchema);
@@ -116,7 +116,7 @@ describe('Discriminated Object', () => {
 
     it('should fail on schema invalidation', () => {
       const input = {
-        'type mapped': 'child1',
+        'type unmapped': 'child1',
         'base field': 123123,
         'child1 field': 101,
       };
@@ -129,7 +129,7 @@ describe('Discriminated Object', () => {
               Object {
                 "base field": 123123,
                 "child1 field": 101,
-                "type mapped": "child1",
+                "type unmapped": "child1",
               },
               101,
             ],
@@ -168,7 +168,7 @@ describe('Discriminated Object', () => {
       const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
-        'type mapped': 'child1',
+        'type unmapped': 'child1',
         'base field': 123123,
         'child1 field': true,
       });
@@ -183,7 +183,7 @@ describe('Discriminated Object', () => {
       const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
-        'type mapped': 'hello world',
+        'type unmapped': 'hello world',
         'base field': 123123,
         'child1 field': true,
       });
@@ -210,7 +210,7 @@ describe('Discriminated Object', () => {
       const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
-        'type mapped': 'base',
+        'type unmapped': 'base',
         'base field': 123123,
       });
     });
@@ -223,7 +223,7 @@ describe('Discriminated Object', () => {
       const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
-        'type mapped': 'hello world',
+        'type unmapped': 'hello world',
         'base field': 123123,
       });
     });
@@ -292,7 +292,7 @@ describe('Discriminated Object', () => {
           },
         ],
         discriminator: {
-          propertyName: 'type mapped',
+          propertyName: 'type unmapped',
           mapping: {
             base: '#/$defs/schema1',
             child1: '#/$defs/schema2',
@@ -304,7 +304,7 @@ describe('Discriminated Object', () => {
             type: 'object',
             required: ['base field'],
             properties: {
-              'type mapped': {
+              'type unmapped': {
                 type: 'string',
               },
               'base field': {
@@ -316,7 +316,7 @@ describe('Discriminated Object', () => {
             type: 'object',
             required: ['base field', 'child1 field'],
             properties: {
-              'type mapped': {
+              'type unmapped': {
                 type: 'string',
               },
               'base field': {
@@ -331,7 +331,7 @@ describe('Discriminated Object', () => {
             type: 'object',
             required: ['base field', 'child2 field'],
             properties: {
-              'type mapped': {
+              'type unmapped': {
                 type: 'string',
               },
               'base field': {
