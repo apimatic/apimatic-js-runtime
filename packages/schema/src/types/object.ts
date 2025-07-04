@@ -246,7 +246,7 @@ function internalObject<
     toJSONSchema: (context) =>
       generateObjectSchema(
         context,
-        Object.entries(objectSchema).map(([key, [, propSchema]]) => ({
+        Object.entries(objectSchema).map(([, [key, propSchema]]) => ({
           key,
           propSchema,
         })),

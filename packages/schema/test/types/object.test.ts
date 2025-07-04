@@ -349,20 +349,20 @@ describe('Object', () => {
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema for an object with required properties', () => {
       const userSchema = object({
-        id: ['id', string()],
-        age: ['age', number()],
+        id: ['ID', string()],
+        age: ['AGE', number()],
       });
       const jsonSchema = generateJSONSchema(userSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
         $schema: 'https://json-schema.org/draft-07/schema',
         type: 'object',
-        required: ['id', 'age'],
+        required: ['ID', 'AGE'],
         properties: {
-          id: {
+          ID: {
             type: 'string',
           },
-          age: {
+          AGE: {
             type: 'number',
           },
         },

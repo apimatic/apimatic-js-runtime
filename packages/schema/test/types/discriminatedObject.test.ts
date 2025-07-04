@@ -302,42 +302,42 @@ describe('Discriminated Object', () => {
         $defs: {
           schema1: {
             type: 'object',
-            required: ['baseField'],
+            required: ['base field'],
             properties: {
-              type: {
+              'type mapped': {
                 type: 'string',
               },
-              baseField: {
+              'base field': {
                 type: 'number',
               },
             },
           },
           schema2: {
             type: 'object',
-            required: ['baseField', 'child1Field'],
+            required: ['base field', 'child1 field'],
             properties: {
-              type: {
+              'type mapped': {
                 type: 'string',
               },
-              baseField: {
+              'base field': {
                 type: 'number',
               },
-              child1Field: {
+              'child1 field': {
                 type: 'boolean',
               },
             },
           },
           schema3: {
             type: 'object',
-            required: ['baseField', 'child2Field'],
+            required: ['base field', 'child2 field'],
             properties: {
-              type: {
+              'type mapped': {
                 type: 'string',
               },
-              baseField: {
+              'base field': {
                 type: 'number',
               },
-              child2Field: {
+              'child2 field': {
                 type: 'boolean',
               },
             },
