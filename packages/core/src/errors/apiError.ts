@@ -44,12 +44,7 @@ export class ApiError<T = {}>
         this.result = await this.parseBlobBody(this.body);
       }
     } catch (error) {
-      if (process.env.NODE_ENV !== 'production' && console) {
-        // tslint:disable-next-line:no-console
-        console.warn(
-          `Unexpected error: Could not parse HTTP response body. ${error.message}`
-        );
-      }
+      this.logParseWarning(error);
     }
   }
 
@@ -81,5 +76,14 @@ export class ApiError<T = {}>
       reader.onerror = reject;
       reader.readAsArrayBuffer(blob);
     });
+  }
+
+  private logParseWarning(error: any): void {
+    if (process.env.NODE_ENV !== 'production' && console) {
+      // tslint:disable-next-line:no-console
+      console.warn(
+        `Unexpected error: Could not parse HTTP response body. ${error.message}`
+      );
+    }
   }
 }
