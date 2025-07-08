@@ -6,7 +6,7 @@
     "trailing-comma": [false],
     "object-literal-sort-keys": false,
     "arrow-parens": false,
-    "quotemark": [true, "single", "double"],
+    "quotemark": [true, "single"],
     "ordered-imports": [false],
     "variable-name": false,
     "object-literal-key-quotes": false,
