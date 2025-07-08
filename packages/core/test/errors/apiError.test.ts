@@ -16,21 +16,29 @@ function stringToBlob(str: string, type = 'application/json') {
 describe('ApiError Class', () => {
   describe('Test API Error Instance', () => {
     const deprecationSpy = jest.spyOn(console, 'warn');
+
+    const mockHttpRequest = {
+      method: 'GET',
+      url: 'url',
+      headers: { 'test-header': 'test-value' },
+      body: { content: 'testBody', type: 'text' },
+      responseType: 'text',
+    } as HttpRequest;
+
+    const mockStatusCode = 500;
+
+    const baseResponse = {
+      statusCode: mockStatusCode,
+      headers: { 'test-header': 'test-value' },
+    };
+
     test.each([
       [
         'should set properties correctly in constructor',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: { content: 'testBody', type: 'text' },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: '',
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         undefined,
         'production',
@@ -39,18 +47,10 @@ describe('ApiError Class', () => {
       ],
       [
         'should parse valid JSON string body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: { content: 'testBody', type: 'text' },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: '{"foo": "bar"}',
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         { foo: 'bar' },
         'production',
@@ -59,18 +59,10 @@ describe('ApiError Class', () => {
       ],
       [
         'should leave result undefined for empty string body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: { content: 'testBody', type: 'text' },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: '',
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         undefined,
         'production',
@@ -79,18 +71,10 @@ describe('ApiError Class', () => {
       ],
       [
         'should parse valid JSON from Readable stream body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: { content: 'testBody', type: 'text' },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: stringToStream('{"a":1}'),
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         { a: 1 },
         'production',
@@ -99,18 +83,10 @@ describe('ApiError Class', () => {
       ],
       [
         'should leave result undefined for invalid JSON string body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: { content: 'testBody', type: 'text' },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: '{invalid json}',
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         undefined,
         'production',
@@ -119,18 +95,10 @@ describe('ApiError Class', () => {
       ],
       [
         'should leave result undefined for invalid JSON in Readable stream body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: { content: 'testBody', type: 'text' },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: stringToStream('{invalid json}'),
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         undefined,
         'production',
@@ -139,18 +107,10 @@ describe('ApiError Class', () => {
       ],
       [
         'should parse valid JSON from Blob body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: { content: 'testBody', type: 'text' },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: stringToBlob('{"x":42}'),
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         { x: 42 },
         'production',
@@ -159,18 +119,10 @@ describe('ApiError Class', () => {
       ],
       [
         'should leave result undefined for invalid JSON in Blob body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: { content: 'testBody', type: 'text' },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: stringToBlob('{invalid json}'),
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         undefined,
         'production',
@@ -179,18 +131,10 @@ describe('ApiError Class', () => {
       ],
       [
         'should leave result undefined for empty Blob body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: { content: 'testBody', type: 'text' },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: stringToBlob(''),
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         undefined,
         'production',
@@ -199,22 +143,11 @@ describe('ApiError Class', () => {
       ],
       [
         'test with string in response body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: {
-            content: 'testBody',
-            type: 'text',
-          },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: '{"test-string" : "value"}',
-          headers: { 'test-header': 'test-value' },
-        },
+        } as HttpResponse,
         { 'test-string': 'value' },
         'production',
         undefined,
@@ -222,22 +155,11 @@ describe('ApiError Class', () => {
       ],
       [
         'test with empty string in response body',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: {
-            content: 'testBody',
-            type: 'text',
-          },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: '',
-          headers: { 'test-header': 'test-value' },
-        },
+        } as HttpResponse,
         undefined,
         'production',
         undefined,
@@ -245,21 +167,10 @@ describe('ApiError Class', () => {
       ],
       [
         'test with incorrect json string in response body with test-environment',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: {
-            content: 'testBody',
-            type: 'text',
-          },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: '[1, 2, 3, 4, ]',
-          headers: { 'test-header': 'test-value' },
         } as HttpResponse,
         undefined,
         'development',
@@ -268,22 +179,11 @@ describe('ApiError Class', () => {
       ],
       [
         'test with incorrect json string in response body with production environment',
+        mockHttpRequest,
         {
-          method: 'GET',
-          url: 'url',
-          headers: { 'test-header': 'test-value' },
-          body: {
-            content: 'testBody',
-            type: 'text',
-          },
-          responseType: 'text',
-          auth: { username: 'test-username', password: 'test-password' },
-        } as HttpRequest,
-        {
-          statusCode: 500,
+          ...baseResponse,
           body: 'testBody result',
-          headers: { 'test-header': 'test-value' },
-        },
+        } as HttpResponse,
         undefined,
         'production',
         'Unexpected error: Could not parse HTTP response body. Unexpected \']\'',
