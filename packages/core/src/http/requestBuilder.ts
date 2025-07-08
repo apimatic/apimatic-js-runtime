@@ -134,7 +134,9 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     interceptor: HttpInterceptorInterface<RequestOptions | undefined>
   ): void;
   interceptRequest(interceptor: (request: HttpRequest) => HttpRequest): void;
-  interceptResponse(interceptor: (response: HttpContext) => HttpContext): void;
+  interceptResponse(
+    interceptor: (response: HttpContext) => Promise<HttpContext>
+  ): void;
   defaultToError(apiErrorCtor: ApiErrorConstructor, message?: string): void;
   validateResponse(validate: boolean): void;
   throwOn<ErrorCtorArgs extends any[]>(
@@ -398,9 +400,11 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this.intercept((req, opt, next) => next(interceptor(req), opt));
   }
   public interceptResponse(
-    interceptor: (response: HttpContext) => HttpContext
+    interceptor: (response: HttpContext) => Promise<HttpContext>
   ): void {
-    this.intercept(async (req, opt, next) => interceptor(await next(req, opt)));
+    this.intercept(
+      async (req, opt, next) => await interceptor(await next(req, opt))
+    );
   }
   public defaultToError(
     apiErrorCtor: ApiErrorConstructor,
@@ -532,7 +536,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
   }
   private _addResponseValidator(): void {
-    this.interceptResponse((context) => {
+    this.interceptResponse(async (context) => {
       const { response } = context;
       if (
         this._validateResponse &&
@@ -613,7 +617,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     });
   }
   private _addErrorHandlingInterceptor() {
-    this.interceptResponse((context) => {
+    this.interceptResponse(async (context) => {
       const { response } = context;
       for (const { statusCode, errorConstructor, isTemplate, args } of this
         ._errorTypes) {
@@ -627,7 +631,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
           if (isTemplate && args.length > 0) {
             args[0] = updateErrorMessage(args[0], response);
           }
-          throw new errorConstructor(context, ...args);
+          const error = new errorConstructor(context, ...args);
+          await error.setResult();
+          throw error;
         }
       }
       return context;
