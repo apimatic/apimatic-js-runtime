@@ -1,31 +1,19 @@
-import { ApiResponse } from './coreInterfaces';
+import { ApiResponse, PagedAsyncIterable } from './coreInterfaces';
 import { PaginationStrategy } from './paginationStrategy';
-import { PagedResponse } from './pagedResponse';
 import { StrategySelector } from './strategySelector';
-import { RequestBuilder } from './requestBuilder';
+import { cloneRequest, Request } from './request';
+import { PagedResponse } from './pagedResponse';
 
-export interface PagedAsyncIterable<TItem, TPage> extends AsyncIterable<TItem> {
-  pages: AsyncIterable<TPage>;
-}
-
-interface PagedDataState<
-  TItem,
-  TPage,
-  TRequest extends RequestBuilder<TRequest>
-> {
+interface PagedDataState<TItem, TPage, TRequest extends Request> {
   request: TRequest;
-  lastResponse: PagedResponse<TItem, TPage> | null;
+  response: PagedResponse<TItem, TPage> | null;
   items: TItem[];
   itemIndex: number;
-  strategySelector: StrategySelector<TItem, TPage, TRequest>;
+  strategySelector: StrategySelector<TItem, TPage>;
 }
 
-export class PagedData<
-  TItem,
-  TPage,
-  TRequest extends RequestBuilder<TRequest>,
-  TPagedResponse
-> implements PagedAsyncIterable<TItem, TPagedResponse> {
+export class PagedData<TItem, TPage, TRequest extends Request, TPagedResponse>
+  implements PagedAsyncIterable<TItem, TPagedResponse> {
   private readonly paginationStrategies: PaginationStrategy[];
   constructor(
     private readonly request: TRequest,
@@ -56,8 +44,8 @@ export class PagedData<
     ) => Promise<IteratorResult<T>>
   ): AsyncIterator<T> {
     const state: PagedDataState<TItem, TPage, TRequest> = {
-      request: this.request.clone(),
-      lastResponse: null,
+      request: cloneRequest(this.request),
+      response: null,
       itemIndex: 0,
       items: [],
       strategySelector: new StrategySelector(this.paginationStrategies),
@@ -84,7 +72,7 @@ export class PagedData<
     if (await this.tryFetchingPage(state)) {
       return {
         done: false,
-        value: this.pagedResponseCreator(state.lastResponse),
+        value: this.pagedResponseCreator(state.response),
       };
     }
 
@@ -96,7 +84,7 @@ export class PagedData<
   ): Promise<boolean> {
     const strategy = state.strategySelector.select(
       state.request,
-      state.lastResponse
+      state.response
     );
     if (strategy === null) {
       return false;
@@ -111,7 +99,7 @@ export class PagedData<
 
     state.itemIndex = 0;
     state.items = items;
-    state.lastResponse = strategy.applyMetaData({
+    state.response = strategy.applyMetaData({
       ...response,
       items,
     });

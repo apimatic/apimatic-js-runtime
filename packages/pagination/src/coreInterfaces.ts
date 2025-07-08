@@ -1,1 +1,1 @@
-export { ApiResponse } from '@apimatic/core-interfaces';
+export { ApiResponse, PagedAsyncIterable } from '@apimatic/core-interfaces';

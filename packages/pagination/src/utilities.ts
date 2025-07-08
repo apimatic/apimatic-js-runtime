@@ -18,17 +18,17 @@ export function extractQueryParams(link: string): Record<string, string> {
 }
 
 export function getValueByJsonPointer(
-  obj: ApiResponse<any>,
+  response: ApiResponse<any>,
   pointer: string
 ): any {
   const [prefix, jsonPath] = pointer.split('#');
 
   if (prefix === '$response.body') {
-    return extractFromResponseBody(obj.body, jsonPath);
+    return extractFromResponseBody(response.body, jsonPath);
   }
 
   if (prefix === '$response.headers') {
-    return extractValueFromJsonPointer(obj.headers, jsonPath);
+    return extractValueFromJsonPointer(response.headers, jsonPath);
   }
 
   return null;

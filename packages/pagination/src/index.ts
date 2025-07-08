@@ -23,4 +23,4 @@ export {
   NumberPagedResponse,
 } from './page/numberPagedResponse';
 export { PagedResponse } from './pagedResponse';
-export { PagedAsyncIterable, PagedData } from './pagedData';
+export { PagedData } from './pagedData';

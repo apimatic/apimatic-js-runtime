@@ -2,7 +2,7 @@ import { PaginationStrategy } from '../paginationStrategy';
 import { PagedResponse } from '../pagedResponse';
 import { CursorPagedResponse } from './cursorPagedResponse';
 import { getValueByJsonPointer } from '../utilities';
-import { RequestBuilder } from '../requestBuilder';
+import { Request, updateRequestByJsonPointer } from '../request';
 
 export class CursorPagination implements PaginationStrategy {
   private readonly currentCursorPointer: string;
@@ -14,13 +14,12 @@ export class CursorPagination implements PaginationStrategy {
     this.nextCursorPointer = nextCursorPointer;
   }
 
-  public tryPreparingRequest<
-    TItem,
-    TPage,
-    TRequest extends RequestBuilder<TRequest>
-  >(request: TRequest, response: PagedResponse<TItem, TPage> | null): boolean {
+  public tryPreparingRequest<TItem, TPage>(
+    request: Request,
+    response: PagedResponse<TItem, TPage> | null
+  ): boolean {
     let isUpdated: boolean = false;
-    request.updateParameterByJsonPointer(this.currentCursorPointer, (value) => {
+    updateRequestByJsonPointer(request, this.currentCursorPointer, (value) => {
       if (response === null) {
         isUpdated = true;
         if (value === undefined) {

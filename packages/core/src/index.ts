@@ -12,7 +12,6 @@ export * from './http/httpHeaders';
 export * from './http/httpInterceptor';
 export * from './http/requestBuilder';
 export * from './http/pathTemplate';
-export { PathParam } from './http/pathParam';
 export { RequestRetryOption } from './http/retryConfiguration';
 export * from './logger/apiLogger';
 export * from './logger/defaultLogger';

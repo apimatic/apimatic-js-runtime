@@ -14,14 +14,6 @@ import {
 } from '../src';
 import { PaginationStrategy } from '../src/paginationStrategy';
 import { ApiResponse } from '../src/coreInterfaces';
-import {
-  ApiError,
-  createRequestBuilderFactory,
-  HttpMethod,
-  HttpRequest,
-  passThroughInterceptor,
-  RequestBuilder,
-} from '@apimatic/core';
 
 const expectedPages = [
   ['item1', 'item2'],

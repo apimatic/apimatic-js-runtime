@@ -1,7 +1,7 @@
 import { PaginationStrategy } from '../paginationStrategy';
 import { PagedResponse } from '../pagedResponse';
 import { OffsetPagedResponse } from './offsetPagedResponse';
-import { RequestBuilder } from '../requestBuilder';
+import { Request, updateRequestByJsonPointer } from '../request';
 
 export class OffsetPagination implements PaginationStrategy {
   private readonly offsetPointer: string;
@@ -11,14 +11,13 @@ export class OffsetPagination implements PaginationStrategy {
     this.offsetPointer = offsetPointer;
   }
 
-  public tryPreparingRequest<
-    TItem,
-    TPage,
-    TRequest extends RequestBuilder<TRequest>
-  >(request: TRequest, response: PagedResponse<TItem, TPage> | null): boolean {
+  public tryPreparingRequest<TItem, TPage>(
+    request: Request,
+    response: PagedResponse<TItem, TPage> | null
+  ): boolean {
     let isUpdated: boolean = false;
 
-    request.updateParameterByJsonPointer(this.offsetPointer, (value) => {
+    updateRequestByJsonPointer(request, this.offsetPointer, (value) => {
       if (response === null) {
         isUpdated = true;
         if (value === undefined || value === null) {

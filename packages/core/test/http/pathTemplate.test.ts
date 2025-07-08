@@ -1,5 +1,5 @@
-import { pathTemplate, SkipEncode } from '../../src/http/pathTemplate';
-import { PathParam } from '../../src/http/pathParam';
+import { pathTemplate } from '../../src/http/pathTemplate';
+import { pathParam, skipEncode } from '../../src';
 test.each([
   [
     'test number type template parameter',
@@ -72,13 +72,13 @@ test.each([
     const encodedTemplatePath = pathTemplate`/rest/v1.0/projects/${companyIdMap}/accident_logs`;
     expect(encodedTemplatePath).toStrictEqual(expectedResult);
 
-    const encodedTemplatePathWithSkipEncoding = pathTemplate`/rest/v1.0/projects/${new SkipEncode(
+    const encodedTemplatePathWithSkipEncoding = pathTemplate`/rest/v1.0/projects/${skipEncode(
       companyIdMap,
       'key'
     )}/accident_logs`;
     expect(encodedTemplatePathWithSkipEncoding).toStrictEqual(expectedResult);
 
-    const encodedTemplatePathWithPathParam = pathTemplate`/rest/v1.0/projects/${new PathParam(
+    const encodedTemplatePathWithPathParam = pathTemplate`/rest/v1.0/projects/${pathParam(
       companyIdMap,
       'key'
     )}/accident_logs`;
@@ -94,11 +94,11 @@ it('test string with special characters template parameter', () => {
   const specialCharString = '$he[]llo%';
 
   const encodedTemplatePath = pathTemplate`/rest/v1.0/projects/${specialCharString}/accident_logs`;
-  const encodedTemplatePathWithPathParam = pathTemplate`/rest/v1.0/projects/${new PathParam(
+  const encodedTemplatePathWithPathParam = pathTemplate`/rest/v1.0/projects/${pathParam(
     specialCharString,
     'key'
   )}/accident_logs`;
-  const encodedTemplatePathWithSkipEncoding = pathTemplate`/rest/v1.0/projects/${new SkipEncode(
+  const encodedTemplatePathWithSkipEncoding = pathTemplate`/rest/v1.0/projects/${skipEncode(
     specialCharString,
     'key'
   )}/accident_logs`;

@@ -116,32 +116,6 @@ export function updateErrorMessage(
   return message;
 }
 
-export function updateValueByJsonPointer(
-  obj: any,
-  pointer: string,
-  updater: (val: any) => any
-): void {
-  if (!obj || !pointer) {
-    return;
-  }
-
-  const pathParts = pointer.split('/').filter(Boolean);
-
-  let current: any = obj;
-
-  for (let i = 0; i < pathParts.length - 1; i++) {
-    const key = pathParts[i];
-    if (!(key in current)) {
-      break;
-    }
-    current = current[key];
-  }
-
-  const lastKey = pathParts[pathParts.length - 1];
-
-  current[lastKey] = updater(current[lastKey]);
-}
-
 function replaceStatusCodePlaceholder(
   message: string,
   statusCode: number,

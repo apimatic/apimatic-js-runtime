@@ -2,7 +2,7 @@ import { PaginationStrategy } from '../paginationStrategy';
 import { PagedResponse } from '../pagedResponse';
 import { LinkPagedResponse } from './linkPagedResponse';
 import { getValueByJsonPointer, extractQueryParams } from '../utilities';
-import { RequestBuilder } from '../requestBuilder';
+import { Request } from '../request';
 
 export class LinkPagination implements PaginationStrategy {
   private readonly nextLinkPointer: string;
@@ -12,11 +12,10 @@ export class LinkPagination implements PaginationStrategy {
     this.nextLinkPointer = nextLinkPointer;
   }
 
-  public tryPreparingRequest<
-    TItem,
-    TPage,
-    TRequest extends RequestBuilder<TRequest>
-  >(request: TRequest, response: PagedResponse<TItem, TPage> | null): boolean {
+  public tryPreparingRequest<TItem, TPage>(
+    request: Request,
+    response: PagedResponse<TItem, TPage> | null
+  ): boolean {
     if (response === null) {
       this.nextLinkValue = null;
       return true;
@@ -27,7 +26,10 @@ export class LinkPagination implements PaginationStrategy {
       return false;
     }
     this.nextLinkValue = nextLink;
-    request.query(extractQueryParams(nextLink));
+    request.queryParams = {
+      ...request.queryParams,
+      ...extractQueryParams(nextLink),
+    };
     return true;
   }
 
