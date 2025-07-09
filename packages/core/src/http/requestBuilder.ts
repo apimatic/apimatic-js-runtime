@@ -56,6 +56,7 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
+import { loadResult } from '../errors/apiError';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -134,9 +135,7 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     interceptor: HttpInterceptorInterface<RequestOptions | undefined>
   ): void;
   interceptRequest(interceptor: (request: HttpRequest) => HttpRequest): void;
-  interceptResponse(
-    interceptor: (response: HttpContext) => Promise<HttpContext>
-  ): void;
+  interceptResponse(interceptor: (response: HttpContext) => HttpContext): void;
   defaultToError(apiErrorCtor: ApiErrorConstructor, message?: string): void;
   validateResponse(validate: boolean): void;
   throwOn<ErrorCtorArgs extends any[]>(
@@ -400,11 +399,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     this.intercept((req, opt, next) => next(interceptor(req), opt));
   }
   public interceptResponse(
-    interceptor: (response: HttpContext) => Promise<HttpContext>
+    interceptor: (response: HttpContext) => HttpContext
   ): void {
-    this.intercept(
-      async (req, opt, next) => await interceptor(await next(req, opt))
-    );
+    this.intercept(async (req, opt, next) => interceptor(await next(req, opt)));
   }
   public defaultToError(
     apiErrorCtor: ApiErrorConstructor,
@@ -536,7 +533,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
   }
   private _addResponseValidator(): void {
-    this.interceptResponse(async (context) => {
+    this.interceptResponse((context) => {
       const { response } = context;
       if (
         this._validateResponse &&
@@ -617,22 +614,22 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     });
   }
   private _addErrorHandlingInterceptor() {
-    this.interceptResponse(async (context) => {
-      const { response } = context;
+    this.intercept(async (req, opt, next) => {
+      const context = await next(req, opt);
       for (const { statusCode, errorConstructor, isTemplate, args } of this
         ._errorTypes) {
         if (
           (typeof statusCode === 'number' &&
-            response.statusCode === statusCode) ||
+            context.response.statusCode === statusCode) ||
           (typeof statusCode !== 'number' &&
-            response.statusCode >= statusCode[0] &&
-            response.statusCode <= statusCode[1])
+            context.response.statusCode >= statusCode[0] &&
+            context.response.statusCode <= statusCode[1])
         ) {
           if (isTemplate && args.length > 0) {
-            args[0] = updateErrorMessage(args[0], response);
+            args[0] = updateErrorMessage(args[0], context.response);
           }
           const error = new errorConstructor(context, ...args);
-          await error.setResult();
+          await loadResult(error);
           throw error;
         }
       }

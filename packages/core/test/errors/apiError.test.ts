@@ -1,4 +1,4 @@
-import { ApiError } from '../../src/errors/apiError';
+import { ApiError, loadResult } from '../../src/errors/apiError';
 import { HttpRequest, HttpResponse } from '../../src/coreInterfaces';
 import { Readable } from 'stream';
 
@@ -25,201 +25,140 @@ describe('ApiError Class', () => {
       responseType: 'text',
     } as HttpRequest;
 
-    const mockStatusCode = 500;
-
     const baseResponse = {
-      statusCode: mockStatusCode,
+      statusCode: 500,
       headers: { 'test-header': 'test-value' },
     };
 
+    it('should set properties correctly in constructor', () => {
+      const response = {
+        ...baseResponse,
+        body: '',
+      } as HttpResponse;
+
+      const apiError = new ApiError(
+        { request: mockHttpRequest, response },
+        'Internal Server Error'
+      );
+
+      expect(apiError.request).toBe(mockHttpRequest);
+      expect(apiError.statusCode).toBe(response.statusCode);
+      expect(apiError.headers).toEqual(response.headers);
+      expect(apiError.body).toBe(response.body);
+      expect(apiError.message).toBe('Internal Server Error');
+      expect(apiError.result).toBeUndefined();
+    });
+
     test.each([
       [
-        'should set properties correctly in constructor',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: '',
-        } as HttpResponse,
-        undefined,
-        'production',
-        undefined,
-        'constructor',
-      ],
-      [
         'should parse valid JSON string body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: '{"foo": "bar"}',
-        } as HttpResponse,
+        '{"foo": "bar"}',
         { foo: 'bar' },
         'production',
         undefined,
-        'parse',
       ],
       [
         'should leave result undefined for empty string body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: '',
-        } as HttpResponse,
+        '',
         undefined,
         'production',
         undefined,
-        'parse',
       ],
       [
         'should parse valid JSON from Readable stream body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: stringToStream('{"a":1}'),
-        } as HttpResponse,
+        stringToStream('{"a":1}'),
         { a: 1 },
         'production',
         undefined,
-        'parse',
       ],
       [
         'should leave result undefined for invalid JSON string body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: '{invalid json}',
-        } as HttpResponse,
+        '{invalid json}',
         undefined,
         'production',
         undefined,
-        'parse',
       ],
       [
         'should leave result undefined for invalid JSON in Readable stream body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: stringToStream('{invalid json}'),
-        } as HttpResponse,
+        stringToStream('{invalid json}'),
         undefined,
         'production',
         undefined,
-        'parse',
       ],
       [
         'should parse valid JSON from Blob body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: stringToBlob('{"x":42}'),
-        } as HttpResponse,
+        stringToBlob('{"x":42}'),
         { x: 42 },
         'production',
         undefined,
-        'parse',
       ],
       [
         'should leave result undefined for invalid JSON in Blob body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: stringToBlob('{invalid json}'),
-        } as HttpResponse,
+        stringToBlob('{invalid json}'),
         undefined,
         'production',
         undefined,
-        'parse',
       ],
       [
         'should leave result undefined for empty Blob body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: stringToBlob(''),
-        } as HttpResponse,
+        stringToBlob(''),
         undefined,
         'production',
         undefined,
-        'parse',
       ],
       [
         'test with string in response body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: '{"test-string" : "value"}',
-        } as HttpResponse,
+        '{"test-string" : "value"}',
         { 'test-string': 'value' },
         'production',
         undefined,
-        'parse',
       ],
       [
         'test with empty string in response body',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: '',
-        } as HttpResponse,
+        '',
         undefined,
         'production',
         undefined,
-        'parse',
       ],
       [
         'test with incorrect json string in response body with test-environment',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: '[1, 2, 3, 4, ]',
-        } as HttpResponse,
+        '[1, 2, 3, 4, ]',
         undefined,
         'development',
-        'Unexpected error: Could not parse HTTP response body. Unexpected \']\'',
-        'parse',
+        `Unexpected error: Could not parse HTTP response body. Unexpected ']'`,
       ],
       [
         'test with incorrect json string in response body with production environment',
-        mockHttpRequest,
-        {
-          ...baseResponse,
-          body: 'testBody result',
-        } as HttpResponse,
+        'testBody result',
         undefined,
         'production',
-        'Unexpected error: Could not parse HTTP response body. Unexpected \']\'',
-        'parse',
+        `Unexpected error: Could not parse HTTP response body. Unexpected ']'`,
       ],
     ])(
       '%s',
       async (
         _: string,
-        request: HttpRequest,
-        response: HttpResponse,
+        body: string | Readable | Blob,
         expectedResult: unknown,
-        node_env: string,
-        errorMessage?: string,
-        testType?: string
+        node_env?: string,
+        errorMessage?: string
       ) => {
         process.env.NODE_ENV = node_env;
+        const response = {
+          ...baseResponse,
+          body,
+        } as HttpResponse;
+
         const apiError = new ApiError(
-          { request, response },
+          { request: mockHttpRequest, response },
           'Internal Server Error'
         );
 
-        if (testType === 'constructor') {
-          expect(apiError.request).toBe(request);
-          expect(apiError.statusCode).toBe(response.statusCode);
-          expect(apiError.headers).toEqual(response.headers);
-          expect(apiError.body).toBe(response.body);
-          expect(apiError.message).toBe('Internal Server Error');
-          expect(apiError.result).toBeUndefined();
-        } else {
-          await apiError.setResult();
-          if (errorMessage !== undefined) {
-            expect(deprecationSpy).toHaveBeenCalledWith(errorMessage);
-          }
-          expect(apiError.result).toEqual(expectedResult);
+        await loadResult(apiError);
+        if (errorMessage !== undefined) {
+          expect(deprecationSpy).toHaveBeenCalledWith(errorMessage);
         }
+        expect(apiError.result).toEqual(expectedResult);
       }
     );
   });

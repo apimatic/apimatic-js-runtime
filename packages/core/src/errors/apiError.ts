@@ -31,59 +31,66 @@ export class ApiError<T = {}>
     this.headers = response.headers;
     this.body = response.body;
   }
+}
 
-  public async setResult(): Promise<void> {
-    try {
-      if (typeof this.body === 'string' && this.body !== '') {
-        this.result = this.parseStringBody(this.body);
-      }
-      if (typeof Readable !== 'undefined' && this.body instanceof Readable) {
-        this.result = await this.parseStreamBody(this.body);
-      }
-      if (typeof Blob !== 'undefined' && this.body instanceof Blob) {
-        this.result = await this.parseBlobBody(this.body);
-      }
-    } catch (error) {
-      this.logParseWarning(error);
-    }
+export async function loadResult<T>(error: ApiError<T>): Promise<void> {
+  try {
+    error.result = await parseBody<T>(error.body);
+  } catch (parseError) {
+    logParseWarning(parseError);
   }
+}
 
-  private parseStringBody(body: string): T | undefined {
-    const jsonBig = JSONBig();
-    return jsonBig.parse(body);
+async function parseBody<T>(
+  body: string | Blob | NodeJS.ReadableStream
+): Promise<T | undefined> {
+  if (typeof body === 'string' && body !== '') {
+    return parseStringBody<T>(body);
   }
-
-  private async parseStreamBody(body: Readable): Promise<T | undefined> {
-    const chunks: Uint8Array[] = [];
-    for await (const chunk of body) {
-      chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-    }
-    const jsonString = Buffer.concat(chunks).toString();
-    return JSON.parse(jsonString);
+  if (typeof Readable !== 'undefined' && body instanceof Readable) {
+    return await parseStreamBody<T>(body);
   }
-
-  private async parseBlobBody(body: Blob): Promise<T | undefined> {
-    const arrayBuffer = await this.blobToArrayBuffer(body);
-    const buffer = Buffer.from(arrayBuffer);
-    const jsonString = buffer.toString();
-    return JSON.parse(jsonString);
+  if (typeof Blob !== 'undefined' && body instanceof Blob) {
+    return await parseBlobBody<T>(body);
   }
+  return undefined;
+}
 
-  private blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
-    return new Promise<ArrayBuffer>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => resolve(reader.result as ArrayBuffer);
-      reader.onerror = reject;
-      reader.readAsArrayBuffer(blob);
-    });
+function parseStringBody<T>(body: string): T | undefined {
+  const jsonBig = JSONBig();
+  return jsonBig.parse(body);
+}
+
+async function parseStreamBody<T>(body: Readable): Promise<T | undefined> {
+  const chunks: Uint8Array[] = [];
+  for await (const chunk of body) {
+    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
   }
+  const jsonString = Buffer.concat(chunks).toString();
+  return JSON.parse(jsonString);
+}
 
-  private logParseWarning(error: any): void {
-    if (process.env.NODE_ENV !== 'production' && console) {
-      // tslint:disable-next-line:no-console
-      console.warn(
-        `Unexpected error: Could not parse HTTP response body. ${error.message}`
-      );
-    }
+async function parseBlobBody<T>(body: Blob): Promise<T | undefined> {
+  const arrayBuffer = await blobToArrayBuffer(body);
+  const buffer = Buffer.from(arrayBuffer);
+  const jsonString = buffer.toString();
+  return JSON.parse(jsonString);
+}
+
+function blobToArrayBuffer(blob: Blob): Promise<ArrayBuffer> {
+  return new Promise<ArrayBuffer>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as ArrayBuffer);
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(blob);
+  });
+}
+
+function logParseWarning(error: any): void {
+  if (process.env.NODE_ENV !== 'production' && console) {
+    // tslint:disable-next-line:no-console
+    console.warn(
+      `Unexpected error: Could not parse HTTP response body. ${error.message}`
+    );
   }
 }
