@@ -55,6 +55,7 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
+import { loadResult } from '../errors/apiError';
 import { PathParam } from './pathParam';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
@@ -751,21 +752,23 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     });
   }
   private _addErrorHandlingInterceptor() {
-    this.interceptResponse((context) => {
-      const { response } = context;
+    this.intercept(async (req, opt, next) => {
+      const context = await next(req, opt);
       for (const { statusCode, errorConstructor, isTemplate, args } of this
         ._errorTypes) {
         if (
           (typeof statusCode === 'number' &&
-            response.statusCode === statusCode) ||
+            context.response.statusCode === statusCode) ||
           (typeof statusCode !== 'number' &&
-            response.statusCode >= statusCode[0] &&
-            response.statusCode <= statusCode[1])
+            context.response.statusCode >= statusCode[0] &&
+            context.response.statusCode <= statusCode[1])
         ) {
           if (isTemplate && args.length > 0) {
-            args[0] = updateErrorMessage(args[0], response);
+            args[0] = updateErrorMessage(args[0], context.response);
           }
-          throw new errorConstructor(context, ...args);
+          const error = new errorConstructor(context, ...args);
+          await loadResult(error);
+          throw error;
         }
       }
       return context;

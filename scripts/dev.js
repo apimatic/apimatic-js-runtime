@@ -1,7 +1,7 @@
 const spawnCommand = require('spawn-command');
 
 // spawn build first so dist files are ready by the time we start test script
-// following startup of the build watcher is going to be really fast, thanks to TS incrememental builds
+// following startup of the build watcher is going to be really fast, thanks to TS incremental builds
 spawnCommand('npm run build', {
   stdio: 'inherit'
 }).on('exit', (exitCode) => {

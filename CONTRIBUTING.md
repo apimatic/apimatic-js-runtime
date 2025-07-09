@@ -50,11 +50,11 @@ Thank you for your interest in contributing! 🎉 Your contributions help make t
 
 ## 📜 License
 
-By contributing, you agree that your contributions will be licensed under the project's [LICENSE](LICENSE).
+By contributing, you agree that your contributions will be licensed under the project's [LICENSE](LICENSE.md).
 
 ---
 
-💬 **Questions?**  
+💬 **Questions?**
 If you need help, feel free to open issues, we will be happy to help.
 
 Happy Coding! 🚀
