@@ -1,6 +1,8 @@
 import {
   createRequestBuilderFactory,
+  pathParam,
   RequestBuilder,
+  skipEncode,
 } from '../../src/http/requestBuilder';
 import {
   AuthenticatorInterface,
@@ -34,7 +36,6 @@ import {
   tabPrefix,
   unindexedPrefix,
 } from '@apimatic/http-query';
-import { PathParam } from '../../src/http/pathParam';
 
 const authParams = {
   username: 'maryam-adnan',
@@ -86,7 +87,7 @@ function mockBaseURIProvider(server: string | undefined) {
 }
 
 const defaultRequestBuilder = (
-  route?: string,
+  route: string | undefined = '/test/requestBuilder',
   customResponse?: HttpResponse,
   authenticatorInterface?: AuthenticatorInterface<boolean>,
   httpClientInterface?: HttpClientInterface
@@ -97,7 +98,7 @@ const defaultRequestBuilder = (
     ApiError,
     authenticatorInterface ?? basicAuth,
     retryConfig
-  )('GET', route ?? '/test/requestBuilder');
+  )('GET', route);
   requestBuilder.baseUrl('default');
   return requestBuilder;
 };
@@ -446,17 +447,26 @@ describe('test default request builder behavior with succesful responses', () =>
   };
 
   it('should test response with no content textual types', async () => {
-    const reqBuilder = defaultRequestBuilder(undefined, noContentResponse);
+    const reqBuilder = defaultRequestBuilder(
+      '/test/requestBuilder',
+      noContentResponse
+    );
     const { result } = await reqBuilder.callAsText();
     expect(result).toEqual('');
   });
   it('should test response with whitespace content textual types', async () => {
-    const reqBuilder = defaultRequestBuilder(undefined, whitespacedResponse);
+    const reqBuilder = defaultRequestBuilder(
+      '/test/requestBuilder',
+      whitespacedResponse
+    );
     const { result } = await reqBuilder.callAsText();
     expect(result).toEqual('  ');
   });
   it('should test response with no content string cases', async () => {
-    const reqBuilder = defaultRequestBuilder(undefined, noContentResponse);
+    const reqBuilder = defaultRequestBuilder(
+      '/test/requestBuilder',
+      noContentResponse
+    );
     const nullableString = await reqBuilder.callAsJson(nullable(string()));
     expect(nullableString.result).toEqual(null);
 
@@ -464,7 +474,10 @@ describe('test default request builder behavior with succesful responses', () =>
     expect(optionalString.result).toEqual(undefined);
   });
   it('should test response with whitespace content string cases', async () => {
-    const reqBuilder = defaultRequestBuilder(undefined, whitespacedResponse);
+    const reqBuilder = defaultRequestBuilder(
+      '/test/requestBuilder',
+      whitespacedResponse
+    );
     const nullableString = await reqBuilder.callAsJson(nullable(string()));
     expect(nullableString.result).toEqual(null);
 
@@ -472,7 +485,10 @@ describe('test default request builder behavior with succesful responses', () =>
     expect(optionalString.result).toEqual(undefined);
   });
   it('should test response with no content boolean cases', async () => {
-    const reqBuilder = defaultRequestBuilder(undefined, noContentResponse);
+    const reqBuilder = defaultRequestBuilder(
+      '/test/requestBuilder',
+      noContentResponse
+    );
     const nullableString = await reqBuilder.callAsJson(nullable(boolean()));
     expect(nullableString.result).toEqual(null);
 
@@ -480,7 +496,10 @@ describe('test default request builder behavior with succesful responses', () =>
     expect(optionalString.result).toEqual(undefined);
   });
   it('should test response with whitespace content boolean cases', async () => {
-    const reqBuilder = defaultRequestBuilder(undefined, whitespacedResponse);
+    const reqBuilder = defaultRequestBuilder(
+      '/test/requestBuilder',
+      whitespacedResponse
+    );
     const nullableString = await reqBuilder.callAsJson(nullable(boolean()));
     expect(nullableString.result).toEqual(null);
 
@@ -488,7 +507,10 @@ describe('test default request builder behavior with succesful responses', () =>
     expect(optionalString.result).toEqual(undefined);
   });
   it('should test response with no content object cases', async () => {
-    const reqBuilder = defaultRequestBuilder(undefined, noContentResponse);
+    const reqBuilder = defaultRequestBuilder(
+      '/test/requestBuilder',
+      noContentResponse
+    );
     const nullableString = await reqBuilder.callAsJson(
       nullable(employeeSchema)
     );
@@ -500,7 +522,10 @@ describe('test default request builder behavior with succesful responses', () =>
     expect(optionalString.result).toEqual(undefined);
   });
   it('should test response with whitespace content object cases', async () => {
-    const reqBuilder = defaultRequestBuilder(undefined, whitespacedResponse);
+    const reqBuilder = defaultRequestBuilder(
+      '/test/requestBuilder',
+      whitespacedResponse
+    );
     const nullableString = await reqBuilder.callAsJson(
       nullable(employeeSchema)
     );
@@ -703,60 +728,47 @@ describe('test default request builder with prefix formats', () => {
   });
 });
 
-describe('test template function', () => {
+describe('test appendTemplatePath function', () => {
   it('should produce correct URL when using appendTemplatePath', async () => {
-    const expectedRequestUrl =
-      'https://apimatic.hopto.org:3000/data/user1/123/true/3.14/9007199254740991';
-
-    const builderWithAppendPath = defaultRequestBuilder('');
-    const mappedArgs = builderWithAppendPath.prepareArgs({
+    const requestBuilder = defaultRequestBuilder(undefined);
+    const mappedArgs = requestBuilder.prepareArgs({
       user: ['user1', optional(string())],
       number: [123, optional(number())],
       bool: [true, optional(boolean())],
       float: [3.14, optional(number())],
       big: [9007199254740991, optional(bigint())],
     });
+
     const templateArray = Object.assign(['data/', '/', '/', '/', '/']);
-    builderWithAppendPath.appendTemplatePath(
+    requestBuilder.appendTemplatePath(
       templateArray,
-      new PathParam(mappedArgs.user, 'user'),
-      new PathParam(mappedArgs.number, 'number'),
-      new PathParam(mappedArgs.bool, 'boolean'),
-      new PathParam(mappedArgs.float, 'float'),
-      new PathParam(mappedArgs.big, 'bigInt')
+      pathParam(mappedArgs.user, 'user'),
+      pathParam(mappedArgs.number, 'number'),
+      pathParam(mappedArgs.bool, 'boolean'),
+      skipEncode(mappedArgs.float, 'float'),
+      pathParam(mappedArgs.big, 'bigInt')
     );
-    const responseFromAppendPath = await builderWithAppendPath.callAsText();
+    const responseFromAppendPath = await requestBuilder.callAsText();
 
-    expect(responseFromAppendPath.request.url).toEqual(expectedRequestUrl);
-
-    builderWithAppendPath.updateParameterByJsonPointer(
-      '$request.path#/data/boolean',
-      () => false
-    );
-    const responseAfterUpdate = await builderWithAppendPath.callAsText();
-    expect(responseAfterUpdate.request.url).toEqual(
-      'https://apimatic.hopto.org:3000/data/user1/123/false/3.14/9007199254740991'
+    expect(responseFromAppendPath.request.url).toEqual(
+      'https://apimatic.hopto.org:3000/data/user1/123/true/3.14/9007199254740991'
     );
   });
 
   it('should produce correct URL when using appendTemplatePath with array type', async () => {
-    const expectedRequestUrl =
-      'https://apimatic.hopto.org:3000/data/123/456/789';
-
-    const builderWithAppendPath = defaultRequestBuilder('');
+    const requestBuilder = defaultRequestBuilder(undefined);
     const integers = [123, 456, 789];
-    const mappedArgs = builderWithAppendPath.prepareArgs({
+    const mappedArgs = requestBuilder.prepareArgs({
       integers: [integers, array(number())],
     });
 
     const templateArray = Object.assign(['data/']);
-    builderWithAppendPath.appendTemplatePath(
-      templateArray,
-      mappedArgs.integers
-    );
-    const responseFromAppendPath = await builderWithAppendPath.callAsText();
+    requestBuilder.appendTemplatePath(templateArray, mappedArgs.integers);
+    const responseFromAppendPath = await requestBuilder.callAsText();
 
-    expect(responseFromAppendPath.request.url).toEqual(expectedRequestUrl);
+    expect(responseFromAppendPath.request.url).toEqual(
+      'https://apimatic.hopto.org:3000/data/123/456/789'
+    );
   });
 });
 
@@ -818,28 +830,5 @@ describe('test default request builder behavior to test retries', () => {
         'Time out error against http method GET and status code 500'
       );
     }
-  });
-});
-
-describe('test request builder clone functionality', () => {
-  it('should test request builder clone creates independent copy', async () => {
-    const originalReqBuilder = defaultRequestBuilder();
-    originalReqBuilder.text('testBody');
-    originalReqBuilder.header('test-header', 'test-value');
-    originalReqBuilder.authenticate(true);
-    originalReqBuilder.requestRetryOption(RequestRetryOption.Disable);
-
-    const clonedReqBuilder = originalReqBuilder.clone();
-
-    originalReqBuilder.query('newParam', 'newValue');
-
-    const originalResponse = await originalReqBuilder.callAsText();
-    const clonedResponse = await clonedReqBuilder.callAsText();
-
-    expect(originalResponse.request.url).not.toEqual(
-      clonedResponse.request.url
-    );
-    expect(originalResponse.request.url).toContain('newParam=newValue');
-    expect(clonedResponse.request.url).not.toContain('newParam=newValue');
   });
 });

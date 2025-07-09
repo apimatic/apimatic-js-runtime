@@ -5,14 +5,15 @@ export interface Request {
   body?: any;
 }
 
-export function cloneRequest<TRequest extends Request>(
+export function cloneRequest<TRequest extends Request>( // shallow cloning
   request: TRequest
 ): TRequest {
-  request.body = cloneBody(request.body);
-  request.headerParams = { ...request.headerParams };
-  request.queryParams = { ...request.queryParams };
-  request.pathParams = { ...request.pathParams };
-  return request;
+  const cloned = Object.create(Object.getPrototypeOf(request));
+  cloned.body = cloneBody(request.body);
+  cloned.headerParams = { ...request.headerParams };
+  cloned.queryParams = { ...request.queryParams };
+  cloned.pathParams = { ...request.pathParams };
+  return cloned;
 }
 
 function cloneBody(body: any | undefined): any | undefined {

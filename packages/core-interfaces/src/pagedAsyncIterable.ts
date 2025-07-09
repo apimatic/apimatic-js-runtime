@@ -1,5 +1,4 @@
 /**
- *
  * An asynchronous iterable wrapper for paginated data that
  * allows iteration over pages or individual items.
  *

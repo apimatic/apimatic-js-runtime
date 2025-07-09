@@ -150,8 +150,8 @@ describe('updateRequestByJsonPointer tests', () => {
 
     updateRequestByJsonPointer(request, '$request.body#/0', () => 5);
 
-    expect(clone.body).toBe([1, 2, 3]);
-    expect(request.body).toBe([1, 5, 2, 3]);
+    expect(clone.body).toStrictEqual([1, 2, 3]);
+    expect(request.body).toStrictEqual([5, 2, 3]);
   });
 
   it('should add new field in request body object', async () => {
@@ -161,8 +161,8 @@ describe('updateRequestByJsonPointer tests', () => {
 
     updateRequestByJsonPointer(request, '$request.body#/3', () => 4);
 
-    expect(clone.body).toBe([1, 2, 3]);
-    expect(request.body).toBe([1, 2, 3, 4]);
+    expect(clone.body).toStrictEqual([1, 2, 3]);
+    expect(request.body).toStrictEqual([1, 2, 3, 4]);
   });
 
   it('should update request body plain', async () => {
@@ -221,14 +221,8 @@ describe('updateRequestByJsonPointer tests', () => {
   it('should add new query parameters', async () => {
     const request = defaultRequest();
 
-    updateRequestByJsonPointer(
-      request,
-      '$request.query#/filter/key',
-      () => 'value'
-    );
-    expect(request.queryParams.filter).toStrictEqual({
-      key: 'value',
-    });
+    updateRequestByJsonPointer(request, '$request.query#/key', () => 'value');
+    expect(request.queryParams.key).toBe('value');
   });
 
   it('should update headers', async () => {

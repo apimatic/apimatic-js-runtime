@@ -393,6 +393,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   ): void {
     this.body = parameters;
     this._formPrefixFormat = prefixFormat;
+    this._bodyType = 'form';
   }
   public formData(
     parameters: Record<string, unknown>,
@@ -400,6 +401,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   ): void {
     this.body = parameters;
     this._formPrefixFormat = prefixFormat;
+    this._bodyType = 'form-data';
   }
 
   public toRequest(): HttpRequest {
@@ -618,7 +620,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         arg.value = this.pathParams[arg.key];
       }
     }
-    return pathTemplate(this._pathStrings, this._pathArgs);
+    return pathTemplate(this._pathStrings, ...this._pathArgs);
   }
   private _getHttpRequestHeaders(): Record<string, string> {
     const headers: Record<string, string> = {};

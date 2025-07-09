@@ -13,6 +13,7 @@ import {
   isNumberPagedResponse,
 } from '../src';
 import { PaginationStrategy } from '../src/paginationStrategy';
+import { Request } from '../src/request';
 import { ApiResponse } from '../src/coreInterfaces';
 
 const expectedPages = [
@@ -60,124 +61,89 @@ const mockResponsesMultiple: Record<string, string> = {
   empty: JSON.stringify({ data: [] }),
 };
 
-function executor<TRequest extends RequestBuilder<string, boolean>>(
+class MockRequest implements Request {
+  public headerParams: Record<string, unknown> = {};
+  public queryParams: Record<string, unknown> = {};
+  public pathParams: Record<string, unknown> = {};
+  public body?: any;
+
+  public createApiResponse(body: string): ApiResponse<any> {
+    return {
+      request: {
+        method: 'GET',
+        url: '',
+      },
+      body,
+      statusCode: 200,
+      headers: {},
+      result: JSON.parse(body),
+    };
+  }
+}
+
+function executor(
   pagination: PaginationStrategy | null,
   responses: Record<string, string> = mockResponses
-): (requestBuilder: TRequest) => Promise<ApiResponse<any>> {
-  return async (requestBuilder) => {
-    const request = requestBuilder.toRequest();
-    const queryString = request.url.split('?')[1] || '';
-    const params = new URLSearchParams(queryString);
-
+): (request: MockRequest) => Promise<ApiResponse<any>> {
+  return async (request) => {
     if (pagination instanceof PagePagination) {
-      const page = parseInt(params.get('page') || '1', 10);
+      const page = parseInt(String(request.queryParams.page ?? 1), 10);
       const pageMap: Record<number, string> = {
         1: 'page1',
         2: 'page2',
         3: 'page3',
       };
-      return createApiResponse(
-        request,
+      return request.createApiResponse(
         responses[pageMap[page]] || responses.empty
       );
     }
 
     if (pagination instanceof OffsetPagination) {
-      const offset = parseInt(params.get('offset') || '0', 10);
+      const offset = parseInt(String(request.queryParams.offset ?? 0), 10);
       const offsetMap: Record<number, string> = {
         0: 'page1',
         2: 'page2',
         4: 'page3',
       };
-      return createApiResponse(
-        request,
+      return request.createApiResponse(
         responses[offsetMap[offset]] || responses.empty
       );
     }
 
-    if (pagination instanceof LinkPagination) {
-      const nextLink = params.get('nextLink');
-      const linkMap: Record<string, string> = {
-        page2: 'page2',
-        page3: 'page3',
-      };
-      return nextLink
-        ? createApiResponse(
-            request,
-            responses[linkMap[nextLink]] || responses.empty
-          )
-        : createApiResponse(request, responses.page1);
-    }
-
     if (pagination instanceof CursorPagination) {
-      const cursor = params.get('cursor') || 'cursor1';
-      if (cursor === 'cursor1') {
-        return createApiResponse(request, mockResponses.page1);
-      } else if (cursor === 'cursor2') {
-        return createApiResponse(request, mockResponses.page2);
-      } else if (cursor === 'cursor3') {
-        return createApiResponse(request, mockResponses.page3);
-      } else {
-        return createApiResponse(request, mockResponses.empty);
-      }
+      const cursor = String(request.queryParams.cursor ?? 'cursor1');
+      const cursorMap: Record<string, string> = {
+        cursor1: 'page1',
+        cursor2: 'page2',
+        cursor3: 'page3',
+      };
+      return request.createApiResponse(
+        responses[cursorMap[cursor]] || responses.empty
+      );
     }
 
-    return createApiResponse(request, responses.empty);
+    if (pagination instanceof LinkPagination) {
+      const nextLink = String(request.queryParams.nextLink ?? 'page1');
+      return request.createApiResponse(responses[nextLink] || responses.empty);
+    }
+
+    return request.createApiResponse(responses.empty);
   };
 }
 
-function createApiResponse(
-  request: HttpRequest,
-  body: string
-): ApiResponse<any> {
-  return {
-    request,
-    body,
-    statusCode: 200,
-    headers: {},
-    result: JSON.parse(body),
-  };
-}
-
-function getRequestBuilder(): RequestBuilder<string, boolean> {
-  const defaultRequestBuilder = createRequestBuilderFactory<string, boolean>(
-    async (_) => ({ statusCode: 200, body: '', headers: {} }),
-    () => 'https://apimatic.hopto.org:3000',
-    ApiError,
-    () => passThroughInterceptor,
-    {
-      maxNumberOfRetries: 3,
-      retryOnTimeout: false,
-      retryInterval: 1,
-      maximumRetryWaitTime: 3,
-      backoffFactor: 2,
-      httpStatusCodesToRetry: [
-        408,
-        413,
-        429,
-        500,
-        502,
-        503,
-        504,
-        521,
-        522,
-        524,
-      ],
-      httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
-    }
-  );
-  const requestBuilder = defaultRequestBuilder('GET', '/test/pagination');
-  requestBuilder.baseUrl('default');
-  return requestBuilder;
+function getRequestBuilder(key: string, value: unknown): MockRequest {
+  const request = new MockRequest();
+  request.queryParams[key] = value;
+  return request;
 }
 
 function getPagedData(
-  requestBuilder: RequestBuilder<string, any>,
+  request: MockRequest,
   pagination: PaginationStrategy,
   pageResponseCreator: (response: PagedResponse<any, any> | null) => any
 ) {
   return new PagedData(
-    requestBuilder,
+    request,
     executor(pagination),
     pageResponseCreator,
     (res) => res.result.data,
@@ -200,8 +166,7 @@ describe('Page-based pagination', () => {
   }));
 
   function createNumberPagedData(value: number | undefined) {
-    const requestBuilder = getRequestBuilder();
-    requestBuilder.query('page', value);
+    const requestBuilder = getRequestBuilder('page', value);
     return getPagedData(
       requestBuilder,
       new PagePagination('$request.query#/page'),
@@ -251,8 +216,7 @@ describe('Offset-based pagination', () => {
   }));
 
   function createOffsetPagedData(value: number | undefined) {
-    const requestBuilder = getRequestBuilder();
-    requestBuilder.query('offset', value);
+    const requestBuilder = getRequestBuilder('offset', value);
     return getPagedData(
       requestBuilder,
       new OffsetPagination('$request.query#/offset'),
@@ -301,8 +265,7 @@ describe('Link-based pagination', () => {
   }));
 
   function createLinkPagedData(value: number | undefined) {
-    const requestBuilder = getRequestBuilder();
-    requestBuilder.query('page', value);
+    const requestBuilder = getRequestBuilder('page', value);
     return getPagedData(
       requestBuilder,
       new LinkPagination('$response.body#/nextLink'),
@@ -332,8 +295,7 @@ describe('Cursor-based pagination', () => {
   }));
 
   function createCursorPagedData(value: string | undefined) {
-    const requestBuilder = getRequestBuilder();
-    requestBuilder.query('cursor', value);
+    const requestBuilder = getRequestBuilder('cursor', value);
     return getPagedData(
       requestBuilder,
       new CursorPagination(
@@ -373,8 +335,8 @@ describe('Cursor-based pagination', () => {
   });
 
   it('should return 1st page only as nextCursor pointer is invalid', async () => {
-    const requestBuilder = getRequestBuilder();
-    requestBuilder.query('cursor', 'cursor1');
+    const requestBuilder = getRequestBuilder('cursor', 'cursor1');
+    requestBuilder.queryParams.cursor = 'cursor1';
     const pagedData = getPagedData(
       requestBuilder,
       new CursorPagination(
@@ -392,8 +354,7 @@ describe('Cursor-based pagination', () => {
 
 describe('Multiple pagination', () => {
   it('should use page pagination without falling back to link pagination ', async () => {
-    const requestBuilder = getRequestBuilder();
-    requestBuilder.query('page', 1);
+    const requestBuilder = getRequestBuilder('page', 1);
 
     const pagedData = new PagedData(
       requestBuilder,
@@ -428,7 +389,7 @@ describe('Multiple pagination', () => {
 describe('Error handling', () => {
   it('should have no pages when paginationStrategies are missing', async () => {
     const pagedData = new PagedData(
-      getRequestBuilder(),
+      getRequestBuilder('', undefined),
       async (_) => fail(),
       (_) => fail(),
       (_) => fail()
@@ -438,11 +399,9 @@ describe('Error handling', () => {
   });
 
   async function verifyNoPages(responseBody: string) {
-    const requestBuilder = getRequestBuilder();
-    requestBuilder.query('offset', 0);
     const pagedData = new PagedData(
-      getRequestBuilder(),
-      async (req) => createApiResponse(req.toRequest(), responseBody),
+      getRequestBuilder('', undefined),
+      async (req) => req.createApiResponse(responseBody),
       (_) => fail(),
       (res) => res.result.data,
       new OffsetPagination('$request.query#/offset')
@@ -465,8 +424,8 @@ describe('Error handling', () => {
 
   it('should throw errors from executor', async () => {
     const pagedData = new PagedData(
-      getRequestBuilder(),
-      async (_: RequestBuilder<string, boolean>) => {
+      getRequestBuilder('', undefined),
+      async (_) => {
         throw new Error('executor error');
       },
       createNumberPagedResponse,
