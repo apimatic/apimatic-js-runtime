@@ -1,4 +1,4 @@
-async function convertFromStream(
+export async function convertFromStream(
   content: string | Blob | NodeJS.ReadableStream
 ): Promise<string> {
   if (typeof content === 'string') {

@@ -1,3 +1,5 @@
+import { convertFromStream as convertFromBlob } from './convertFromBlob';
+
 export async function convertFromStream(
   content: string | Blob | NodeJS.ReadableStream
 ): Promise<string> {
@@ -5,7 +7,7 @@ export async function convertFromStream(
     return content;
   }
   if (content instanceof Blob) {
-    throw new Error('Type must be ReadableStream');
+    return convertFromBlob(content);
   }
 
   const chunks: Uint8Array[] = [];
