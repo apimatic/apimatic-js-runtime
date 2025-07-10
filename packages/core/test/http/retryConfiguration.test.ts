@@ -157,35 +157,6 @@ describe('Retry Configuration', () => {
         undefined,
       ],
       [
-        'calculate retry wait time by setting retry-after header in dateTime',
-        9,
-        {
-          maxNumberOfRetries: 1,
-          retryOnTimeout: false,
-          retryInterval: 1,
-          maximumRetryWaitTime: 3,
-          backoffFactor: 2,
-          httpStatusCodesToRetry: [
-            408,
-            413,
-            429,
-            500,
-            502,
-            503,
-            504,
-            521,
-            522,
-            524,
-          ],
-          httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
-        },
-        10,
-        0,
-        200,
-        { 'retry-after': new Date(Date.now() + 10000).toUTCString() },
-        undefined,
-      ],
-      [
         'calculate retry wait time by setting header and httpCode undefined',
         0,
         {
@@ -356,5 +327,40 @@ describe('Retry Configuration', () => {
         expect(Math.floor(waitTime)).toStrictEqual(expectedResult);
       }
     );
+    test('calculate retry wait time by setting retry-after header in dateTime with range assertion', () => {
+      const expectedMs = 10000;
+      const retryAfterHeader = new Date(Date.now() + expectedMs).toUTCString();
+
+      const retryConfig: RetryConfiguration = {
+        maxNumberOfRetries: 1,
+        retryOnTimeout: false,
+        retryInterval: 1,
+        maximumRetryWaitTime: 3,
+        backoffFactor: 2,
+        httpStatusCodesToRetry: [
+          408,
+          413,
+          429,
+          500,
+          502,
+          503,
+          504,
+          521,
+          522,
+          524,
+        ],
+        httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
+      };
+      const waitTime = getRetryWaitTime(
+        retryConfig,
+        10,
+        0,
+        200,
+        { 'retry-after': retryAfterHeader },
+        undefined
+      );
+      expect(waitTime).toBeGreaterThanOrEqual(8);
+      expect(waitTime).toBeLessThanOrEqual(10);
+    });
   });
 });

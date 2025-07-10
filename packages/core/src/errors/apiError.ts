@@ -49,12 +49,10 @@ export async function loadResult<T>(error: ApiError<T>): Promise<void> {
 async function parseBody<T>(
   body: string | Blob | NodeJS.ReadableStream
 ): Promise<T | undefined> {
-  if (typeof body !== 'string') {
-    body = await convertFromStream(body);
-  }
+  const jsonString = await convertFromStream(body);
   if (body === '') {
     return undefined;
   }
   const jsonBig = JSONBig();
-  return jsonBig.parse(body);
+  return jsonBig.parse(jsonString);
 }

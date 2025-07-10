@@ -4,7 +4,7 @@ import {
   HttpResponse,
 } from '@apimatic/core-interfaces';
 import { toBuffer, getStreamData } from '../src';
-import { Readable } from 'stream';
+import { convertToStream } from '@apimatic/convert-to-stream';
 
 describe('Tests for getting and comparing stream or blob data as buffer', () => {
   let actualBlobBuffer: Buffer;
@@ -65,14 +65,14 @@ describe('Tests for getting and comparing stream or blob data as buffer', () => 
   });
 
   it('should pass with same stream data', async () => {
-    const expected = await toBuffer(Readable.from('This is example data'));
+    const expected = await toBuffer(convertToStream('This is example data'));
 
     expect(actualBlobBuffer).toEqual(expected);
     expect(actualStreamBuffer).toEqual(expected);
   });
 
   it('should fail with different stream data', async () => {
-    const expected = await toBuffer(Readable.from('different data'));
+    const expected = await toBuffer(convertToStream('different data'));
 
     expect(actualBlobBuffer).not.toEqual(expected);
     expect(actualStreamBuffer).not.toEqual(expected);
@@ -96,7 +96,7 @@ const mockHttpClientInterface: HttpClientInterface = (
   if (request.url === 'example/getStream') {
     return Promise.resolve({
       statusCode: 200,
-      body: Readable.from('This is example data'),
+      body: convertToStream('This is example data'),
       headers: {},
     });
   }

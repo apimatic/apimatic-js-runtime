@@ -1,5 +1,5 @@
 import { HttpClientInterface } from '@apimatic/core-interfaces';
-import { Readable } from 'stream';
+import { convertFromStream } from '@apimatic/convert-to-stream';
 
 /**
  * Get streaming data from a given URL.
@@ -27,39 +27,11 @@ export async function getStreamData(
 export async function toBuffer(
   input: NodeJS.ReadableStream | Blob | undefined
 ): Promise<Buffer> {
-  if (typeof Blob !== 'undefined' && input instanceof Blob) {
-    return blobToBuffer(input);
+  if (input === undefined) {
+    throw new Error(
+      'Unsupported input type. Expected a Blob or ReadableStream.'
+    );
   }
-  if (typeof Readable !== 'undefined' && input instanceof Readable) {
-    return streamToBuffer(input);
-  }
-  throw new Error('Unsupported input type. Expected a Blob or ReadableStream.');
-}
-
-/**
- * Convert a NodeJS ReadableStream to a Buffer.
- * @param stream Readable stream to convert.
- * @returns Promise resolving to a Buffer containing stream data.
- */
-async function streamToBuffer(stream: NodeJS.ReadableStream): Promise<Buffer> {
-  const chunks: Uint8Array[] = [];
-  for await (const chunk of stream) {
-    chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-  }
-  return Buffer.concat(chunks);
-}
-
-/**
- * Convert a Blob to a Buffer.
- * @param blob Blob to convert.
- * @returns Promise resolving to an Buffer containing blob data.
- */
-async function blobToBuffer(blob: Blob): Promise<Buffer> {
-  const arrayBuffer = new Promise<ArrayBuffer>((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as ArrayBuffer);
-    reader.onerror = reject;
-    reader.readAsArrayBuffer(blob);
-  });
-  return Buffer.from(await arrayBuffer);
+  const jsonString = await convertFromStream(input);
+  return Buffer.from(jsonString);
 }
