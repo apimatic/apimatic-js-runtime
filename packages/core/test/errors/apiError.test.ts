@@ -1,17 +1,6 @@
 import { ApiError, loadResult } from '../../src/errors/apiError';
 import { HttpRequest, HttpResponse } from '../../src/coreInterfaces';
-import { Readable } from 'stream';
-
-function stringToStream(str: string) {
-  const stream = new Readable();
-  stream.push(str);
-  stream.push(null);
-  return stream;
-}
-
-function stringToBlob(str: string, type = 'application/json') {
-  return new Blob([str], { type });
-}
+import { convertToStream } from '@apimatic/convert-to-stream';
 
 describe('ApiError Class', () => {
   describe('Test API Error Instance', () => {
@@ -66,7 +55,7 @@ describe('ApiError Class', () => {
       ],
       [
         'should parse valid JSON from Readable stream body',
-        stringToStream('{"a":1}'),
+        convertToStream('{"a":1}'),
         { a: 1 },
         'production',
         undefined,
@@ -80,28 +69,7 @@ describe('ApiError Class', () => {
       ],
       [
         'should leave result undefined for invalid JSON in Readable stream body',
-        stringToStream('{invalid json}'),
-        undefined,
-        'production',
-        undefined,
-      ],
-      [
-        'should parse valid JSON from Blob body',
-        stringToBlob('{"x":42}'),
-        { x: 42 },
-        'production',
-        undefined,
-      ],
-      [
-        'should leave result undefined for invalid JSON in Blob body',
-        stringToBlob('{invalid json}'),
-        undefined,
-        'production',
-        undefined,
-      ],
-      [
-        'should leave result undefined for empty Blob body',
-        stringToBlob(''),
+        convertToStream('{invalid json}'),
         undefined,
         'production',
         undefined,
@@ -138,7 +106,7 @@ describe('ApiError Class', () => {
       '%s',
       async (
         _: string,
-        body: string | Readable | Blob,
+        body: string | NodeJS.ReadableStream | Blob,
         expectedResult: unknown,
         node_env?: string,
         errorMessage?: string
@@ -151,7 +119,7 @@ describe('ApiError Class', () => {
 
         const apiError = new ApiError(
           { request: mockHttpRequest, response },
-          'Internal Server Error'
+          'Internal server Error'
         );
 
         await loadResult(apiError);

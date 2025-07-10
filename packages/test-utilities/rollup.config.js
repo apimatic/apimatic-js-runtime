@@ -1,4 +1,5 @@
 import typescript from 'rollup-plugin-typescript2';
+import packageJson from '@apimatic/core/package.json';
 
 const getTsPlugin = ({ declaration = true, target } = {}) =>
   typescript({
@@ -27,6 +28,7 @@ export default [
         dir: 'es',
         format: 'esm'
       }
-    ]
+    ],
+    external: Object.keys(packageJson.dependencies)
   })
 ];
