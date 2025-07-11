@@ -11,5 +11,6 @@ export function unknown(): Schema<unknown, unknown> {
     type: 'unknown',
     validate: () => [],
     map: identityFn,
+    toJSONSchema: () => ({}),
   });
 }

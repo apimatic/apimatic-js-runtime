@@ -10,6 +10,8 @@ import {
   typedExpandoObject,
   object,
   anyOf,
+  JSONSchema,
+  generateJSONSchema,
 } from '../../src';
 
 describe('Expando Object', () => {
@@ -573,6 +575,52 @@ describe('Expando Object', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for an object with additional properties', () => {
+      const userSchema = expandoObject({
+        id: ['id', string()],
+      });
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+        },
+        required: ['id'],
+        additionalProperties: true,
+      });
+    });
+
+    it('should output a valid JSON Schema for an object with typed additional properties', () => {
+      const userSchema = typedExpandoObject(
+        {
+          id: ['id', string()],
+        },
+        'additionalProps',
+        number()
+      );
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+        },
+        required: ['id'],
+        additionalProperties: {
+          type: 'number',
+        },
+      });
     });
   });
 });

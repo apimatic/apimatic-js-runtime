@@ -12,5 +12,8 @@ export function number(): Schema<number, number> {
     type: 'number',
     validate: toValidator(isNumericString),
     map: coerceNumericStringToNumber as (arg: number) => number,
+    toJSONSchema: () => ({
+      type: 'number',
+    }),
   });
 }
