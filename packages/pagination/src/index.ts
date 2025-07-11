@@ -2,6 +2,7 @@ export { OffsetPagination } from './offset/offsetPagination';
 export { CursorPagination } from './cursor/cursorPagination';
 export { PagePagination } from './page/pagePagination';
 export { LinkPagination } from './link/linkPagination';
+export { PaginationStrategy } from './paginationStrategy';
 export {
   createOffsetPagedResponse,
   isOffsetPagedResponse,
@@ -23,4 +24,4 @@ export {
   NumberPagedResponse,
 } from './page/numberPagedResponse';
 export { PagedResponse } from './pagedResponse';
-export { PagedData } from './pagedData';
+export { createPagedData } from './pagedData';

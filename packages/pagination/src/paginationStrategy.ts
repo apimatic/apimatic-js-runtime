@@ -1,4 +1,3 @@
-import { Request } from './request';
 import { PagedResponse } from './pagedResponse';
 import { PagedDataState } from './strategySelector';
 
@@ -11,7 +10,7 @@ export interface PaginationStrategy {
    *              It will be updated if the strategy is applicable.
    * @returns True if this strategy is applicable on the given state of API.
    */
-  tryPreparingRequest<TItem, TPage, TRequest extends Request>(
+  tryPreparingRequest<TItem, TPage, TRequest>(
     state: PagedDataState<TItem, TPage, TRequest>
   ): boolean;
 

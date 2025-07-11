@@ -1,6 +1,6 @@
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedResponse } from './pagedResponse';
-import { RequestManager } from './request';
+import { RequestManager } from './requestManager';
 
 export interface PagedDataState<TItem, TPage, TRequest> {
   requestManager: RequestManager<TRequest, TPage>;

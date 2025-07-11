@@ -14,7 +14,7 @@ export class CursorPagination implements PaginationStrategy {
     this.nextCursorPointer = nextCursorPointer;
   }
 
-  public tryPreparingRequest<TItem, TPage, TRequest extends Request>(
+  public tryPreparingRequest<TItem, TPage, TRequest>(
     state: PagedDataState<TItem, TPage, TRequest>
   ): boolean {
     let isUpdated: boolean = false;

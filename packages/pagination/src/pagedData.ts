@@ -2,9 +2,33 @@ import { ApiResponse, PagedAsyncIterable } from './coreInterfaces';
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedDataState, StrategySelector } from './strategySelector';
 import { PagedResponse } from './pagedResponse';
-import { RequestManager } from './request';
+import { RequestManager } from './requestManager';
 
-export class PagedData<TItem, TPage, TRequest, TPagedResponse>
+export function createPagedData<TItem, TPage, TRequest, TPagedResponse>(
+  executor: (req: TRequest) => Promise<ApiResponse<TPage>>,
+  updater: (
+    req: TRequest
+  ) => (pointer: string | null, setter: (value: any) => any) => TRequest,
+  createPagedResponse: (
+    res: PagedResponse<TItem, TPage> | null
+  ) => TPagedResponse,
+  extractItems: (res: ApiResponse<TPage>) => TItem[] | undefined,
+  ...pagination: PaginationStrategy[]
+): (req: TRequest) => PagedAsyncIterable<TItem, TPagedResponse> {
+  return (req) =>
+    new PagedData(
+      {
+        request: req,
+        executor,
+        updater,
+      },
+      createPagedResponse,
+      extractItems,
+      ...pagination
+    );
+}
+
+class PagedData<TItem, TPage, TRequest, TPagedResponse>
   implements PagedAsyncIterable<TItem, TPagedResponse> {
   private readonly paginationStrategies: PaginationStrategy[];
   constructor(
