@@ -772,6 +772,247 @@ describe('test appendTemplatePath function', () => {
   });
 });
 
+describe('updateRequestByJsonPointer tests', () => {
+  const testBody = {
+    user: {
+      name: 'John',
+      age: 30,
+      address: {
+        city: 'New York',
+      },
+    },
+  };
+
+  async function extractRequestBody(
+    request: RequestBuilder<any, any>
+  ): Promise<string> {
+    const body = (await request.callAsText()).request.body;
+    if (body === undefined) {
+      throw new Error('Body is undefined');
+    }
+    if (typeof body.content !== 'string') {
+      fail();
+    }
+    return body.content;
+  }
+
+  it('should update request body object', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.json(testBody);
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.body#/user/address/city',
+      () => 'Boston'
+    );
+
+    const result = await extractRequestBody(requestBuilder);
+    const newResult = await extractRequestBody(newRequestBuilder);
+
+    expect(JSON.parse(result).user.address.city).toBe('New York');
+    expect(JSON.parse(newResult).user.address.city).toBe('Boston');
+  });
+
+  it('should add new field in request body object', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.json(testBody);
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.body#/user/address/house',
+      () => 214
+    );
+
+    const result = await extractRequestBody(requestBuilder);
+    const newResult = await extractRequestBody(newRequestBuilder);
+
+    expect(JSON.parse(result).user.address.house).toBeUndefined();
+    expect(JSON.parse(newResult).user.address.house).toBe(214);
+  });
+
+  it('should update request body array', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.json([1, 2, 3]);
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.body#/0',
+      () => 5
+    );
+
+    const result = await extractRequestBody(requestBuilder);
+    const newResult = await extractRequestBody(newRequestBuilder);
+
+    expect(JSON.parse(result)).toStrictEqual([1, 2, 3]);
+    expect(JSON.parse(newResult)).toStrictEqual([5, 2, 3]);
+  });
+
+  it('should add new field in request body array', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.json([1, 2, 3]);
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.body#/3',
+      () => 4
+    );
+
+    const result = await extractRequestBody(requestBuilder);
+    const newResult = await extractRequestBody(newRequestBuilder);
+
+    expect(JSON.parse(result)).toStrictEqual([1, 2, 3]);
+    expect(JSON.parse(newResult)).toStrictEqual([1, 2, 3, 4]);
+  });
+
+  it('should update request body plain', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.text('NewYork');
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.body',
+      () => 'Boston'
+    );
+
+    const result = await extractRequestBody(requestBuilder);
+    const newResult = await extractRequestBody(newRequestBuilder);
+
+    expect(result).toBe('NewYork');
+    expect(newResult).toBe('Boston');
+  });
+
+  it('should add new field as request body plain', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.text(undefined);
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.body',
+      () => 'Boston'
+    );
+
+    const newResult = await extractRequestBody(newRequestBuilder);
+    expect(newResult).toBe('Boston');
+  });
+
+  it('should not add new field as request body undefined', async () => {
+    const requestBuilder = defaultRequestBuilder();
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.body#/new',
+      () => fail()
+    );
+    expect(
+      async () => await extractRequestBody(newRequestBuilder)
+    ).rejects.toThrow('Body is undefined');
+  });
+
+  it('should not add new field as request body plain', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.text('NewYork');
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.body#/new',
+      () => fail()
+    );
+
+    const result = await extractRequestBody(newRequestBuilder);
+    expect(result).toBe('NewYork');
+  });
+
+  it('should update path parameters', async () => {
+    const requestBuilder = defaultRequestBuilder(undefined);
+
+    const templateArray = Object.assign(['data/', '/']);
+    requestBuilder.appendTemplatePath(
+      templateArray,
+      pathParam('123', 'userId'),
+      pathParam('456', 'postId')
+    );
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.path#/userId',
+      () => '789'
+    );
+
+    expect(requestBuilder.toRequest().url).toBe(
+      'https://apimatic.hopto.org:3000/data/123/456'
+    );
+    expect(newRequestBuilder.toRequest().url).toBe(
+      'https://apimatic.hopto.org:3000/data/789/456'
+    );
+  });
+
+  it('should update query parameters', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.query({
+      filter: {
+        status: 'active',
+        type: 'user',
+      },
+    });
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.query#/filter/status',
+      () => 'inactive'
+    );
+
+    expect(requestBuilder.toRequest().url).toBe(
+      'https://apimatic.hopto.org:3000/test/requestBuilder?filter%5Bstatus%5D=active&filter%5Btype%5D=user'
+    );
+
+    expect(newRequestBuilder.toRequest().url).toBe(
+      'https://apimatic.hopto.org:3000/test/requestBuilder?filter%5Bstatus%5D=inactive&filter%5Btype%5D=user'
+    );
+  });
+
+  it('should add new query parameters', async () => {
+    const requestBuilder = defaultRequestBuilder();
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.query#/key',
+      () => 'value'
+    );
+
+    expect(requestBuilder.toRequest().url).toBe(
+      'https://apimatic.hopto.org:3000/test/requestBuilder'
+    );
+    expect(newRequestBuilder.toRequest().url).toBe(
+      'https://apimatic.hopto.org:3000/test/requestBuilder?key=value'
+    );
+  });
+
+  it('should update headers', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.headers({
+      'x-api-key': 'old-key',
+      'content-type': 'application/json',
+    });
+
+    const newRequestBuilder = requestBuilder.updateByJsonPointer(
+      '$request.headers#/x-api-key',
+      () => 'new-key'
+    );
+
+    expect(requestBuilder.toRequest().headers?.['x-api-key']).toBe('old-key');
+    expect(newRequestBuilder.toRequest().headers?.['x-api-key']).toBe(
+      'new-key'
+    );
+  });
+
+  it('should not update body when not set', async () => {
+    const requestBuilder = defaultRequestBuilder();
+
+    requestBuilder.updateByJsonPointer('$request.body#/user', () => fail());
+  });
+
+  it('should not update for null json pointer', async () => {
+    const requestBuilder = defaultRequestBuilder();
+
+    requestBuilder.updateByJsonPointer(null, () => fail());
+  });
+
+  it('should not update for invalid pointer prefix', async () => {
+    const requestBuilder = defaultRequestBuilder();
+
+    requestBuilder.updateByJsonPointer('$invalid.prefix#/key', () => fail());
+  });
+});
+
 describe('test default request builder behavior to test retries', () => {
   const noneAuthenticationProvider = () => passThroughInterceptor;
   function mockHttpClientAdapterToTestRetries(): HttpClientInterface {

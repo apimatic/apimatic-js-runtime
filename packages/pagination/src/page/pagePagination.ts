@@ -1,7 +1,7 @@
 import { PaginationStrategy } from '../paginationStrategy';
 import { NumberPagedResponse } from './numberPagedResponse';
 import { PagedResponse } from '../pagedResponse';
-import { Request, updateRequestByJsonPointer } from '../request';
+import { PagedDataState } from '../strategySelector';
 
 export class PagePagination implements PaginationStrategy {
   private readonly pagePointer: string;
@@ -11,27 +11,29 @@ export class PagePagination implements PaginationStrategy {
     this.pagePointer = pagePointer;
   }
 
-  public tryPreparingRequest<TItem, TPage>(
-    request: Request,
-    response: PagedResponse<TItem, TPage> | null
+  public tryPreparingRequest<TItem, TPage, TRequest>(
+    state: PagedDataState<TItem, TPage, TRequest>
   ): boolean {
     let isUpdated: boolean = false;
-    updateRequestByJsonPointer(request, this.pagePointer, (value) => {
-      if (response === null) {
-        isUpdated = true;
-        if (value === undefined || value === null) {
-          this.pageNumber = '1';
+    state.request = state.requestManager.updater(state.request)(
+      this.pagePointer,
+      (value) => {
+        if (state.response === null) {
+          isUpdated = true;
+          if (value === undefined || value === null) {
+            this.pageNumber = '1';
+            return value;
+          }
+          this.pageNumber = String(value);
           return value;
         }
-        this.pageNumber = String(value);
-        return value;
+        const numericValue = +(value ?? 1);
+        const newPage = numericValue + 1;
+        this.pageNumber = newPage.toString();
+        isUpdated = true;
+        return newPage;
       }
-      const numericValue = +(value ?? 1);
-      const newPage = numericValue + 1;
-      this.pageNumber = newPage.toString();
-      isUpdated = true;
-      return newPage;
-    });
+    );
     return isUpdated;
   }
 

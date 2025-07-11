@@ -1,34 +1,41 @@
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedResponse } from './pagedResponse';
-import { Request } from './request';
+import { RequestManager } from './request';
+
+export interface PagedDataState<TItem, TPage, TRequest> {
+  requestManager: RequestManager<TRequest, TPage>;
+  request: TRequest;
+  response: PagedResponse<TItem, TPage> | null;
+  items: TItem[];
+  itemIndex: number;
+  strategySelector: StrategySelector<TItem, TPage>;
+}
 
 export class StrategySelector<TItem, TPage> {
   private selectedStrategy: PaginationStrategy | null = null;
 
   constructor(private readonly strategies: PaginationStrategy[]) {}
 
-  public select(
-    request: Request,
-    response: PagedResponse<TItem, TPage> | null
+  public select<TRequest>(
+    state: PagedDataState<TItem, TPage, TRequest>
   ): PaginationStrategy | null {
     if (this.selectedStrategy === null) {
-      return this.selectStrategy(request, response);
+      return this.selectStrategy(state);
     }
 
-    return this.selectedStrategy.tryPreparingRequest(request, response)
+    return this.selectedStrategy.tryPreparingRequest(state)
       ? this.selectedStrategy
       : null;
   }
 
-  private selectStrategy(
-    request: Request,
-    response: PagedResponse<TItem, TPage> | null
+  private selectStrategy<TRequest>(
+    state: PagedDataState<TItem, TPage, TRequest>
   ): PaginationStrategy | null {
     for (const strategy of this.strategies) {
-      if (!strategy.tryPreparingRequest(request, response)) {
+      if (!strategy.tryPreparingRequest(state)) {
         continue;
       }
-      if (response !== null) {
+      if (state.response !== null) {
         // select strategy, if not the first API call i.e. response received.
         this.selectedStrategy = strategy;
       }

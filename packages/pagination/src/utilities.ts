@@ -1,7 +1,7 @@
 import { ApiResponse } from './coreInterfaces';
 
-export function extractQueryParams(link: string): Record<string, string> {
-  const result: Record<string, string> = {};
+export function extractQueryParams(link: string): Record<string, () => string> {
+  const result: Record<string, () => string> = {};
 
   const [, query] = link.split('?');
 
@@ -11,7 +11,8 @@ export function extractQueryParams(link: string): Record<string, string> {
   for (const queryParam of queryParams) {
     const [key, value] = queryParam.split('=');
     if (key) {
-      result[decodeURIComponent(key)] = decodeURIComponent(value || '');
+      const queryPointer = '$request.query#/' + decodeURIComponent(key);
+      result[queryPointer] = () => decodeURIComponent(value || '');
     }
   }
   return result;

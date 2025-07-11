@@ -1,19 +1,18 @@
 import { Request } from './request';
 import { PagedResponse } from './pagedResponse';
+import { PagedDataState } from './strategySelector';
 
 export interface PaginationStrategy {
   /**
-   * Check if this strategy can be applied on given request.
+   * Check if this strategy can be applied on given request in state.
    * Updates the request if its applicable.
    *
-   * @param request The request object to be modify for current page's
-   *                API call.
-   * @param response The response of the last page.
-   * @returns True if this strategy is applicable on the given request.
+   * @param state The state object containing the info about last API call.
+   *              It will be updated if the strategy is applicable.
+   * @returns True if this strategy is applicable on the given state of API.
    */
-  tryPreparingRequest<TItem, TPage>(
-    request: Request,
-    response: PagedResponse<TItem, TPage> | null
+  tryPreparingRequest<TItem, TPage, TRequest extends Request>(
+    state: PagedDataState<TItem, TPage, TRequest>
   ): boolean;
 
   /**

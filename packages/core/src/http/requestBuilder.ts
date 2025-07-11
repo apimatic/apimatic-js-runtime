@@ -1,6 +1,11 @@
 import JSONBig from '@apimatic/json-bigint';
 import { FileWrapper } from '@apimatic/file-wrapper';
-import { deprecated, sanitizeUrl, updateErrorMessage } from '../apiHelper';
+import {
+  deprecated,
+  sanitizeUrl,
+  updateByJsonPointer,
+  updateErrorMessage,
+} from '../apiHelper';
 import {
   ApiResponse,
   AuthenticatorInterface,
@@ -96,40 +101,7 @@ export interface ApiErrorFactory {
   message?: string | undefined;
 }
 
-interface IntermediateRequestBuilder extends RequestCaller {
-  headerParams: Record<string, unknown>;
-  queryParams: Record<string, unknown>;
-  pathParams: Record<string, unknown>;
-  body?: any;
-}
-
-interface RequestCaller {
-  call(requestOptions?: RequestOptions): Promise<ApiResponse<void>>;
-  callAsJson<T>(
-    schema: Schema<T, any>,
-    requestOptions?: RequestOptions
-  ): Promise<ApiResponse<T>>;
-  callAsStream(
-    requestOptions?: RequestOptions
-  ): Promise<ApiResponse<NodeJS.ReadableStream | Blob>>;
-  callAsText(requestOptions?: RequestOptions): Promise<ApiResponse<string>>;
-  callAsOptionalText(
-    requestOptions?: RequestOptions
-  ): Promise<ApiResponse<string | undefined>>;
-  callAsXml<T>(
-    rootName: string,
-    schema: Schema<T, any>,
-    requestOptions?: RequestOptions
-  ): Promise<ApiResponse<T>>;
-  callAsXml<T>(
-    rootName: string,
-    schema: Schema<T, any>,
-    requestOptions?: RequestOptions
-  ): Promise<ApiResponse<T>>;
-}
-
-export interface RequestBuilder<BaseUrlParamType, AuthParams>
-  extends RequestCaller {
+export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   deprecated(methodName: string, message?: string): void;
   prepareArgs: typeof prepareArgs;
   method(httpMethodName: HttpMethod): void;
@@ -197,19 +169,45 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams>
     isTemplate: boolean,
     ...args: ErrorCtorArgs
   ): void;
+  updateByJsonPointer(
+    pointer: string | null,
+    updater: (value: any) => any
+  ): RequestBuilder<BaseUrlParamType, AuthParams>;
   paginate<TItem, TPagedResponse>(
     createPagedIterable: (
-      req: IntermediateRequestBuilder
+      req: RequestBuilder<BaseUrlParamType, AuthParams>
     ) => PagedAsyncIterable<TItem, TPagedResponse>
   ): PagedAsyncIterable<TItem, TPagedResponse>;
+  call(requestOptions?: RequestOptions): Promise<ApiResponse<void>>;
+  callAsJson<T>(
+    schema: Schema<T, any>,
+    requestOptions?: RequestOptions
+  ): Promise<ApiResponse<T>>;
+  callAsStream(
+    requestOptions?: RequestOptions
+  ): Promise<ApiResponse<NodeJS.ReadableStream | Blob>>;
+  callAsText(requestOptions?: RequestOptions): Promise<ApiResponse<string>>;
+  callAsOptionalText(
+    requestOptions?: RequestOptions
+  ): Promise<ApiResponse<string | undefined>>;
+  callAsXml<T>(
+    rootName: string,
+    schema: Schema<T, any>,
+    requestOptions?: RequestOptions
+  ): Promise<ApiResponse<T>>;
+  callAsXml<T>(
+    rootName: string,
+    schema: Schema<T, any>,
+    requestOptions?: RequestOptions
+  ): Promise<ApiResponse<T>>;
 }
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   implements RequestBuilder<BaseUrlParamType, AuthParams> {
-  public queryParams: Record<string, unknown> = {};
-  public pathParams: Record<string, unknown> = {};
-  public headerParams: Record<string, unknown> = {};
-  public body?: any;
+  protected _queryParams: Record<string, unknown> = {};
+  protected _pathParams: Record<string, unknown> = {};
+  protected _headerParams: Record<string, unknown> = {};
+  protected _body?: any;
   protected _accept?: string;
   protected _contentType?: string;
   protected _contentTypeOptional?: string;
@@ -275,7 +273,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         (arg instanceof SkipEncode || arg instanceof PathParam) &&
         arg.key !== undefined
       ) {
-        this.pathParams[arg.key] = arg.value;
+        this._pathParams[arg.key] = arg.value;
       }
     }
   }
@@ -301,11 +299,11 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (value === null || typeof value === 'undefined') {
       return;
     }
-    this.headerParams[name] = value;
+    this._headerParams[name] = value;
   }
   public headers(headersToMerge: Record<string, string>): void {
     for (const [name, value] of Object.entries(headersToMerge)) {
-      this.headerParams[name] = value;
+      this._headerParams[name] = value;
     }
   }
   public query(
@@ -327,7 +325,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
 
     if (typeof nameOrParameters === 'string') {
-      this.queryParams[nameOrParameters] = value;
+      this._queryParams[nameOrParameters] = value;
       if (prefixFormat) {
         this._queryParamsPrefixFormat[nameOrParameters] = prefixFormat;
       }
@@ -352,19 +350,19 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   private setQueryParams(parameters: Record<string, unknown>): void {
     for (const [key, val] of Object.entries(parameters)) {
       if (val !== undefined && val !== null) {
-        this.queryParams[key] = val;
+        this._queryParams[key] = val;
       }
     }
   }
   public text(
     body: string | number | bigint | boolean | null | undefined
   ): void {
-    this.body = body;
+    this._body = body;
     this._bodyType = 'text';
     this._contentTypeOptional = TEXT_CONTENT_TYPE;
   }
   public json(data: unknown): void {
-    this.body = data;
+    this._body = data;
     this._bodyType = 'json';
     this._contentTypeOptional = JSON_CONTENT_TYPE;
   }
@@ -378,7 +376,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (mappingResult.errors) {
       throw new ArgumentsValidationError({ [argName]: mappingResult.errors });
     }
-    this.body = {
+    this._body = {
       data,
       rootName,
     };
@@ -392,7 +390,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void {
-    this.body = parameters;
+    this._body = parameters;
     this._formPrefixFormat = prefixFormat;
     this._bodyType = 'form';
   }
@@ -400,7 +398,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void {
-    this.body = parameters;
+    this._body = parameters;
     this._formPrefixFormat = prefixFormat;
     this._bodyType = 'form-data';
   }
@@ -552,12 +550,91 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     return { ...result, result: mappingResult.result };
   }
+  public updateByJsonPointer(
+    pointer: string | null,
+    updater: (value: any) => any
+  ): RequestBuilder<BaseUrlParamType, AuthParams> {
+    if (!pointer) {
+      return this;
+    }
+    const targets: Record<
+      string,
+      (req: DefaultRequestBuilder<BaseUrlParamType, AuthParams>) => void
+    > = {
+      '$request.body': (req) =>
+        (req._body = updateByJsonPointer(this._body, point, updater)),
+      '$request.path': (req) =>
+        (req._pathParams = updateByJsonPointer(
+          this._pathParams,
+          point,
+          updater
+        )),
+      '$request.query': (req) =>
+        (req._queryParams = updateByJsonPointer(
+          this._queryParams,
+          point,
+          updater
+        )),
+      '$request.headers': (req) =>
+        (req._headerParams = updateByJsonPointer(
+          this._headerParams,
+          point,
+          updater
+        )),
+    };
+    const [prefix, point = ''] = pointer.split('#', 2);
+    const paramUpdater = targets[prefix];
+    if (!paramUpdater) {
+      return this;
+    }
+    const request = this._clone();
+    paramUpdater(request);
+    return request;
+  }
   public paginate<TItem, TPagedResponse>(
     createPagedIterable: (
-      req: IntermediateRequestBuilder
+      req: RequestBuilder<BaseUrlParamType, AuthParams>
     ) => PagedAsyncIterable<TItem, TPagedResponse>
   ): PagedAsyncIterable<TItem, TPagedResponse> {
     return createPagedIterable(this);
+  }
+  private _clone(): DefaultRequestBuilder<BaseUrlParamType, AuthParams> {
+    const cloned = new DefaultRequestBuilder(
+      this._httpClient,
+      this._baseUrlProvider,
+      this._apiErrorCtr,
+      this._authenticationProvider,
+      this._httpMethod,
+      this._xmlSerializer,
+      this._retryConfig,
+      this._path,
+      this._apiLogger
+    );
+
+    this.cloneParameters(cloned);
+    return cloned;
+  }
+  private cloneParameters(
+    cloned: DefaultRequestBuilder<BaseUrlParamType, AuthParams>
+  ): void {
+    cloned._accept = this._accept;
+    cloned._contentType = this._contentType;
+    cloned._headerParams = { ...this._headerParams };
+    cloned._body = this._body;
+    cloned._bodyType = this._bodyType;
+    cloned._stream = this._stream;
+    cloned._queryParams = { ...this._queryParams };
+    cloned._formPrefixFormat = this._formPrefixFormat;
+    cloned._pathStrings = this._pathStrings;
+    cloned._pathArgs = this._pathArgs;
+    cloned._pathParams = this._pathParams;
+    cloned._baseUrlArg = this._baseUrlArg;
+    cloned._validateResponse = this._validateResponse;
+    cloned._interceptors = [...this._interceptors];
+    cloned._authParams = this._authParams;
+    cloned._retryOption = this._retryOption;
+    cloned._apiErrorFactory = { ...this._apiErrorFactory };
+    cloned._errorTypes = [...this._errorTypes];
   }
   private _addResponseValidator(): void {
     this.interceptResponse((context) => {
@@ -591,7 +668,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   private _getQueryUrl(): string {
     const queryParts: string[] = [];
-    for (const [key, value] of Object.entries(this.queryParams)) {
+    for (const [key, value] of Object.entries(this._queryParams)) {
       const formatter = this._queryParamsPrefixFormat?.[key];
       queryParts.push(urlEncodeObject({ [key]: value }, formatter));
     }
@@ -616,9 +693,9 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       if (
         (arg instanceof SkipEncode || arg instanceof PathParam) &&
         arg.key !== undefined &&
-        arg.key in this.pathParams
+        arg.key in this._pathParams
       ) {
-        arg.value = this.pathParams[arg.key];
+        arg.value = this._pathParams[arg.key];
       }
     }
     return pathTemplate(this._pathStrings, ...this._pathArgs);
@@ -626,7 +703,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   private _getHttpRequestHeaders(): Record<string, string> {
     const headers: Record<string, string> = {};
 
-    for (const [name, value] of Object.entries(this.headerParams)) {
+    for (const [name, value] of Object.entries(this._headerParams)) {
       if (typeof value === 'object') {
         setHeader(headers, name, JSON.stringify(value));
         continue;
@@ -659,38 +736,41 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       return { type: 'stream', content: this._stream };
     }
 
-    if (this.body === undefined) {
+    if (this._body === undefined) {
       return undefined;
     }
 
     switch (this._bodyType) {
       case 'text':
-        return { type: 'text', content: String(this.body) };
+        return { type: 'text', content: String(this._body) };
 
       case 'json':
-        return { type: 'text', content: JSON.stringify(this.body) };
+        return { type: 'text', content: JSON.stringify(this._body) };
 
       case 'xml':
         return {
           type: 'text',
           content: this._xmlSerializer.xmlSerialize(
-            this.body.data,
-            this.body.rootName
+            this._body.data,
+            this._body.rootName
           ),
         };
 
       case 'form':
       case 'form-data': {
         if (
-          typeof this.body !== 'object' ||
-          this.body === null ||
-          Array.isArray(this.body)
+          typeof this._body !== 'object' ||
+          this._body === null ||
+          Array.isArray(this._body)
         ) {
           return undefined;
         }
 
         const type = this._bodyType;
-        const encoded = formDataEncodeObject(this.body, this._formPrefixFormat);
+        const encoded = formDataEncodeObject(
+          this._body,
+          this._formPrefixFormat
+        );
         const content = filterFileWrapperFromKeyValuePairs(encoded);
 
         return type === 'form' ? { type, content } : { type, content: encoded };

@@ -1,23 +1,14 @@
 import { ApiResponse, PagedAsyncIterable } from './coreInterfaces';
 import { PaginationStrategy } from './paginationStrategy';
-import { StrategySelector } from './strategySelector';
-import { cloneRequest, Request } from './request';
+import { PagedDataState, StrategySelector } from './strategySelector';
 import { PagedResponse } from './pagedResponse';
+import { RequestManager } from './request';
 
-interface PagedDataState<TItem, TPage, TRequest extends Request> {
-  request: TRequest;
-  response: PagedResponse<TItem, TPage> | null;
-  items: TItem[];
-  itemIndex: number;
-  strategySelector: StrategySelector<TItem, TPage>;
-}
-
-export class PagedData<TItem, TPage, TRequest extends Request, TPagedResponse>
+export class PagedData<TItem, TPage, TRequest, TPagedResponse>
   implements PagedAsyncIterable<TItem, TPagedResponse> {
   private readonly paginationStrategies: PaginationStrategy[];
   constructor(
-    private readonly request: TRequest,
-    private readonly executor: (req: TRequest) => Promise<ApiResponse<TPage>>,
+    private readonly requestManager: RequestManager<TRequest, TPage>,
     private readonly pagedResponseCreator: (
       p: PagedResponse<TItem, TPage> | null
     ) => TPagedResponse,
@@ -44,7 +35,8 @@ export class PagedData<TItem, TPage, TRequest extends Request, TPagedResponse>
     ) => Promise<IteratorResult<T>>
   ): AsyncIterator<T> {
     const state: PagedDataState<TItem, TPage, TRequest> = {
-      request: cloneRequest(this.request),
+      requestManager: this.requestManager,
+      request: this.requestManager.request,
       response: null,
       itemIndex: 0,
       items: [],
@@ -82,15 +74,12 @@ export class PagedData<TItem, TPage, TRequest extends Request, TPagedResponse>
   private async tryFetchingPage(
     state: PagedDataState<TItem, TPage, TRequest>
   ): Promise<boolean> {
-    const strategy = state.strategySelector.select(
-      state.request,
-      state.response
-    );
+    const strategy = state.strategySelector.select(state);
     if (strategy === null) {
       return false;
     }
 
-    const response = await this.executor(state.request);
+    const response = await this.requestManager.executor(state.request);
     const items = this.itemsCreator(response);
 
     if (!items || items.length === 0) {

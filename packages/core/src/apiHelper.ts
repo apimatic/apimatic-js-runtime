@@ -189,3 +189,36 @@ function extractValueFromJsonPointer(obj: any, pointer: string): any {
   }
   return result;
 }
+
+export function updateByJsonPointer<T>(
+  obj: T,
+  pointer: string,
+  updater: (val: any) => any
+): T {
+  if (pointer === '') {
+    return updater(obj);
+  }
+
+  return updateAtPath(updater, obj, pointer.split('/').filter(Boolean));
+}
+
+function updateAtPath(
+  updater: (val: any) => any,
+  current: any,
+  parts: string[],
+  index: number = 0
+): any {
+  if (!current || typeof current !== 'object') {
+    return current;
+  }
+
+  const key = parts[index];
+  const next = current[key];
+  const cloned = Array.isArray(current) ? [...current] : { ...current };
+  cloned[key] =
+    index === parts.length - 1
+      ? updater(next) // update directly for last part
+      : updateAtPath(updater, next, parts, index + 1); // call recursively
+
+  return cloned;
+}

@@ -1,7 +1,7 @@
 import { PaginationStrategy } from '../paginationStrategy';
 import { PagedResponse } from '../pagedResponse';
 import { OffsetPagedResponse } from './offsetPagedResponse';
-import { Request, updateRequestByJsonPointer } from '../request';
+import { PagedDataState } from '../strategySelector';
 
 export class OffsetPagination implements PaginationStrategy {
   private readonly offsetPointer: string;
@@ -11,29 +11,31 @@ export class OffsetPagination implements PaginationStrategy {
     this.offsetPointer = offsetPointer;
   }
 
-  public tryPreparingRequest<TItem, TPage>(
-    request: Request,
-    response: PagedResponse<TItem, TPage> | null
+  public tryPreparingRequest<TItem, TPage, TRequest>(
+    state: PagedDataState<TItem, TPage, TRequest>
   ): boolean {
     let isUpdated: boolean = false;
 
-    updateRequestByJsonPointer(request, this.offsetPointer, (value) => {
-      if (response === null) {
-        isUpdated = true;
-        if (value === undefined || value === null) {
-          this.pageOffset = '0';
+    state.request = state.requestManager.updater(state.request)(
+      this.offsetPointer,
+      (value) => {
+        if (state.response === null) {
+          isUpdated = true;
+          if (value === undefined || value === null) {
+            this.pageOffset = '0';
+            return value;
+          }
+          this.pageOffset = String(value);
           return value;
         }
-        this.pageOffset = String(value);
-        return value;
+        const dataLength = state.response?.items.length ?? 0;
+        const numericValue = +(value ?? 0);
+        const newOffset = numericValue + dataLength;
+        this.pageOffset = String(newOffset);
+        isUpdated = true;
+        return newOffset;
       }
-      const dataLength = response?.items.length ?? 0;
-      const numericValue = +(value ?? 0);
-      const newOffset = numericValue + dataLength;
-      this.pageOffset = String(newOffset);
-      isUpdated = true;
-      return newOffset;
-    });
+    );
 
     return isUpdated;
   }
