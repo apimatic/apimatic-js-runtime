@@ -327,7 +327,6 @@ describe('Retry Configuration', () => {
         expect(Math.floor(waitTime)).toStrictEqual(expectedResult);
       }
     );
-
     test('calculate retry wait time by setting retry-after header in dateTime with range assertion', () => {
       const expectedMs = 10000;
       const retryAfterHeader = new Date(Date.now() + expectedMs).toUTCString();
@@ -352,7 +351,6 @@ describe('Retry Configuration', () => {
         ],
         httpMethodsToRetry: ['GET', 'PUT'] as HttpMethod[],
       };
-
       const waitTime = getRetryWaitTime(
         retryConfig,
         10,
@@ -361,7 +359,6 @@ describe('Retry Configuration', () => {
         { 'retry-after': retryAfterHeader },
         undefined
       );
-
       expect(waitTime).toBeGreaterThanOrEqual(8);
       expect(waitTime).toBeLessThanOrEqual(10);
     });
