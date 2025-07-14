@@ -169,6 +169,10 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     isTemplate: boolean,
     ...args: ErrorCtorArgs
   ): void;
+  updateByJsonPointer(
+    pointer: string | null,
+    updater: (value: any) => any
+  ): RequestBuilder<BaseUrlParamType, AuthParams>;
   paginate<TItem, TPagedResponse>(
     createPagedIterable: (
       req: this,
@@ -558,13 +562,13 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     ) => PagedAsyncIterable<TItem, TPagedResponse>
   ): PagedAsyncIterable<TItem, TPagedResponse> {
     return createPagedIterable(this, (req) =>
-      req._updateByJsonPointer.bind(req)
+      req.updateByJsonPointer.bind(req)
     );
   }
-  private _updateByJsonPointer(
+  public updateByJsonPointer(
     pointer: string | null,
     updater: (value: any) => any
-  ): DefaultRequestBuilder<BaseUrlParamType, AuthParams> {
+  ): RequestBuilder<BaseUrlParamType, AuthParams> {
     if (!pointer) {
       return this;
     }

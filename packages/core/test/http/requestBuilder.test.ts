@@ -10,6 +10,7 @@ import {
   HttpMethod,
   HttpRequest,
   HttpResponse,
+  PagedAsyncIterable,
   passThroughInterceptor,
   RequestOptions,
   RetryConfiguration,
@@ -769,6 +770,51 @@ describe('test appendTemplatePath function', () => {
     expect(responseFromAppendPath.request.url).toEqual(
       'https://apimatic.hopto.org:3000/data/123/456/789'
     );
+  });
+});
+
+describe('paginate tests', () => {
+  function reverseHeadersIterable(
+    req: RequestBuilder<string, boolean>
+  ): PagedAsyncIterable<any, any> {
+    const asyncIterable = <T>(): AsyncIterable<T> => ({
+      [Symbol.asyncIterator]() {
+        const headers: any[] = Object.entries(req.toRequest().headers ?? {});
+        return {
+          async next(): Promise<IteratorResult<T>> {
+            const isDone = headers.length === 0 ? true : false;
+            return {
+              value: headers.pop(),
+              done: isDone,
+            };
+          },
+        };
+      },
+    });
+
+    return {
+      ...asyncIterable(),
+      pages: asyncIterable(),
+    };
+  }
+
+  it('should iterate over request header params', async () => {
+    const requestBuilder = defaultRequestBuilder();
+    requestBuilder.headers({
+      status: 'active',
+      type: 'user',
+    });
+
+    const headersIterable = requestBuilder.paginate(reverseHeadersIterable);
+
+    const values: any[] = [];
+    for await (const header of headersIterable) {
+      values.push(header);
+    }
+    expect(values).toStrictEqual([
+      ['type', 'user'],
+      ['status', 'active'],
+    ]);
   });
 });
 
