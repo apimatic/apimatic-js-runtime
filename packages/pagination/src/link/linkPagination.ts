@@ -31,10 +31,7 @@ export class LinkPagination implements PaginationStrategy {
     for (const [pointer, setter] of Object.entries(
       extractQueryParams(nextLink)
     )) {
-      state.request = state.requestManager.updater(state.request)(
-        pointer,
-        setter
-      );
+      state.request = state.requestUpdater(state.request)(pointer, setter);
     }
     return true;
   }

@@ -1,9 +1,10 @@
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedResponse } from './pagedResponse';
-import { RequestManager } from './requestManager';
 
 export interface PagedDataState<TItem, TPage, TRequest> {
-  requestManager: RequestManager<TRequest, TPage>;
+  requestUpdater: (
+    request: TRequest
+  ) => (pointer: string | null, setter: (value: any) => any) => TRequest;
   request: TRequest;
   response: PagedResponse<TItem, TPage> | null;
   items: TItem[];

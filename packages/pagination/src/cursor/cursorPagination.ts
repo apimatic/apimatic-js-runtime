@@ -18,7 +18,7 @@ export class CursorPagination implements PaginationStrategy {
     state: PagedDataState<TItem, TPage, TRequest>
   ): boolean {
     let isUpdated: boolean = false;
-    state.request = state.requestManager.updater(state.request)(
+    state.request = state.requestUpdater(state.request)(
       this.currentCursorPointer,
       (value) => {
         if (state.response === null) {

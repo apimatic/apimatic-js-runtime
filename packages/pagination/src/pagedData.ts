@@ -2,31 +2,28 @@ import { ApiResponse, PagedAsyncIterable } from './coreInterfaces';
 import { PaginationStrategy } from './paginationStrategy';
 import { PagedDataState, StrategySelector } from './strategySelector';
 import { PagedResponse } from './pagedResponse';
-import { RequestManager } from './requestManager';
 
 export function createPagedData<TItem, TPage, TRequest, TPagedResponse>(
-  executor: (req: TRequest) => Promise<ApiResponse<TPage>>,
+  executor: (request: TRequest) => Promise<ApiResponse<TPage>>,
   createPagedResponse: (
-    res: PagedResponse<TItem, TPage> | null
+    response: PagedResponse<TItem, TPage> | null
   ) => TPagedResponse,
-  extractItems: (res: ApiResponse<TPage>) => TItem[] | undefined,
-  ...pagination: PaginationStrategy[]
+  extractItems: (response: ApiResponse<TPage>) => TItem[] | undefined,
+  ...paginationStrategies: PaginationStrategy[]
 ): (
-  req: TRequest,
+  request: TRequest,
   updater: (
-    req: TRequest
+    request: TRequest
   ) => (pointer: string | null, setter: (value: any) => any) => TRequest
 ) => PagedAsyncIterable<TItem, TPagedResponse> {
-  return (req, updater) =>
+  return (request, updater) =>
     new PagedData(
-      {
-        request: req,
-        executor,
-        updater,
-      },
+      request,
+      executor,
+      updater,
       createPagedResponse,
       extractItems,
-      ...pagination
+      ...paginationStrategies
     );
 }
 
@@ -34,9 +31,15 @@ class PagedData<TItem, TPage, TRequest, TPagedResponse>
   implements PagedAsyncIterable<TItem, TPagedResponse> {
   private readonly paginationStrategies: PaginationStrategy[];
   constructor(
-    private readonly requestManager: RequestManager<TRequest, TPage>,
+    private readonly request: TRequest,
+    private readonly requestExecutor: (
+      req: TRequest
+    ) => Promise<ApiResponse<TPage>>,
+    private readonly requestUpdater: (
+      req: TRequest
+    ) => (pointer: string | null, setter: (value: any) => any) => TRequest,
     private readonly pagedResponseCreator: (
-      p: PagedResponse<TItem, TPage> | null
+      response: PagedResponse<TItem, TPage> | null
     ) => TPagedResponse,
     private readonly itemsCreator: (
       response: ApiResponse<TPage>
@@ -61,8 +64,8 @@ class PagedData<TItem, TPage, TRequest, TPagedResponse>
     ) => Promise<IteratorResult<T>>
   ): AsyncIterator<T> {
     const state: PagedDataState<TItem, TPage, TRequest> = {
-      requestManager: this.requestManager,
-      request: this.requestManager.request,
+      requestUpdater: this.requestUpdater,
+      request: this.request,
       response: null,
       itemIndex: 0,
       items: [],
@@ -105,7 +108,7 @@ class PagedData<TItem, TPage, TRequest, TPagedResponse>
       return false;
     }
 
-    const response = await this.requestManager.executor(state.request);
+    const response = await this.requestExecutor(state.request);
     const items = this.itemsCreator(response);
 
     if (!items || items.length === 0) {

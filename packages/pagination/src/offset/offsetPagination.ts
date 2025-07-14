@@ -16,7 +16,7 @@ export class OffsetPagination implements PaginationStrategy {
   ): boolean {
     let isUpdated: boolean = false;
 
-    state.request = state.requestManager.updater(state.request)(
+    state.request = state.requestUpdater(state.request)(
       this.offsetPointer,
       (value) => {
         if (state.response === null) {
