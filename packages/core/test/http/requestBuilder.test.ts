@@ -777,24 +777,31 @@ describe('paginate tests', () => {
   function reverseHeadersIterable(
     req: RequestBuilder<string, boolean>
   ): PagedAsyncIterable<any, any> {
-    const asyncIterable = <T>(): AsyncIterable<T> => ({
+    const rawHeaders = req.toRequest().headers ?? {};
+    const headers = Object.entries(rawHeaders);
+    return {
+      ...createAsyncIterable(headers),
+      pages: createAsyncIterable(headers),
+    };
+  }
+
+  function createAsyncIterable<T>(headers: any[]): AsyncIterable<T> {
+    return {
       [Symbol.asyncIterator]() {
-        const headers: any[] = Object.entries(req.toRequest().headers ?? {});
+        return createAsyncIterator<T>(headers);
+      },
+    };
+  }
+
+  function createAsyncIterator<T>(headers: any[]): AsyncIterator<T> {
+    return {
+      async next(): Promise<IteratorResult<T>> {
+        const isDone = headers.length === 0;
         return {
-          async next(): Promise<IteratorResult<T>> {
-            const isDone = headers.length === 0 ? true : false;
-            return {
-              value: headers.pop(),
-              done: isDone,
-            };
-          },
+          value: headers.pop(),
+          done: isDone,
         };
       },
-    });
-
-    return {
-      ...asyncIterable(),
-      pages: asyncIterable(),
     };
   }
 
