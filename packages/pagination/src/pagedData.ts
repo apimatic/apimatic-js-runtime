@@ -6,16 +6,18 @@ import { RequestManager } from './requestManager';
 
 export function createPagedData<TItem, TPage, TRequest, TPagedResponse>(
   executor: (req: TRequest) => Promise<ApiResponse<TPage>>,
-  updater: (
-    req: TRequest
-  ) => (pointer: string | null, setter: (value: any) => any) => TRequest,
   createPagedResponse: (
     res: PagedResponse<TItem, TPage> | null
   ) => TPagedResponse,
   extractItems: (res: ApiResponse<TPage>) => TItem[] | undefined,
   ...pagination: PaginationStrategy[]
-): (req: TRequest) => PagedAsyncIterable<TItem, TPagedResponse> {
-  return (req) =>
+): (
+  req: TRequest,
+  updater: (
+    req: TRequest
+  ) => (pointer: string | null, setter: (value: any) => any) => TRequest
+) => PagedAsyncIterable<TItem, TPagedResponse> {
+  return (req, updater) =>
     new PagedData(
       {
         request: req,

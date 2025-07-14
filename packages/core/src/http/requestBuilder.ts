@@ -169,13 +169,12 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     isTemplate: boolean,
     ...args: ErrorCtorArgs
   ): void;
-  updateByJsonPointer(
-    pointer: string | null,
-    updater: (value: any) => any
-  ): RequestBuilder<BaseUrlParamType, AuthParams>;
   paginate<TItem, TPagedResponse>(
     createPagedIterable: (
-      req: this
+      req: this,
+      updater: (
+        req: this
+      ) => (pointer: string | null, setter: (value: any) => any) => this
     ) => PagedAsyncIterable<TItem, TPagedResponse>
   ): PagedAsyncIterable<TItem, TPagedResponse>;
   call(requestOptions?: RequestOptions): Promise<ApiResponse<void>>;
@@ -550,10 +549,22 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     return { ...result, result: mappingResult.result };
   }
-  public updateByJsonPointer(
+  public paginate<TItem, TPagedResponse>(
+    createPagedIterable: (
+      req: this,
+      updater: (
+        req: this
+      ) => (pointer: string | null, setter: (value: any) => any) => this
+    ) => PagedAsyncIterable<TItem, TPagedResponse>
+  ): PagedAsyncIterable<TItem, TPagedResponse> {
+    return createPagedIterable(this, (req) =>
+      req._updateByJsonPointer.bind(req)
+    );
+  }
+  private _updateByJsonPointer(
     pointer: string | null,
     updater: (value: any) => any
-  ): RequestBuilder<BaseUrlParamType, AuthParams> {
+  ): DefaultRequestBuilder<BaseUrlParamType, AuthParams> {
     if (!pointer) {
       return this;
     }
@@ -590,13 +601,6 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     const request = this._clone();
     paramUpdater(request);
     return request;
-  }
-  public paginate<TItem, TPagedResponse>(
-    createPagedIterable: (
-      req: this
-    ) => PagedAsyncIterable<TItem, TPagedResponse>
-  ): PagedAsyncIterable<TItem, TPagedResponse> {
-    return createPagedIterable(this);
   }
   private _clone(): DefaultRequestBuilder<BaseUrlParamType, AuthParams> {
     const cloned = new DefaultRequestBuilder(
