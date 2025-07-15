@@ -1,0 +1,1 @@
+{"version":3,"file":"httpInterceptor.d.ts","sourceRoot":"","sources":["../../src/http/httpInterceptor.ts"],"names":[],"mappings":"AAAA,OAAO,EACL,wBAAwB,EACxB,gBAAgB,EAEjB,MAAM,2BAA2B,CAAC;AACnC;;;;;GAKG;AACH,wBAAgB,oBAAoB,CAAC,CAAC,EACpC,YAAY,EAAE,KAAK,CAAC,wBAAwB,CAAC,CAAC,CAAC,CAAC,EAChD,MAAM,EAAE,gBAAgB,CAAC,CAAC,CAAC,GAC1B,gBAAgB,CAAC,CAAC,CAAC,CAGrB"}

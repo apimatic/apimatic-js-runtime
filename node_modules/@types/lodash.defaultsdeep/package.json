@@ -1,0 +1,32 @@
+{
+    "name": "@types/lodash.defaultsdeep",
+    "version": "4.6.9",
+    "description": "TypeScript definitions for lodash.defaultsdeep",
+    "homepage": "https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/lodash.defaultsdeep",
+    "license": "MIT",
+    "contributors": [
+        {
+            "name": "Brian Zengel",
+            "githubUsername": "bczengel",
+            "url": "https://github.com/bczengel"
+        },
+        {
+            "name": "Ilya Mochalov",
+            "githubUsername": "chrootsu",
+            "url": "https://github.com/chrootsu"
+        }
+    ],
+    "main": "",
+    "types": "index.d.ts",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DefinitelyTyped/DefinitelyTyped.git",
+        "directory": "types/lodash.defaultsdeep"
+    },
+    "scripts": {},
+    "dependencies": {
+        "@types/lodash": "*"
+    },
+    "typesPublisherContentHash": "a9784f920f87688d119fce042c14a93b558db797fc2327bf402886f73617f068",
+    "typeScriptVersion": "4.5"
+}

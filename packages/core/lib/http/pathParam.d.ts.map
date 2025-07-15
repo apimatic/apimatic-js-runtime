@@ -1,0 +1,1 @@
+{"version":3,"file":"pathParam.d.ts","sourceRoot":"","sources":["../../src/http/pathParam.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,iBAAiB,EAAE,MAAM,UAAU,CAAC;AAE7C,qBAAa,SAAS,CAAC,CAAC,SAAS,iBAAiB;IAC7B,KAAK,EAAE,CAAC;IAAS,GAAG,EAAE,MAAM;gBAA5B,KAAK,EAAE,CAAC,EAAS,GAAG,EAAE,MAAM;CAChD"}
