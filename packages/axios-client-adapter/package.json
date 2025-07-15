@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/axios-client-adapter",
   "author": "APIMatic Ltd.",
-  "version": "0.3.10",
+  "version": "0.3.11",
   "license": "MIT",
   "sideEffects": false,
   "main": "lib/index.js",
@@ -59,7 +59,7 @@
   },
   "dependencies": {
     "@apimatic/convert-to-stream": "^0.1.6",
-    "@apimatic/core-interfaces": "^0.2.10",
+    "@apimatic/core-interfaces": "^0.2.11",
     "@apimatic/file-wrapper": "^0.3.6",
     "@apimatic/http-headers": "^0.3.6",
     "@apimatic/http-query": "^0.3.6",

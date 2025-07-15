@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/pagination",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "provides the async utilities for handling paginated API responses.",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -35,7 +35,7 @@
     }
   ],
   "dependencies": {
-    "@apimatic/core-interfaces": "^0.2.9"
+    "@apimatic/core-interfaces": "^0.2.11"
   },
   "publishConfig": {
     "access": "public"
