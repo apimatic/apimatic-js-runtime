@@ -281,7 +281,7 @@ describe('expectMatchingWithOptions', () => {
   });
 
   it('array: should pass when expected is empty', () => {
-    const exp = [];
+    const exp: never[] = [];
     const actl = [1, 2, 3, 4];
     const opts: ExpectOptions = {
       isOrdered: true,
@@ -292,8 +292,8 @@ describe('expectMatchingWithOptions', () => {
   });
 
   it('array: should pass when both expected and actual are empty', () => {
-    const exp = [];
-    const actl = [];
+    const exp: never[] = [];
+    const actl: never[] = [];
     const opts: ExpectOptions = {
       isOrdered: true,
       allowExtra: true,

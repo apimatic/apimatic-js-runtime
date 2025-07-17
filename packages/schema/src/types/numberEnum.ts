@@ -36,6 +36,8 @@ export function numberEnum<T extends string, TEnumValue extends number>(
     type: `Enum<${Object.values(enumVariable)
       .filter((v) => typeof v === 'number')
       .join(',')}>`,
+    // TODO: The correct return type should be TEnumValue | number
+    // when allowForUnknownProps is true but that would be a breaking change.
     map: coerceNumericStringToNumber as (value: TEnumValue) => TEnumValue,
     validate,
   });

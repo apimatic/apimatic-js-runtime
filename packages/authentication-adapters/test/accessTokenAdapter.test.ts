@@ -26,7 +26,7 @@ describe('test access token authentication scheme', () => {
     const authenticationProvider = accessTokenAuthenticationProvider(config);
     const handler = authenticationProvider(true);
     const interceptor = [handler];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
@@ -51,7 +51,7 @@ describe('test access token authentication scheme', () => {
     const authenticationProvider = accessTokenAuthenticationProvider(config);
     const handler = authenticationProvider(false);
     const interceptor = [handler];
-    const client = async (req) => {
+    const client = async (req: HttpRequest) => {
       return { request: req, response };
     };
     const executor = callHttpInterceptors(interceptor, client);
