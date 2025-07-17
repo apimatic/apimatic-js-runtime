@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.3.6](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/http-query@0.3.5...@apimatic/http-query@0.3.6) (2025-07-11)
+
+### Bug Fixes
+
+- **core:** populate error.result for all response types ([#250](https://github.com/apimatic/apimatic-js-runtime/issues/250)) ([6266f34](https://github.com/apimatic/apimatic-js-runtime/commit/6266f34bfb4cbfae2ade0958923aa55c0a81826b))
+
 ### [0.3.5](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/http-query@0.3.4...@apimatic/http-query@0.3.5) (2025-05-15)
 
 **Note:** Version bump only for package @apimatic/http-query

@@ -4,6 +4,7 @@ import {
   HttpContext,
   HttpRequest,
 } from '@apimatic/core-interfaces';
+import { convertFromStream } from '@apimatic/convert-to-stream';
 
 /**
  * Thrown when the HTTP status code is not okay.
@@ -29,21 +30,29 @@ export class ApiError<T = {}>
     this.statusCode = response.statusCode;
     this.headers = response.headers;
     this.body = response.body;
+  }
+}
 
-    if (typeof response.body === 'string' && response.body !== '') {
-      const JSON = JSONBig();
-      try {
-        this.result = JSON.parse(response.body);
-      } catch (error) {
-        if (process.env.NODE_ENV !== 'production') {
-          if (console) {
-            // tslint:disable-next-line:no-console
-            console.warn(
-              `Unexpected error: Could not parse HTTP response body as JSON. ${error.message}`
-            );
-          }
-        }
-      }
+export async function loadResult<T>(error: ApiError<T>): Promise<void> {
+  try {
+    error.result = await parseBody<T>(error.body);
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production' && console) {
+      // tslint:disable-next-line:no-console
+      console.warn(
+        `Unexpected error: Could not parse HTTP response body. ${error.message}`
+      );
     }
   }
+}
+
+async function parseBody<T>(
+  body: string | Blob | NodeJS.ReadableStream
+): Promise<T | undefined> {
+  const jsonString = await convertFromStream(body);
+  if (body === '') {
+    return undefined;
+  }
+  const jsonBig = JSONBig();
+  return jsonBig.parse(jsonString);
 }

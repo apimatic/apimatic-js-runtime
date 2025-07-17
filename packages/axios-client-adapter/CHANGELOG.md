@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.3.11](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.10...@apimatic/axios-client-adapter@0.3.11) (2025-07-15)
+
+**Note:** Version bump only for package @apimatic/axios-client-adapter
+
+### [0.3.10](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.9...@apimatic/axios-client-adapter@0.3.10) (2025-07-11)
+
+### Bug Fixes
+
+- **core:** populate error.result for all response types ([#250](https://github.com/apimatic/apimatic-js-runtime/issues/250)) ([6266f34](https://github.com/apimatic/apimatic-js-runtime/commit/6266f34bfb4cbfae2ade0958923aa55c0a81826b))
+
 ### [0.3.9](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.8...@apimatic/axios-client-adapter@0.3.9) (2025-05-15)
 
 **Note:** Version bump only for package @apimatic/axios-client-adapter

@@ -1,8 +1,12 @@
 import flatMap from 'lodash.flatmap';
+import { PathParam } from './pathParam';
 
 /** Marker for skipping URL-encoding when used with Path templating */
 export class SkipEncode<T extends PathTemplatePrimitiveTypes> {
-  constructor(public value: T) {}
+  public key?: string;
+  constructor(public value: T, key?: string) {
+    this.key = key;
+  }
 }
 
 export type PathTemplatePrimitiveTypes =
@@ -12,12 +16,15 @@ export type PathTemplatePrimitiveTypes =
   | number[]
   | bigint
   | Array<bigint>
+  | boolean
+  | boolean[]
   | unknown;
 
 /** Path template argument type */
 export type PathTemplateTypes =
   | PathTemplatePrimitiveTypes
-  | SkipEncode<PathTemplatePrimitiveTypes>;
+  | SkipEncode<PathTemplatePrimitiveTypes>
+  | PathParam<PathTemplatePrimitiveTypes>;
 
 /**
  * URL path templating method.
@@ -45,28 +52,28 @@ export function pathTemplate(
 function encodePathTemplateSegment(value: PathTemplateTypes) {
   let skipEncode = false;
   const encode = (m: string | number | bigint | unknown) => {
-    let encodeParameter = '';
     if (
       typeof m === 'string' ||
       typeof m === 'number' ||
-      typeof m === 'bigint'
+      typeof m === 'bigint' ||
+      typeof m === 'boolean'
     ) {
-      encodeParameter =
-        skipEncode || typeof m === 'bigint'
-          ? m.toString()
-          : encodeURIComponent(m);
+      return skipEncode || typeof m === 'bigint'
+        ? m.toString()
+        : encodeURIComponent(m);
     }
-    return encodeParameter;
+    return '';
   };
 
   if (value instanceof SkipEncode) {
     value = value.value;
     skipEncode = true;
   }
+  if (value instanceof PathParam) {
+    value = value.value;
+  }
   return Array.isArray(value)
-    ? (value as Array<string | number | bigint | unknown>)
-        .map<string | number | bigint | unknown>(encode)
-        .join('/')
+    ? (value as unknown[]).map<unknown>(encode).join('/')
     : [encode(value)];
 }
 

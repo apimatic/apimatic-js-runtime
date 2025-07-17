@@ -10,11 +10,6 @@
     "@jridgewell/gen-mapping" "^0.3.0"
     "@jridgewell/trace-mapping" "^0.3.9"
 
-"@apimatic/convert-to-stream@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@apimatic/convert-to-stream/-/convert-to-stream-0.0.2.tgz#7d9942071291011c4576de97619d974face8acaa"
-  integrity sha512-1DRg17ItExfMYsXwjt6WIjJSCgV5RGg3fHPLgYD44/YmiU+7suWj7YfPKKUqmNcnJ/AvMh4lG1+tHrfOT01zXw==
-
 "@apimatic/json-bigint@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@apimatic/json-bigint/-/json-bigint-1.2.0.tgz#05223455ec135976fe7a55456c2d21a3bbde56d8"
@@ -5251,11 +5246,6 @@ json-parse-even-better-errors@^2.3.0, json-parse-even-better-errors@^2.3.1:
   version "2.3.1"
   resolved "https://registry.yarnpkg.com/json-parse-even-better-errors/-/json-parse-even-better-errors-2.3.1.tgz#7c47805a94319928e05777405dc12e1f7a4ee02d"
   integrity sha512-xyFwyhro/JEof6Ghe2iz2NcXoj2sloNsWr/XsERDK/oiPCfaNhl5ONfp+jQdAZRQQ0IJWNzH9zIZF7li91kh2w==
-
-json-ptr@^3.1.1:
-  version "3.1.1"
-  resolved "https://registry.yarnpkg.com/json-ptr/-/json-ptr-3.1.1.tgz#184c3d48db659fa9bbc1519f7db6f390ddffb659"
-  integrity sha512-SiSJQ805W1sDUCD1+/t1/1BIrveq2Fe9HJqENxZmMCILmrPI7WhS/pePpIOx85v6/H2z1Vy7AI08GV2TzfXocg==
 
 json-schema-traverse@^1.0.0:
   version "1.0.0"

@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.5.10](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/authentication-adapters@0.5.9...@apimatic/authentication-adapters@0.5.10) (2025-07-15)
+
+**Note:** Version bump only for package @apimatic/authentication-adapters
+
+### [0.5.9](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/authentication-adapters@0.5.8...@apimatic/authentication-adapters@0.5.9) (2025-07-11)
+
+### Bug Fixes
+
+- **core:** populate error.result for all response types ([#250](https://github.com/apimatic/apimatic-js-runtime/issues/250)) ([6266f34](https://github.com/apimatic/apimatic-js-runtime/commit/6266f34bfb4cbfae2ade0958923aa55c0a81826b))
+
 ### [0.5.8](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/authentication-adapters@0.5.7...@apimatic/authentication-adapters@0.5.8) (2025-05-15)
 
 **Note:** Version bump only for package @apimatic/authentication-adapters
