@@ -38,7 +38,7 @@ export class HttpClient {
   private _axiosInstance: AxiosInstance;
   private _timeout: number;
   private _abortErrorFactory: AbortErrorConstructor;
-  private _proxySettings?: ProxySettings;
+  private readonly _proxySettings?: ProxySettings;
 
   constructor(
     abortErrorFactory: AbortErrorConstructor,
@@ -301,10 +301,10 @@ export function isBlob(value: unknown): value is Blob {
   );
 }
 
-interface ProxySettings {
+export interface ProxySettings {
   url: string;
   port: number;
-  auth: {
+  auth?: {
     username: string;
     password: string;
   };

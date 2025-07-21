@@ -245,8 +245,10 @@ describe('HTTP Client', () => {
   const proxySettings = {
     url: 'http://proxy.example.com',
     port: 8080,
-    username: 'user',
-    password: 'pass',
+    auth: {
+      username: 'user',
+      password: 'pass',
+    },
   };
   const httpRequest: HttpRequest = {
     method: 'GET',
@@ -261,9 +263,10 @@ describe('HTTP Client', () => {
   };
   const expectedProxyConfig = {
     protocol: 'http:',
-    auth: 'user:pass',
-    host: 'proxy.example.com',
-    port: 8080,
+    username: 'user',
+    password: 'pass',
+    host: 'proxy.example.com:8080',
+    port: '8080',
   };
 
   it('adds httpAgent to axios request config for http URLs when proxySettings are provided', () => {
