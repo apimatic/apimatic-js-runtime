@@ -2,7 +2,6 @@ import { HttpResponse } from '@apimatic/core-interfaces';
 import { getHeader } from '@apimatic/http-headers';
 import { detect } from 'detect-browser';
 import warning from 'tiny-warning';
-import { JsonPointer } from 'json-ptr';
 
 /**
  * Validates the protocol and removes duplicate forward slashes
@@ -163,9 +162,8 @@ function replaceBodyPlaceholders(
       const [, ...rest] = element?.split('#');
       const nodePointer = rest.join('#')?.slice(0, -1);
       if (nodePointer) {
-        const value = JsonPointer.create(nodePointer).get(parsed);
-        const replaced_value =
-          typeof value !== 'undefined' ? JSON.stringify(value) : '';
+        const value = extractValueFromJsonPointer(parsed, nodePointer);
+        const replaced_value = value !== null ? JSON.stringify(value) : '';
         message = message.replace(element, replaced_value);
       }
     } else {
@@ -173,4 +171,54 @@ function replaceBodyPlaceholders(
     }
   });
   return message;
+}
+
+function extractValueFromJsonPointer(obj: any, pointer: string): any {
+  if (pointer === '') {
+    return obj;
+  }
+
+  const pathParts = pointer.split('/').filter(Boolean);
+
+  let result = obj;
+  for (const key of pathParts) {
+    if (!result || typeof result !== 'object' || !(key in result)) {
+      return null;
+    }
+    result = result[key];
+  }
+  return result;
+}
+
+export function updateByJsonPointer<T>(
+  obj: T,
+  pointer: string,
+  updater: (val: any) => any
+): T {
+  if (pointer === '') {
+    return updater(obj);
+  }
+
+  return updateAtPath(updater, obj, pointer.split('/').filter(Boolean));
+}
+
+function updateAtPath(
+  updater: (val: any) => any,
+  current: any,
+  parts: string[],
+  index: number = 0
+): any {
+  if (!current || typeof current !== 'object') {
+    return current;
+  }
+
+  const key = parts[index];
+  const next = current[key];
+  const cloned = Array.isArray(current) ? [...current] : { ...current };
+  cloned[key] =
+    index === parts.length - 1
+      ? updater(next) // update directly for last part
+      : updateAtPath(updater, next, parts, index + 1); // call recursively
+
+  return cloned;
 }
