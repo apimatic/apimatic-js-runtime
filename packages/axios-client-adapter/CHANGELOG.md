@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.3.11](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.10...@apimatic/axios-client-adapter@0.3.11) (2025-07-15)
+
+**Note:** Version bump only for package @apimatic/axios-client-adapter
+
 ### [0.3.10](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.9...@apimatic/axios-client-adapter@0.3.10) (2025-07-11)
 
 ### Bug Fixes
