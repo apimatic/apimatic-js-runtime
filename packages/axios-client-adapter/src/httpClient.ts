@@ -198,7 +198,9 @@ export class HttpClient {
     const reqUrl = new URL(targetUrl);
     const proxyUrl = new URL(url);
 
-    proxyUrl.port = port.toString();
+    if (port) {
+      proxyUrl.port = port.toString();
+    }
 
     if (auth) {
       proxyUrl.username = auth.username;
@@ -267,14 +269,7 @@ export interface HttpClientOptions {
   /** Custom https agent to be used when performing https requests. */
   httpsAgent?: any;
   /** Proxy settings to be used when performing http/https requests. */
-  proxySettings?: {
-    url: string;
-    port: number;
-    auth?: {
-      username: string;
-      password: string;
-    };
-  };
+  proxySettings?: ProxySettings;
   /** Configurations to retry requests */
   retryConfig: Partial<RetryConfiguration>;
 }
@@ -303,7 +298,7 @@ export function isBlob(value: unknown): value is Blob {
 
 export interface ProxySettings {
   url: string;
-  port: number;
+  port?: number;
   auth?: {
     username: string;
     password: string;
