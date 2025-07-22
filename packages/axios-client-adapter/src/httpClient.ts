@@ -20,6 +20,8 @@ import {
 } from '@apimatic/core-interfaces';
 import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
 import { isFileWrapper } from '@apimatic/file-wrapper';
+import { HttpProxyAgent } from 'http-proxy-agent';
+import { HttpsProxyAgent } from 'https-proxy-agent';
 
 export const DEFAULT_AXIOS_CONFIG_OVERRIDES: AxiosRequestConfig = {
   transformResponse: [],
@@ -36,6 +38,7 @@ export class HttpClient {
   private _axiosInstance: AxiosInstance;
   private _timeout: number;
   private _abortErrorFactory: AbortErrorConstructor;
+  private readonly _proxySettings?: ProxySettings;
 
   constructor(
     abortErrorFactory: AbortErrorConstructor,
@@ -44,18 +47,22 @@ export class HttpClient {
       timeout = DEFAULT_TIMEOUT,
       httpAgent,
       httpsAgent,
+      proxySettings,
     }: {
       clientConfigOverrides?: AxiosRequestConfig;
       timeout?: number;
       httpAgent?: any;
       httpsAgent?: any;
+      proxySettings?: ProxySettings;
     } = {}
   ) {
+    this._proxySettings = proxySettings;
     this._timeout = timeout;
     this._axiosInstance = axios.create({
       ...DEFAULT_AXIOS_CONFIG_OVERRIDES,
       ...clientConfigOverrides,
       ...{ httpAgent, httpsAgent },
+      proxy: false,
     });
     this._abortErrorFactory = abortErrorFactory;
   }
@@ -177,6 +184,37 @@ export class HttpClient {
   }
 
   /**
+   * Configures proxy agents for the axios request based on the URL protocol.
+   */
+  public configureProxyAgent(
+    axiosRequest: AxiosRequestConfig,
+    targetUrl: string
+  ): void {
+    if (!this._proxySettings) {
+      return;
+    }
+
+    const { url, port, auth } = this._proxySettings;
+    const reqUrl = new URL(targetUrl);
+    const proxyUrl = new URL(url);
+
+    if (port) {
+      proxyUrl.port = port.toString();
+    }
+
+    if (auth) {
+      proxyUrl.username = auth.username;
+      proxyUrl.password = auth.password;
+    }
+
+    if (reqUrl.protocol === 'https:') {
+      axiosRequest.httpsAgent = new HttpsProxyAgent(proxyUrl.toString());
+    } else if (reqUrl.protocol === 'http:') {
+      axiosRequest.httpAgent = new HttpProxyAgent(proxyUrl.toString());
+    }
+  }
+
+  /**
    * Executes the HttpRequest with the given options and returns the HttpResponse
    * or throws an error.
    */
@@ -185,6 +223,10 @@ export class HttpClient {
     requestOptions?: { abortSignal?: AbortSignal }
   ): Promise<HttpResponse> {
     const axiosRequest = this.convertHttpRequest(request);
+
+    if (axiosRequest.url) {
+      this.configureProxyAgent(axiosRequest, axiosRequest.url);
+    }
 
     if (requestOptions?.abortSignal) {
       // throw if already aborted; do not place HTTP call
@@ -226,6 +268,8 @@ export interface HttpClientOptions {
   httpAgent?: any;
   /** Custom https agent to be used when performing https requests. */
   httpsAgent?: any;
+  /** Proxy settings to be used when performing http/https requests. */
+  proxySettings?: ProxySettings;
   /** Configurations to retry requests */
   retryConfig: Partial<RetryConfiguration>;
 }
@@ -250,4 +294,13 @@ export function isBlob(value: unknown): value is Blob {
     value instanceof Blob ||
     Object.prototype.toString.call(value) === '[object Blob]'
   );
+}
+
+export interface ProxySettings {
+  url: string;
+  port?: number;
+  auth?: {
+    username: string;
+    password: string;
+  };
 }
