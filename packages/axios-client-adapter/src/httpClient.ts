@@ -5,8 +5,8 @@ import {
   AxiosResponse,
   AxiosResponseHeaders,
   RawAxiosResponseHeaders,
+  default as axios,
 } from 'axios';
-import axios from 'axios';
 import isNode from 'detect-node';
 import FormData from 'form-data';
 import {
@@ -20,6 +20,7 @@ import {
 } from '@apimatic/core-interfaces';
 import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
 import { isFileWrapper } from '@apimatic/file-wrapper';
+import { configureProxyAgent } from './proxyAgent';
 
 export const DEFAULT_AXIOS_CONFIG_OVERRIDES: AxiosRequestConfig = {
   transformResponse: [],
@@ -36,6 +37,7 @@ export class HttpClient {
   private _axiosInstance: AxiosInstance;
   private _timeout: number;
   private _abortErrorFactory: AbortErrorConstructor;
+  private readonly _proxySettings?: ProxySettings;
 
   constructor(
     abortErrorFactory: AbortErrorConstructor,
@@ -44,18 +46,22 @@ export class HttpClient {
       timeout = DEFAULT_TIMEOUT,
       httpAgent,
       httpsAgent,
+      proxySettings,
     }: {
       clientConfigOverrides?: AxiosRequestConfig;
       timeout?: number;
       httpAgent?: any;
       httpsAgent?: any;
+      proxySettings?: ProxySettings;
     } = {}
   ) {
+    this._proxySettings = proxySettings;
     this._timeout = timeout;
     this._axiosInstance = axios.create({
       ...DEFAULT_AXIOS_CONFIG_OVERRIDES,
       ...clientConfigOverrides,
       ...{ httpAgent, httpsAgent },
+      proxy: false,
     });
     this._abortErrorFactory = abortErrorFactory;
   }
@@ -74,7 +80,6 @@ export class HttpClient {
     });
 
     if (req.auth) {
-      // Set basic auth credentials if provided
       newRequest.auth = {
         username: req.auth.username,
         password: req.auth.password || '',
@@ -88,13 +93,11 @@ export class HttpClient {
       requestBody?.type === 'form-data' &&
       requestBody.content.some((item) => isFileWrapper(item.value))
     ) {
-      // Create multipart request if a file is present
       const form = new FormData();
       for (const iter of requestBody.content) {
         if (isFileWrapper(iter.value)) {
           let fileData = iter.value.file;
 
-          // Make sure Blob has the correct content type if provided
           if (isBlob(fileData) && iter.value.options?.contentType) {
             fileData = new Blob([fileData], {
               type: iter.value.options.contentType,
@@ -113,17 +116,13 @@ export class HttpClient {
       requestBody?.type === 'form-data' ||
       requestBody?.type === 'form'
     ) {
-      // Create form-urlencoded request
       headers = headers.set(CONTENT_TYPE_HEADER, FORM_URLENCODED_CONTENT_TYPE);
-
       newRequest.data = urlEncodeKeyValuePairs(requestBody.content);
     } else if (requestBody?.type === 'stream') {
       let contentType = 'application/octet-stream';
       if (isBlob(requestBody.content.file) && requestBody.content.file.type) {
-        // Set Blob mime type as the content-type header if present
         contentType = requestBody.content.file.type;
       } else if (requestBody.content.options?.contentType) {
-        // Otherwise, use the content type if available.
         contentType = requestBody.content.options.contentType;
       }
       headers = headers.set(CONTENT_TYPE_HEADER, contentType, false);
@@ -134,13 +133,8 @@ export class HttpClient {
       newRequest.responseType = isNode ? 'stream' : 'blob';
     }
 
-    // Prevent superagent from converting any status code to error
     newRequest.validateStatus = () => true;
-
-    // Set 30 seconds timeout
     newRequest.timeout = this._timeout;
-
-    // set headers
     newRequest.headers = headers;
 
     return newRequest;
@@ -162,13 +156,9 @@ export class HttpClient {
   ): Record<string, string> {
     const httpResponseHeaders: Record<string, string> = {};
 
-    // Iterate through each property of AxiosResponseHeaders
     for (const key in axiosHeaders) {
-      // Check if the property is not a function (AxiosHeaders may have methods)
       if (typeof axiosHeaders[key] !== 'function') {
-        // Convert property key to lowercase as HTTP headers are case-insensitive
         const lowercaseKey = key.toLowerCase();
-        // Assign the value to HttpResponse headers
         httpResponseHeaders[lowercaseKey] = String(axiosHeaders[key]);
       }
     }
@@ -186,8 +176,11 @@ export class HttpClient {
   ): Promise<HttpResponse> {
     const axiosRequest = this.convertHttpRequest(request);
 
+    if (axiosRequest.url && this._proxySettings) {
+      configureProxyAgent(axiosRequest, axiosRequest.url, this._proxySettings);
+    }
+
     if (requestOptions?.abortSignal) {
-      // throw if already aborted; do not place HTTP call
       if (requestOptions.abortSignal.aborted) {
         throw this.abortError();
       }
@@ -195,7 +188,6 @@ export class HttpClient {
       const cancelToken = axios.CancelToken.source();
       axiosRequest.cancelToken = cancelToken.token;
 
-      // attach abort event handler
       requestOptions.abortSignal.addEventListener('abort', () => {
         cancelToken.cancel();
       });
@@ -204,7 +196,6 @@ export class HttpClient {
     try {
       return this.convertHttpResponse(await this._axiosInstance(axiosRequest));
     } catch (error) {
-      // abort error should be thrown as the AbortError
       if (axios.isCancel(error)) {
         throw this.abortError();
       }
@@ -226,6 +217,7 @@ export interface HttpClientOptions {
   httpAgent?: any;
   /** Custom https agent to be used when performing https requests. */
   httpsAgent?: any;
+  proxySettings: ProxySettings;
   /** Configurations to retry requests */
   retryConfig: Partial<RetryConfiguration>;
 }
@@ -234,12 +226,6 @@ export type AbortErrorConstructor = new (message?: string) => any;
 
 /**
  * Check whether value is an instance of Blob
- *
- * @remark
- * Reference: https://github.com/sindresorhus/is-blob/blob/master/index.js
- *
- * @param value Value to check
- * @returns True if the value is a Blob instance
  */
 export function isBlob(value: unknown): value is Blob {
   if (typeof Blob === 'undefined') {
@@ -250,4 +236,13 @@ export function isBlob(value: unknown): value is Blob {
     value instanceof Blob ||
     Object.prototype.toString.call(value) === '[object Blob]'
   );
+}
+
+export interface ProxySettings {
+  address: string;
+  port?: number;
+  auth?: {
+    username: string;
+    password: string;
+  };
 }
