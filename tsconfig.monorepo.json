@@ -36,6 +36,9 @@
     },
     {
       "path": "./packages/test-utilities"
+    },
+    {
+      "path": "./packages/pagination"
     }
   ]
 }

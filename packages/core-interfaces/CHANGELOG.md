@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.2.11](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.10...@apimatic/core-interfaces@0.2.11) (2025-07-15)
+
+### Features
+
+- add pagination support ([#244](https://github.com/apimatic/apimatic-js-runtime/issues/244)) ([cd43985](https://github.com/apimatic/apimatic-js-runtime/commit/cd43985de5b552a6f6d5ecc64b28b54170607cc6))
+
+### [0.2.10](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.9...@apimatic/core-interfaces@0.2.10) (2025-07-11)
+
+### Bug Fixes
+
+- **core:** populate error.result for all response types ([#250](https://github.com/apimatic/apimatic-js-runtime/issues/250)) ([6266f34](https://github.com/apimatic/apimatic-js-runtime/commit/6266f34bfb4cbfae2ade0958923aa55c0a81826b))
+
 ### [0.2.9](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.8...@apimatic/core-interfaces@0.2.9) (2025-05-15)
 
 **Note:** Version bump only for package @apimatic/core-interfaces
