@@ -1,2 +1,2 @@
-export * from './proxyAgent';
-export * from './proxySettings';
+export { configureProxyAgent } from './proxyAgent';
+export { ProxySettings } from './proxySettings';
