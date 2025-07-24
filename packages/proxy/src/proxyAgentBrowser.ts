@@ -1,7 +1,6 @@
-import { ProxySettings } from './proxySettings';
-import { ProxyAgents } from './proxyAgent';
+import { ProxyAgents, ProxySettings } from '.';
 
-export function configureProxyAgent(
+export function createProxyAgents(
   _proxySettings: ProxySettings
 ): ProxyAgents | undefined {
   // tslint:disable-next-line:no-console

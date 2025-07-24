@@ -1,4 +1,4 @@
-import { configureProxyAgent } from '../src/proxyAgentBrowser';
+import { createProxyAgents } from '../src/proxyAgentBrowser';
 
 describe('configureProxyAgent', () => {
   it('should return undefined', () => {
@@ -12,7 +12,7 @@ describe('configureProxyAgent', () => {
         password: 'pass',
       },
     };
-    const proxyAgents = configureProxyAgent(proxySettings);
+    const proxyAgents = createProxyAgents(proxySettings);
     expect(proxyAgents).toBeUndefined();
     expect(consoleSpy).toHaveBeenCalledWith(
       'Proxy agents are not supported in browser environment'

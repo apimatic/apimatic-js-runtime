@@ -1,8 +1,8 @@
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { ProxySettings } from './proxySettings';
+import { ProxyAgents, ProxySettings } from '.';
 
-export function configureProxyAgent(
+export function createProxyAgents(
   proxySettings: ProxySettings
 ): ProxyAgents | undefined {
   const { address, port, auth } = proxySettings;
@@ -21,9 +21,4 @@ export function configureProxyAgent(
     httpAgent: new HttpProxyAgent(proxyUrl.toString()),
     httpsAgent: new HttpsProxyAgent(proxyUrl.toString()),
   };
-}
-
-export interface ProxyAgents {
-  httpAgent: any;
-  httpsAgent: any;
 }

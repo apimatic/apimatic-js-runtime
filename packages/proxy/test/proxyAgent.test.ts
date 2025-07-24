@@ -1,8 +1,8 @@
 import { HttpProxyAgent } from 'http-proxy-agent';
 import { HttpsProxyAgent } from 'https-proxy-agent';
-import { configureProxyAgent } from '../src';
+import { createProxyAgents } from '../src';
 
-describe('configureProxyAgent', () => {
+describe('createProxyAgents', () => {
   it('should return proxyAgents when proxySettings are provided', () => {
     const proxySettings = {
       address: 'http://proxy.example.com',
@@ -19,7 +19,7 @@ describe('configureProxyAgent', () => {
       host: 'proxy.example.com:8080',
       port: '8080',
     };
-    const proxyAgents = configureProxyAgent(proxySettings);
+    const proxyAgents = createProxyAgents(proxySettings);
     expect(proxyAgents?.httpAgent).toBeInstanceOf(HttpProxyAgent);
     expect(proxyAgents?.httpsAgent).toBeInstanceOf(HttpsProxyAgent);
     expect(proxyAgents?.httpsAgent.proxy).toMatchObject(expectedProxyConfig);
@@ -36,7 +36,7 @@ describe('configureProxyAgent', () => {
       },
     };
 
-    const proxyAgents = configureProxyAgent(httpsProxySettings);
+    const proxyAgents = createProxyAgents(httpsProxySettings);
     expect(proxyAgents?.httpAgent.proxy.protocol).toBe('https:');
     expect(proxyAgents?.httpsAgent.proxy.protocol).toBe('https:');
   });
@@ -50,7 +50,7 @@ describe('configureProxyAgent', () => {
       },
     };
 
-    const proxyAgents = configureProxyAgent(noPortSettings);
+    const proxyAgents = createProxyAgents(noPortSettings);
     expect(proxyAgents?.httpAgent).toBeInstanceOf(HttpProxyAgent);
     expect(proxyAgents?.httpsAgent).toBeInstanceOf(HttpsProxyAgent);
     expect(proxyAgents?.httpAgent.proxy.host).toBe('proxy.example.com');
@@ -62,7 +62,7 @@ describe('configureProxyAgent', () => {
       port: 8080,
     };
 
-    const proxyAgents = configureProxyAgent(noAuthSettings);
+    const proxyAgents = createProxyAgents(noAuthSettings);
 
     expect(proxyAgents?.httpAgent).toBeInstanceOf(HttpProxyAgent);
     expect(proxyAgents?.httpsAgent).toBeInstanceOf(HttpsProxyAgent);
@@ -75,7 +75,7 @@ describe('configureProxyAgent', () => {
       address: 'http://proxy.example.com',
     };
 
-    const proxyAgents = configureProxyAgent(minimalSettings);
+    const proxyAgents = createProxyAgents(minimalSettings);
 
     expect(proxyAgents?.httpAgent).toBeInstanceOf(HttpProxyAgent);
     expect(proxyAgents?.httpsAgent).toBeInstanceOf(HttpsProxyAgent);
