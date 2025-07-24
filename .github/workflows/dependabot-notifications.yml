@@ -13,7 +13,6 @@ jobs:
     steps:
       - name: Get PR Information
         if: github.actor == 'dependabot[bot]'
-        id: get-pr-info
         uses: actions/github-script@v6
         with:
           script: |
