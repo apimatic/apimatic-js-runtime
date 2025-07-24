@@ -20,7 +20,7 @@ import {
 } from '@apimatic/core-interfaces';
 import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
 import { isFileWrapper } from '@apimatic/file-wrapper';
-import { configureProxyAgent } from './proxyAgent';
+import { configureProxyAgent, ProxySettings } from '@apimatic/proxy';
 
 export const DEFAULT_AXIOS_CONFIG_OVERRIDES: AxiosRequestConfig = {
   transformResponse: [],
@@ -177,7 +177,15 @@ export class HttpClient {
     const axiosRequest = this.convertHttpRequest(request);
 
     if (axiosRequest.url && this._proxySettings) {
-      configureProxyAgent(axiosRequest, axiosRequest.url, this._proxySettings);
+      const proxyAgents = configureProxyAgent(this._proxySettings);
+      const reqUrl = new URL(axiosRequest.url);
+      if (proxyAgents !== undefined) {
+        if (reqUrl.protocol === 'https:') {
+          axiosRequest.httpsAgent = proxyAgents.httpsAgent;
+        } else if (reqUrl.protocol === 'http:') {
+          axiosRequest.httpAgent = proxyAgents.httpAgent;
+        }
+      }
     }
 
     if (requestOptions?.abortSignal) {
@@ -236,13 +244,4 @@ export function isBlob(value: unknown): value is Blob {
     value instanceof Blob ||
     Object.prototype.toString.call(value) === '[object Blob]'
   );
-}
-
-export interface ProxySettings {
-  address: string;
-  port?: number;
-  auth?: {
-    username: string;
-    password: string;
-  };
 }
