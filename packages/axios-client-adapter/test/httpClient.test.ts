@@ -16,9 +16,19 @@ import {
 import { FileWrapper } from '@apimatic/file-wrapper';
 import FormData from 'form-data';
 import fs from 'fs';
-import { AbortError } from './abortError';
-// import { HttpProxyAgent } from 'http-proxy-agent';
-// import { HttpsProxyAgent } from 'https-proxy-agent';
+
+/**
+ * Thrown when the API call is aborted by the caller.
+ *
+ * Note that when an AbortError is thrown, it is not a guarantee that the API call
+ * did not go through.
+ */
+class AbortError extends Error {
+  constructor(message?: string) {
+    super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
 
 describe('HTTP Client', () => {
   it('converts request with http text body and http get method', () => {
@@ -274,7 +284,6 @@ describe('HTTP Client', () => {
     httpRequest.url = 'http://apimatic.hopto.org:3000/test/requestBuilder';
     const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
     httpClient.setProxyAgent(axiosRequestConfig);
-    // expect(axiosRequestConfig.httpAgent).toBeInstanceOf(HttpProxyAgent);
     expect(axiosRequestConfig.httpAgent.proxy).toMatchObject(
       expectedProxyConfig
     );
@@ -285,7 +294,6 @@ describe('HTTP Client', () => {
     httpRequest.url = 'https://apimatic.hopto.org:3000/test/requestBuilder';
     const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
     httpClient.setProxyAgent(axiosRequestConfig);
-    // expect(axiosRequestConfig.httpsAgent).toBeInstanceOf(HttpsProxyAgent);
     expect(axiosRequestConfig.httpsAgent.proxy).toMatchObject(
       expectedProxyConfig
     );

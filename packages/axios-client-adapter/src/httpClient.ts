@@ -20,7 +20,7 @@ import {
 } from '@apimatic/core-interfaces';
 import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
 import { isFileWrapper } from '@apimatic/file-wrapper';
-import { configureProxyAgent, ProxySettings } from '@apimatic/proxy';
+import { createProxyAgents, ProxySettings } from '@apimatic/proxy';
 
 export const DEFAULT_AXIOS_CONFIG_OVERRIDES: AxiosRequestConfig = {
   transformResponse: [],
@@ -61,7 +61,6 @@ export class HttpClient {
       ...DEFAULT_AXIOS_CONFIG_OVERRIDES,
       ...clientConfigOverrides,
       ...{ httpAgent, httpsAgent },
-      proxy: false,
     });
     this._abortErrorFactory = abortErrorFactory;
   }
@@ -192,6 +191,8 @@ export class HttpClient {
   ): Promise<HttpResponse> {
     const axiosRequest = this.convertHttpRequest(request);
 
+    this.setProxyAgent(axiosRequest);
+
     if (requestOptions?.abortSignal) {
       // throw if already aborted; do not place HTTP call
       if (requestOptions.abortSignal.aborted) {
@@ -223,7 +224,7 @@ export class HttpClient {
     if (!this._proxySettings || !axiosRequest.url) {
       return;
     }
-    const proxyAgents = configureProxyAgent(this._proxySettings);
+    const proxyAgents = createProxyAgents(this._proxySettings);
 
     const protocol = new URL(axiosRequest.url).protocol;
 
@@ -247,6 +248,7 @@ export interface HttpClientOptions {
   httpAgent?: any;
   /** Custom https agent to be used when performing https requests. */
   httpsAgent?: any;
+  /** Proxy configuration to route requests through a proxy server. */
   proxySettings?: ProxySettings;
   /** Configurations to retry requests */
   retryConfig: Partial<RetryConfiguration>;
