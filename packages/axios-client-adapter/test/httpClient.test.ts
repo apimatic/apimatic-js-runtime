@@ -17,6 +17,8 @@ import { FileWrapper } from '@apimatic/file-wrapper';
 import FormData from 'form-data';
 import fs from 'fs';
 import { AbortError } from './abortError';
+// import { HttpProxyAgent } from 'http-proxy-agent';
+// import { HttpsProxyAgent } from 'https-proxy-agent';
 
 describe('HTTP Client', () => {
   it('converts request with http text body and http get method', () => {
@@ -238,6 +240,71 @@ describe('HTTP Client', () => {
 
     const httpResponse = httpClient.convertHttpResponse(response);
     expect(httpResponse).toMatchObject(expectedHttpResponse);
+  });
+
+  const proxySettings = {
+    address: 'http://proxy.example.com',
+    port: 8080,
+    auth: {
+      username: 'user',
+      password: 'pass',
+    },
+  };
+  const httpRequest: HttpRequest = {
+    method: 'GET',
+    headers: { 'test-header': 'test-value' },
+    body: {
+      content: 'testBody',
+      type: 'text',
+    },
+    url: '',
+    responseType: 'text',
+    auth: { username: 'test-username', password: 'test-password' },
+  };
+  const expectedProxyConfig = {
+    protocol: 'http:',
+    username: 'user',
+    password: 'pass',
+    host: 'proxy.example.com:8080',
+    port: '8080',
+  };
+
+  it('adds httpAgent to axios request config for http URLs when proxySettings are provided', () => {
+    const httpClient = new HttpClient(AbortError, { proxySettings });
+    httpRequest.url = 'http://apimatic.hopto.org:3000/test/requestBuilder';
+    const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
+    httpClient.setProxyAgent(axiosRequestConfig);
+    // expect(axiosRequestConfig.httpAgent).toBeInstanceOf(HttpProxyAgent);
+    expect(axiosRequestConfig.httpAgent.proxy).toMatchObject(
+      expectedProxyConfig
+    );
+  });
+
+  it('adds httpsAgent to axios request config for https URLs when proxySettings are provided', () => {
+    const httpClient = new HttpClient(AbortError, { proxySettings });
+    httpRequest.url = 'https://apimatic.hopto.org:3000/test/requestBuilder';
+    const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
+    httpClient.setProxyAgent(axiosRequestConfig);
+    // expect(axiosRequestConfig.httpsAgent).toBeInstanceOf(HttpsProxyAgent);
+    expect(axiosRequestConfig.httpsAgent.proxy).toMatchObject(
+      expectedProxyConfig
+    );
+  });
+
+  it('httpsAgent should be undefined when proxySettings are not provided', () => {
+    const httpClient = new HttpClient(AbortError);
+    httpRequest.url = 'https://apimatic.hopto.org:3000/test/requestBuilder';
+    const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
+    httpClient.setProxyAgent(axiosRequestConfig);
+    expect(axiosRequestConfig.httpsAgent).toBeUndefined();
+  });
+
+  it('httpsAgent and httpAgent should be undefined when requestUrl is not set', () => {
+    const httpClient = new HttpClient(AbortError);
+    const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
+    httpClient.setProxyAgent(axiosRequestConfig);
+    expect(axiosRequestConfig.httpsAgent).toBeUndefined();
+    expect(axiosRequestConfig.httpAgent).toBeUndefined();
   });
 });
 

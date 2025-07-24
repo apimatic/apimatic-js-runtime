@@ -176,17 +176,7 @@ export class HttpClient {
   ): Promise<HttpResponse> {
     const axiosRequest = this.convertHttpRequest(request);
 
-    if (axiosRequest.url && this._proxySettings) {
-      const proxyAgents = configureProxyAgent(this._proxySettings);
-      const reqUrl = new URL(axiosRequest.url);
-      if (proxyAgents !== undefined) {
-        if (reqUrl.protocol === 'https:') {
-          axiosRequest.httpsAgent = proxyAgents.httpsAgent;
-        } else if (reqUrl.protocol === 'http:') {
-          axiosRequest.httpAgent = proxyAgents.httpAgent;
-        }
-      }
-    }
+    this.setProxyAgent(axiosRequest);
 
     if (requestOptions?.abortSignal) {
       if (requestOptions.abortSignal.aborted) {
@@ -209,6 +199,21 @@ export class HttpClient {
       }
 
       throw error;
+    }
+  }
+
+  public setProxyAgent(axiosRequest: AxiosRequestConfig): void {
+    if (!this._proxySettings || !axiosRequest.url) {
+      return;
+    }
+    const proxyAgents = configureProxyAgent(this._proxySettings);
+
+    const protocol = new URL(axiosRequest.url).protocol;
+
+    if (protocol === 'https:') {
+      axiosRequest.httpsAgent = proxyAgents?.httpsAgent;
+    } else if (protocol === 'http:') {
+      axiosRequest.httpAgent = proxyAgents?.httpAgent;
     }
   }
 
