@@ -5,8 +5,8 @@ import {
   AxiosResponse,
   AxiosResponseHeaders,
   RawAxiosResponseHeaders,
-  default as axios,
 } from 'axios';
+import axios from 'axios';
 import isNode from 'detect-node';
 import FormData from 'form-data';
 import {
