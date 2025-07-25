@@ -1,4 +1,4 @@
-name: PR Check
+name: SonarQube Scan
 on:
   push:
     branches: [master]
