@@ -283,7 +283,6 @@ describe('HTTP Client', () => {
     const httpClient = new HttpClient(AbortError, { proxySettings });
     httpRequest.url = 'http://apimatic.hopto.org:3000/test/requestBuilder';
     const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
-    httpClient.setProxyAgent(axiosRequestConfig);
     expect(axiosRequestConfig.httpAgent.proxy).toMatchObject(
       expectedProxyConfig
     );
@@ -293,7 +292,6 @@ describe('HTTP Client', () => {
     const httpClient = new HttpClient(AbortError, { proxySettings });
     httpRequest.url = 'https://apimatic.hopto.org:3000/test/requestBuilder';
     const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
-    httpClient.setProxyAgent(axiosRequestConfig);
     expect(axiosRequestConfig.httpsAgent.proxy).toMatchObject(
       expectedProxyConfig
     );
@@ -303,14 +301,12 @@ describe('HTTP Client', () => {
     const httpClient = new HttpClient(AbortError);
     httpRequest.url = 'https://apimatic.hopto.org:3000/test/requestBuilder';
     const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
-    httpClient.setProxyAgent(axiosRequestConfig);
     expect(axiosRequestConfig.httpsAgent).toBeUndefined();
   });
 
   it('httpsAgent and httpAgent should be undefined when requestUrl is not set', () => {
     const httpClient = new HttpClient(AbortError);
     const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
-    httpClient.setProxyAgent(axiosRequestConfig);
     expect(axiosRequestConfig.httpsAgent).toBeUndefined();
     expect(axiosRequestConfig.httpAgent).toBeUndefined();
   });

@@ -148,6 +148,8 @@ export class HttpClient {
     // set headers
     newRequest.headers = headers;
 
+    this.setProxyAgent(newRequest);
+
     return newRequest;
   }
 
@@ -191,8 +193,6 @@ export class HttpClient {
   ): Promise<HttpResponse> {
     const axiosRequest = this.convertHttpRequest(request);
 
-    this.setProxyAgent(axiosRequest);
-
     if (requestOptions?.abortSignal) {
       // throw if already aborted; do not place HTTP call
       if (requestOptions.abortSignal.aborted) {
@@ -220,7 +220,7 @@ export class HttpClient {
     }
   }
 
-  public setProxyAgent(axiosRequest: AxiosRequestConfig): void {
+  private setProxyAgent(axiosRequest: AxiosRequestConfig): void {
     if (!this._proxySettings || !axiosRequest.url) {
       return;
     }
