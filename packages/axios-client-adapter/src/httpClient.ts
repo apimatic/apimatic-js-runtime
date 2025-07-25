@@ -20,6 +20,8 @@ import {
 } from '@apimatic/core-interfaces';
 import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
 import { isFileWrapper } from '@apimatic/file-wrapper';
+import { createProxyAgents } from '@apimatic/proxy';
+import { ProxySettings } from '.';
 
 export const DEFAULT_AXIOS_CONFIG_OVERRIDES: AxiosRequestConfig = {
   transformResponse: [],
@@ -36,6 +38,7 @@ export class HttpClient {
   private _axiosInstance: AxiosInstance;
   private _timeout: number;
   private _abortErrorFactory: AbortErrorConstructor;
+  private readonly _proxySettings?: ProxySettings;
 
   constructor(
     abortErrorFactory: AbortErrorConstructor,
@@ -44,13 +47,16 @@ export class HttpClient {
       timeout = DEFAULT_TIMEOUT,
       httpAgent,
       httpsAgent,
+      proxySettings,
     }: {
       clientConfigOverrides?: AxiosRequestConfig;
       timeout?: number;
       httpAgent?: any;
       httpsAgent?: any;
+      proxySettings?: ProxySettings;
     } = {}
   ) {
+    this._proxySettings = proxySettings;
     this._timeout = timeout;
     this._axiosInstance = axios.create({
       ...DEFAULT_AXIOS_CONFIG_OVERRIDES,
@@ -143,6 +149,8 @@ export class HttpClient {
     // set headers
     newRequest.headers = headers;
 
+    this.setProxyAgent(newRequest);
+
     return newRequest;
   }
 
@@ -213,6 +221,21 @@ export class HttpClient {
     }
   }
 
+  private setProxyAgent(axiosRequest: AxiosRequestConfig): void {
+    if (!this._proxySettings || !axiosRequest.url) {
+      return;
+    }
+    const proxyAgents = createProxyAgents(this._proxySettings);
+
+    const protocol = new URL(axiosRequest.url).protocol;
+
+    if (protocol === 'https:') {
+      axiosRequest.httpsAgent = proxyAgents?.httpsAgent;
+    } else if (protocol === 'http:') {
+      axiosRequest.httpAgent = proxyAgents?.httpAgent;
+    }
+  }
+
   private abortError() {
     return new this._abortErrorFactory('The HTTP call was aborted.');
   }
@@ -226,6 +249,8 @@ export interface HttpClientOptions {
   httpAgent?: any;
   /** Custom https agent to be used when performing https requests. */
   httpsAgent?: any;
+  /** Proxy configuration to route requests through a proxy server. */
+  proxySettings?: ProxySettings;
   /** Configurations to retry requests */
   retryConfig: Partial<RetryConfiguration>;
 }
