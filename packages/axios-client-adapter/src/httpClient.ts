@@ -20,7 +20,8 @@ import {
 } from '@apimatic/core-interfaces';
 import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
 import { isFileWrapper } from '@apimatic/file-wrapper';
-import { createProxyAgents, ProxySettings } from '@apimatic/proxy';
+import { createProxyAgents } from '@apimatic/proxy';
+import { ProxySettings } from '.';
 
 export const DEFAULT_AXIOS_CONFIG_OVERRIDES: AxiosRequestConfig = {
   transformResponse: [],
