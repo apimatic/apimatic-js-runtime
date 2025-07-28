@@ -64,6 +64,7 @@
     "@apimatic/http-headers": "^0.3.6",
     "@apimatic/http-query": "^0.3.6",
     "@apimatic/json-bigint": "^1.2.0",
+    "@apimatic/proxy": "^0.1.0",
     "@apimatic/schema": "^0.7.17",
     "axios": "^1.8.4",
     "detect-browser": "^5.3.0",
