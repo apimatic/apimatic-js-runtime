@@ -111,7 +111,7 @@ describe('ApiError Class', () => {
         expectedResult: unknown,
         node_env?: string,
         errorMessage?: string,
-        isBodyComsumed?: boolean
+        isBodyConsumed?: boolean
       ) => {
         process.env.NODE_ENV = node_env;
         const response = {
@@ -126,7 +126,7 @@ describe('ApiError Class', () => {
 
         await loadResult(apiError);
 
-        expect(await isConsumed(apiError.body)).toBe(isBodyComsumed);
+        expect(await isConsumed(apiError.body)).toBe(isBodyConsumed);
         expect(apiError.result).toEqual(expectedResult);
         if (errorMessage) {
           expect(deprecationSpy).toHaveBeenCalledWith(errorMessage);
