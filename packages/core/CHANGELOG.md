@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.22](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.21...@apimatic/core@0.10.22) (2025-07-30)
+
+### Bug Fixes
+
+- api error stream body parsing to reset it afterwards ([#258](https://github.com/apimatic/apimatic-js-runtime/issues/258)) ([260c83d](https://github.com/apimatic/apimatic-js-runtime/commit/260c83d21fb77fb7e17c90268b6171f378cbb5a0))
+
 ### [0.10.21](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.20...@apimatic/core@0.10.21) (2025-07-15)
 
 ### Features
