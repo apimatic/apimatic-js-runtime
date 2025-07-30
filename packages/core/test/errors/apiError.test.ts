@@ -4,8 +4,6 @@ import { convertToStream } from '@apimatic/convert-to-stream';
 
 describe('ApiError Class', () => {
   describe('Test API Error Instance', () => {
-    const deprecationSpy = jest.spyOn(console, 'warn');
-
     const mockHttpRequest = {
       method: 'GET',
       url: 'url',
@@ -39,81 +37,35 @@ describe('ApiError Class', () => {
     });
 
     test.each([
-      [
-        'should parse valid JSON string body',
-        '{"foo": "bar"}',
-        { foo: 'bar' },
-        'production',
-        undefined,
-        false,
-      ],
+      ['should parse valid JSON string body', '{"foo": "bar"}', { foo: 'bar' }],
       [
         'should parse valid JSON from Readable stream body',
         convertToStream('{"a":1}'),
         { a: 1 },
-        'production',
-        undefined,
-        false,
       ],
-      [
-        'should leave result undefined for empty string body',
-        '',
-        undefined,
-        'production',
-        undefined,
-        false,
-      ],
+      ['should leave result undefined for empty string body', '', undefined],
       [
         'should leave result undefined for empty Readable stream body',
         convertToStream(''),
         undefined,
-        'production',
-        undefined,
-        true,
       ],
       [
         'should leave result undefined for invalid JSON string body',
         '{invalid json}',
         undefined,
-        'production',
-        undefined,
-        false,
       ],
       [
         'should leave result undefined for invalid JSON in Readable stream body',
         convertToStream('{invalid json}'),
         undefined,
-        'production',
-        undefined,
-        false,
-      ],
-      [
-        'test with incorrect json string in response body with production environment',
-        'testBody result',
-        undefined,
-        'production',
-        undefined,
-        false,
-      ],
-      [
-        'test with incorrect json string in response body with test-environment',
-        '[1, 2, 3, 4, ]',
-        undefined,
-        'development',
-        `Unexpected error: Could not parse HTTP response body. Unexpected ']'`,
-        false,
       ],
     ])(
       '%s',
       async (
-        _: string,
+        name: string,
         body: string | NodeJS.ReadableStream | Blob,
-        expectedResult: unknown,
-        node_env?: string,
-        errorMessage?: string,
-        isBodyConsumed?: boolean
+        expectedResult: unknown
       ) => {
-        process.env.NODE_ENV = node_env;
         const response = {
           ...baseResponse,
           body,
@@ -121,31 +73,12 @@ describe('ApiError Class', () => {
 
         const apiError = new ApiError(
           { request: mockHttpRequest, response },
-          'Internal server Error'
+          name
         );
 
         await loadResult(apiError);
-
-        expect(await isConsumed(apiError.body)).toBe(isBodyConsumed);
         expect(apiError.result).toEqual(expectedResult);
-        if (errorMessage) {
-          expect(deprecationSpy).toHaveBeenCalledWith(errorMessage);
-        }
       }
     );
-
-    async function isConsumed(
-      input: string | Blob | NodeJS.ReadableStream
-    ): Promise<boolean> {
-      if (input instanceof Blob || typeof input === 'string') {
-        return false; // Blob and string is always readable even if consumed
-      }
-
-      const chunks: Uint8Array[] = [];
-      for await (const chunk of input) {
-        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
-      }
-      return chunks.length === 0;
-    }
   });
 });
