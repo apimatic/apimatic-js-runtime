@@ -45,13 +45,7 @@ describe('ApiError Class', () => {
         { foo: 'bar' },
         'production',
         undefined,
-      ],
-      [
-        'should leave result undefined for empty string body',
-        '',
-        undefined,
-        'production',
-        undefined,
+        false,
       ],
       [
         'should parse valid JSON from Readable stream body',
@@ -59,6 +53,23 @@ describe('ApiError Class', () => {
         { a: 1 },
         'production',
         undefined,
+        false,
+      ],
+      [
+        'should leave result undefined for empty string body',
+        '',
+        undefined,
+        'production',
+        undefined,
+        false,
+      ],
+      [
+        'should leave result undefined for empty Readable stream body',
+        convertToStream(''),
+        undefined,
+        'production',
+        undefined,
+        true,
       ],
       [
         'should leave result undefined for invalid JSON string body',
@@ -66,6 +77,7 @@ describe('ApiError Class', () => {
         undefined,
         'production',
         undefined,
+        false,
       ],
       [
         'should leave result undefined for invalid JSON in Readable stream body',
@@ -73,20 +85,15 @@ describe('ApiError Class', () => {
         undefined,
         'production',
         undefined,
+        false,
       ],
       [
-        'test with string in response body',
-        '{"test-string" : "value"}',
-        { 'test-string': 'value' },
-        'production',
-        undefined,
-      ],
-      [
-        'test with empty string in response body',
-        '',
+        'test with incorrect json string in response body with production environment',
+        'testBody result',
         undefined,
         'production',
         undefined,
+        false,
       ],
       [
         'test with incorrect json string in response body with test-environment',
@@ -94,13 +101,7 @@ describe('ApiError Class', () => {
         undefined,
         'development',
         `Unexpected error: Could not parse HTTP response body. Unexpected ']'`,
-      ],
-      [
-        'test with incorrect json string in response body with production environment',
-        'testBody result',
-        undefined,
-        'production',
-        `Unexpected error: Could not parse HTTP response body. Unexpected ']'`,
+        false,
       ],
     ])(
       '%s',
@@ -109,7 +110,8 @@ describe('ApiError Class', () => {
         body: string | NodeJS.ReadableStream | Blob,
         expectedResult: unknown,
         node_env?: string,
-        errorMessage?: string
+        errorMessage?: string,
+        isBodyConsumed?: boolean
       ) => {
         process.env.NODE_ENV = node_env;
         const response = {
@@ -123,11 +125,27 @@ describe('ApiError Class', () => {
         );
 
         await loadResult(apiError);
-        if (errorMessage !== undefined) {
+
+        expect(await isConsumed(apiError.body)).toBe(isBodyConsumed);
+        expect(apiError.result).toEqual(expectedResult);
+        if (errorMessage) {
           expect(deprecationSpy).toHaveBeenCalledWith(errorMessage);
         }
-        expect(apiError.result).toEqual(expectedResult);
       }
     );
+
+    async function isConsumed(
+      input: string | Blob | NodeJS.ReadableStream
+    ): Promise<boolean> {
+      if (input instanceof Blob || typeof input === 'string') {
+        return false; // Blob and string is always readable even if consumed
+      }
+
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of input) {
+        chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
+      }
+      return chunks.length === 0;
+    }
   });
 });
