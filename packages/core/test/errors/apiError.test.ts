@@ -111,7 +111,7 @@ describe('ApiError Class', () => {
         expectedResult: unknown,
         node_env?: string,
         errorMessage?: string,
-        isBodyAlreadyRead?: boolean
+        isBodyComsumed?: boolean
       ) => {
         process.env.NODE_ENV = node_env;
         const response = {
@@ -125,9 +125,8 @@ describe('ApiError Class', () => {
         );
 
         await loadResult(apiError);
-        const isStreamRead = await isAlreadyRead(apiError.body);
 
-        expect(isStreamRead).toBe(isBodyAlreadyRead);
+        expect(await isConsumed(apiError.body)).toBe(isBodyComsumed);
         expect(apiError.result).toEqual(expectedResult);
         if (errorMessage) {
           expect(deprecationSpy).toHaveBeenCalledWith(errorMessage);
@@ -135,11 +134,11 @@ describe('ApiError Class', () => {
       }
     );
 
-    async function isAlreadyRead(
+    async function isConsumed(
       input: string | Blob | NodeJS.ReadableStream
     ): Promise<boolean> {
       if (input instanceof Blob || typeof input === 'string') {
-        return false; // Blob and string is always readable
+        return false; // Blob and string is always readable even if consumed
       }
 
       const chunks: Uint8Array[] = [];
