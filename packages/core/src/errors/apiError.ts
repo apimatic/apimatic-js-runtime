@@ -4,7 +4,10 @@ import {
   HttpContext,
   HttpRequest,
 } from '@apimatic/core-interfaces';
-import { convertFromStream } from '@apimatic/convert-to-stream';
+import {
+  convertFromStream,
+  convertToStream,
+} from '@apimatic/convert-to-stream';
 
 /**
  * Thrown when the HTTP status code is not okay.
@@ -34,8 +37,15 @@ export class ApiError<T = {}>
 }
 
 export async function loadResult<T>(error: ApiError<T>): Promise<void> {
+  const bodyString = await convertFromStream(error.body);
+  error.result = parseBody(bodyString);
+  error.body =
+    typeof error.body === 'string' ? bodyString : convertToStream(bodyString);
+}
+
+function parseBody<T>(body: string): T | undefined {
   try {
-    error.result = await parseBody<T>(error.body);
+    return JSONBig().parse(body);
   } catch (error) {
     if (process.env.NODE_ENV !== 'production' && console) {
       // tslint:disable-next-line:no-console
@@ -44,15 +54,5 @@ export async function loadResult<T>(error: ApiError<T>): Promise<void> {
       );
     }
   }
-}
-
-async function parseBody<T>(
-  body: string | Blob | NodeJS.ReadableStream
-): Promise<T | undefined> {
-  const jsonString = await convertFromStream(body);
-  if (body === '') {
-    return undefined;
-  }
-  const jsonBig = JSONBig();
-  return jsonBig.parse(jsonString);
+  return undefined;
 }
