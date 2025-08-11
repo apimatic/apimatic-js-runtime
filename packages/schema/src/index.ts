@@ -13,6 +13,7 @@ export * from './types/nullable';
 export * from './types/number';
 export * from './types/numberEnum';
 export * from './types/object';
+// test comment
 export * from './types/oneOf';
 export * from './types/optional';
 export * from './types/string';
