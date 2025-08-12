@@ -1,6 +1,8 @@
 # APIMatic Axios Client Adapter Library for JavaScript SDKs
 
-This package provides a robust HTTP client implementation by wrapping the Axios library, enabling seamless HTTP request execution with extended features.
+This package provides an Axios-based HTTP client adapter that integrates seamlessly with the @apimatic/core package, enabling efficient HTTP request execution with extended capabilities.
+
+The exported functionality includes:
 
 * **Axios-Based HTTP Client**: Robust HTTP client built on Axios for reliable API communication.
 * **Request/Response Transformation**: Automatic conversion between APIMatic HTTP interfaces and Axios formats.

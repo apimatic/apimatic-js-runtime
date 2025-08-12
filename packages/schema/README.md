@@ -2,6 +2,8 @@
 
 This package provides utilities for creating schema for different types, along with serialization information.
 
+The exported functionality includes:
+
 * **Bidirectional Data Transformation & Validation**: Transforms data between external API formats (JSON/XML) and internal TypeScript types, validates before mapping or unmapping, and reports errors with detailed path information.
 * **Object Schema Variants**: Offers strict, flexible, and expandable object parsing options, including support for typing additional properties.
 * **Schema Modifiers & Utilities**: Supports optional and nullable values, array and dictionary validation, default values, and constant value schemas.

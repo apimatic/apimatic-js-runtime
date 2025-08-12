@@ -1,6 +1,6 @@
 # APIMatic XML Adapter Library for JavaScript SDKs
 
-This package provides XML serialization and deserialization utilities for apimatic-js-runtime libraries using xml2js for robust XML processing.
+This package provides XML serialization and deserialization utilities for apimatic-js-runtime libraries.
 
 The exported helper functions include:
 

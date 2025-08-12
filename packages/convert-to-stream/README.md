@@ -1,6 +1,6 @@
 # APIMatic Convert-to-Stream Library for JavaScript SDKs
 
-This package provides utility functions to convert data between streams and blobs, with automatic platform-specific handling for both Node.js and browser environments.
+This package provides utility functions to convert data between strings, Node.js streams, and browser Blob objects. It supports both Node.js and browser environments with automatic platform-specific handling.
 
 The exported functionality includes:
 
