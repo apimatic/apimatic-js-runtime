@@ -28,6 +28,26 @@ They provide common runtime utilities needed by SDKs to make API calls and handl
 | [@apimatic/pagination](packages/pagination)                           | [![npm shield](https://img.shields.io/npm/v/@apimatic/pagination)](https://www.npmjs.com/package/@apimatic/pagination)                           | Provides utilities to handle paginated API responses, including support for asynchronous iteration over pages or items. |
 | [@apimatic/proxy](packages/proxy)                                     | [![npm shield](https://img.shields.io/npm/v/@apimatic/proxy)](https://www.npmjs.com/package/@apimatic/proxy)                                     |  Provides proxy configuration utilities for HTTP clients. |
 
+## Builds and Usage
+
+The following environments are supported:
+
+1. Node.js v14.15.0+
+1. Bundlers like Rollup or Webpack
+1. Web browsers
+
+To support multiple environments, we export various builds:
+
+| Environment                                       | Usage                                                                            |
+| ------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Common.js                                         | Import like this: `require('@apimatic/<package-name>')`.                             |
+| ES Module                                         | Import like this: `import { /* your imports */ } from '@apimatic/<package-name>'`.   |
+| Browsers                                          | \*Use script: `https://unpkg.com/@apimatic/<package-name>@VERSION/umd/<package-name>.js`     |
+| Modern Browsers (supports ESM and uses modern JS) | \*Use script: `https://unpkg.com/@apimatic/<package-name>@VERSION/umd/<package-name>.esm.js` |
+
+_\* Don't forget to replace VERSION with the version number._
+
+**Note**: We discourage importing files or modules directly from the package. These are likely to change in the future and should not be considered stable.
 
 [ci-badge]: https://github.com/apimatic/apimatic-js-runtime/actions/workflows/main.yml/badge.svg
 [ci-url]: https://github.com/apimatic/apimatic-js-runtime/actions/workflows/main.yml
