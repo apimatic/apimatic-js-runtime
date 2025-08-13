@@ -3,7 +3,7 @@ import { convertFromStream } from '@apimatic/convert-to-stream';
 
 /**
  * Get streaming data from a given URL.
- * @param client Instance of HttpClient to be used.
+ * @param client HttpClient instance to fetch data.
  * @param url URL from which to create the readable stream.
  * @returns Stream of data fetched from the URL.
  * @throws Error if unable to retrieve data from the URL.
