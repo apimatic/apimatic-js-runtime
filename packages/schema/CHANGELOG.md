@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.7.18](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.17...@apimatic/schema@0.7.18) (2025-08-13)
+
+**Note:** Version bump only for package @apimatic/schema
+
 ### [0.7.17](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.16...@apimatic/schema@0.7.17) (2025-07-11)
 
 ### Bug Fixes
