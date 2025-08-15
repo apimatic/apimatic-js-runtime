@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.24](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.23...@apimatic/core@0.10.24) (2025-08-13)
+
+**Note:** Version bump only for package @apimatic/core
+
+### [0.10.23](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.22...@apimatic/core@0.10.23) (2025-07-30)
+
+### Bug Fixes
+
+- loading result only for sub types of api error ([#259](https://github.com/apimatic/apimatic-js-runtime/issues/259)) ([2cf6c26](https://github.com/apimatic/apimatic-js-runtime/commit/2cf6c267b9537a959455d9691ca6c8b58e54b454))
+
+### [0.10.22](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.21...@apimatic/core@0.10.22) (2025-07-30)
+
+### Bug Fixes
+
+- api error stream body parsing to reset it afterwards ([#258](https://github.com/apimatic/apimatic-js-runtime/issues/258)) ([260c83d](https://github.com/apimatic/apimatic-js-runtime/commit/260c83d21fb77fb7e17c90268b6171f378cbb5a0))
+
+### [0.10.21](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.20...@apimatic/core@0.10.21) (2025-07-15)
+
+### Features
+
+- add pagination support ([#244](https://github.com/apimatic/apimatic-js-runtime/issues/244)) ([cd43985](https://github.com/apimatic/apimatic-js-runtime/commit/cd43985de5b552a6f6d5ecc64b28b54170607cc6))
+
+### [0.10.20](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.19...@apimatic/core@0.10.20) (2025-07-11)
+
+### Bug Fixes
+
+- **core:** populate error.result for all response types ([#250](https://github.com/apimatic/apimatic-js-runtime/issues/250)) ([6266f34](https://github.com/apimatic/apimatic-js-runtime/commit/6266f34bfb4cbfae2ade0958923aa55c0a81826b))
+- **core:** remove usage of stream module ([#251](https://github.com/apimatic/apimatic-js-runtime/issues/251)) ([7fa520b](https://github.com/apimatic/apimatic-js-runtime/commit/7fa520b5ee272ba0301d03eda8a2a11e29878c8a))
+
 ### [0.10.19](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.18...@apimatic/core@0.10.19) (2025-05-15)
 
 **Note:** Version bump only for package @apimatic/core

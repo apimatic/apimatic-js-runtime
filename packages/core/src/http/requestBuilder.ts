@@ -1,19 +1,24 @@
 import JSONBig from '@apimatic/json-bigint';
 import { FileWrapper } from '@apimatic/file-wrapper';
-import { deprecated, sanitizeUrl, updateErrorMessage } from '../apiHelper';
+import {
+  deprecated,
+  sanitizeUrl,
+  updateByJsonPointer,
+  updateErrorMessage,
+} from '../apiHelper';
 import {
   ApiResponse,
   AuthenticatorInterface,
   HttpContext,
   HttpMethod,
   HttpRequest,
-  HttpRequestMultipartFormBody,
-  HttpRequestUrlEncodedFormBody,
   HttpInterceptorInterface,
   RequestOptions,
   RetryConfiguration,
   ApiLoggerInterface,
   HttpClientInterface,
+  HttpRequestBody,
+  PagedAsyncIterable,
 } from '../coreInterfaces';
 import { ArgumentsValidationError } from '../errors/argumentsValidationError';
 import { ResponseValidationError } from '../errors/responseValidationError';
@@ -29,7 +34,6 @@ import {
   CONTENT_LENGTH_HEADER,
   CONTENT_TYPE_HEADER,
   JSON_CONTENT_TYPE,
-  mergeHeaders,
   setHeader,
   setHeaderIfNotSet,
   TEXT_CONTENT_TYPE,
@@ -56,6 +60,8 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
+import { ApiError, loadResult } from '../errors/apiError';
+import { PathParam } from './pathParam';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
   httpMethod: HttpMethod,
@@ -65,9 +71,17 @@ export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
 const JSON = JSONBig();
 
 export function skipEncode<T extends PathTemplatePrimitiveTypes>(
-  value: T
+  value: T,
+  key?: string
 ): SkipEncode<T> {
-  return new SkipEncode(value);
+  return new SkipEncode(value, key);
+}
+
+export function pathParam<T extends PathTemplatePrimitiveTypes>(
+  value: T,
+  key: string
+): PathParam<T> {
+  return new PathParam(value, key);
 }
 
 export type ApiErrorConstructor = new (
@@ -86,6 +100,7 @@ export interface ApiErrorFactory {
   apiErrorCtor: ApiErrorConstructor;
   message?: string | undefined;
 }
+
 export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   deprecated(methodName: string, message?: string): void;
   prepareArgs: typeof prepareArgs;
@@ -154,6 +169,18 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
     isTemplate: boolean,
     ...args: ErrorCtorArgs
   ): void;
+  updateByJsonPointer(
+    pointer: string | null,
+    updater: (value: any) => any
+  ): RequestBuilder<BaseUrlParamType, AuthParams>;
+  paginate<TItem, TPagedResponse>(
+    createPagedIterable: (
+      req: this,
+      updater: (
+        req: this
+      ) => (pointer: string | null, setter: (value: any) => any) => this
+    ) => PagedAsyncIterable<TItem, TPagedResponse>
+  ): PagedAsyncIterable<TItem, TPagedResponse>;
   call(requestOptions?: RequestOptions): Promise<ApiResponse<void>>;
   callAsJson<T>(
     schema: Schema<T, any>,
@@ -180,15 +207,20 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
 
 export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   implements RequestBuilder<BaseUrlParamType, AuthParams> {
+  protected _queryParams: Record<string, unknown> = {};
+  protected _pathParams: Record<string, unknown> = {};
+  protected _headerParams: Record<string, unknown> = {};
+  protected _body?: any;
   protected _accept?: string;
   protected _contentType?: string;
-  protected _headers: Record<string, string>;
-  protected _body?: string;
+  protected _contentTypeOptional?: string;
+  protected _bodyType?: 'text' | 'json' | 'xml' | 'form' | 'form-data';
+  protected _formPrefixFormat?: ArrayPrefixFunction;
+  protected _queryParamsPrefixFormat: Record<string, ArrayPrefixFunction>;
   protected _stream?: FileWrapper;
-  protected _query: string[];
-  protected _form?: HttpRequestUrlEncodedFormBody['content'];
-  protected _formData?: HttpRequestMultipartFormBody['content'];
-  protected _baseUrlArg: BaseUrlParamType | undefined;
+  protected _pathStrings?: TemplateStringsArray;
+  protected _pathArgs?: PathTemplateTypes[];
+  protected _baseUrlArg?: BaseUrlParamType;
   protected _validateResponse: boolean;
   protected _interceptors: Array<
     HttpInterceptorInterface<RequestOptions | undefined>
@@ -210,8 +242,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _path?: string,
     protected _apiLogger?: ApiLoggerInterface
   ) {
-    this._headers = {};
-    this._query = [];
+    this._queryParamsPrefixFormat = {};
     this._interceptors = [];
     this._errorTypes = [];
     this._validateResponse = true;
@@ -238,8 +269,16 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     strings: TemplateStringsArray,
     ...args: PathTemplateTypes[]
   ): void {
-    const pathSegment = pathTemplate(strings, ...args);
-    this.appendPath(pathSegment);
+    this._pathStrings = strings;
+    this._pathArgs = args;
+    for (const arg of args) {
+      if (
+        (arg instanceof SkipEncode || arg instanceof PathParam) &&
+        arg.key !== undefined
+      ) {
+        this._pathParams[arg.key] = arg.value;
+      }
+    }
   }
   public method(httpMethodName: HttpMethod): void {
     this._httpMethod = httpMethodName;
@@ -263,15 +302,12 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (value === null || typeof value === 'undefined') {
       return;
     }
-    if (typeof value === 'object') {
-      setHeader(this._headers, name, JSON.stringify(value));
-      return;
-    }
-    // String() is used to convert boolean, number, bigint, or unknown types
-    setHeader(this._headers, name, String(value));
+    this._headerParams[name] = value;
   }
   public headers(headersToMerge: Record<string, string>): void {
-    mergeHeaders(this._headers, headersToMerge);
+    for (const [name, value] of Object.entries(headersToMerge)) {
+      this._headerParams[name] = value;
+    }
   }
   public query(
     name: string,
@@ -290,28 +326,48 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (nameOrParameters === null || nameOrParameters === undefined) {
       return;
     }
-    const queryString =
-      typeof nameOrParameters === 'string'
-        ? urlEncodeObject(
-            {
-              [nameOrParameters]: value,
-            },
-            prefixFormat
-          )
-        : urlEncodeObject(nameOrParameters, prefixFormat);
-    if (queryString) {
-      this._query.push(queryString);
+
+    if (typeof nameOrParameters === 'string') {
+      this._queryParams[nameOrParameters] = value;
+      if (prefixFormat) {
+        this._queryParamsPrefixFormat[nameOrParameters] = prefixFormat;
+      }
+      return;
+    }
+    this.setPrefixFormats(nameOrParameters, prefixFormat);
+    this.setQueryParams(nameOrParameters);
+  }
+
+  private setPrefixFormats(
+    parameters: Record<string, unknown>,
+    prefixFormat?: ArrayPrefixFunction
+  ): void {
+    if (!prefixFormat) {
+      return;
+    }
+    for (const key of Object.keys(parameters)) {
+      this._queryParamsPrefixFormat[key] = prefixFormat;
+    }
+  }
+
+  private setQueryParams(parameters: Record<string, unknown>): void {
+    for (const [key, val] of Object.entries(parameters)) {
+      if (val !== undefined && val !== null) {
+        this._queryParams[key] = val;
+      }
     }
   }
   public text(
     body: string | number | bigint | boolean | null | undefined
   ): void {
-    this._body = body?.toString() ?? undefined;
-    this._setContentTypeIfNotSet(TEXT_CONTENT_TYPE);
+    this._body = body;
+    this._bodyType = 'text';
+    this._contentTypeOptional = TEXT_CONTENT_TYPE;
   }
   public json(data: unknown): void {
-    this._body = JSON.stringify(data);
-    this._setContentTypeIfNotSet(JSON_CONTENT_TYPE);
+    this._body = data;
+    this._bodyType = 'json';
+    this._contentTypeOptional = JSON_CONTENT_TYPE;
   }
   public xml<T>(
     argName: string,
@@ -323,11 +379,12 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     if (mappingResult.errors) {
       throw new ArgumentsValidationError({ [argName]: mappingResult.errors });
     }
-    this._body = this._xmlSerializer.xmlSerialize(
+    this._body = {
+      data,
       rootName,
-      mappingResult.result
-    );
-    this._setContentTypeIfNotSet(XML_CONTENT_TYPE);
+    };
+    this._bodyType = 'xml';
+    this._contentTypeOptional = XML_CONTENT_TYPE;
   }
   public stream(file?: FileWrapper): void {
     this._stream = file;
@@ -336,56 +393,26 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void {
-    this._form = filterFileWrapperFromKeyValuePairs(
-      formDataEncodeObject(parameters, prefixFormat)
-    );
+    this._body = parameters;
+    this._formPrefixFormat = prefixFormat;
+    this._bodyType = 'form';
   }
   public formData(
     parameters: Record<string, unknown>,
     prefixFormat?: ArrayPrefixFunction
   ): void {
-    this._formData = formDataEncodeObject(parameters, prefixFormat);
+    this._body = parameters;
+    this._formPrefixFormat = prefixFormat;
+    this._bodyType = 'form-data';
   }
+
   public toRequest(): HttpRequest {
-    const request: HttpRequest = {
+    return {
       method: this._httpMethod,
-      url: mergePath(this._baseUrlProvider(this._baseUrlArg), this._path),
+      url: this._getQueryUrl(),
+      headers: this._getHttpRequestHeaders(),
+      body: this._getHttpRequestBody(),
     };
-
-    if (this._query.length > 0) {
-      const queryString = this._query.join('&');
-      request.url +=
-        (request.url.indexOf('?') === -1 ? '?' : '&') + queryString;
-    }
-
-    request.url = sanitizeUrl(request.url);
-
-    // defensively copy headers
-    const headers = { ...this._headers };
-
-    if (this._accept) {
-      setHeader(headers, ACCEPT_HEADER, this._accept);
-    }
-
-    if (this._contentType) {
-      setHeader(headers, CONTENT_TYPE_HEADER, this._contentType);
-    }
-
-    setHeader(headers, CONTENT_LENGTH_HEADER);
-
-    request.headers = headers;
-
-    if (this._body !== undefined) {
-      request.body = { type: 'text', content: this._body };
-    } else if (this._form !== undefined) {
-      request.body = { type: 'form', content: this._form };
-    } else if (this._formData !== undefined) {
-      request.body = { type: 'form-data', content: this._formData };
-    } else if (this._stream !== undefined) {
-      request.body = { type: 'stream', content: this._stream };
-    }
-
-    return request;
   }
   public intercept(
     interceptor: HttpInterceptorInterface<RequestOptions | undefined>
@@ -526,10 +553,96 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     }
     return { ...result, result: mappingResult.result };
   }
-  private _setContentTypeIfNotSet(contentType: string) {
-    if (!this._contentType) {
-      setHeaderIfNotSet(this._headers, CONTENT_TYPE_HEADER, contentType);
+  public paginate<TItem, TPagedResponse>(
+    createPagedIterable: (
+      req: this,
+      updater: (
+        req: this
+      ) => (pointer: string | null, setter: (value: any) => any) => this
+    ) => PagedAsyncIterable<TItem, TPagedResponse>
+  ): PagedAsyncIterable<TItem, TPagedResponse> {
+    return createPagedIterable(this, (req) =>
+      req.updateByJsonPointer.bind(req)
+    );
+  }
+  public updateByJsonPointer(
+    pointer: string | null,
+    updater: (value: any) => any
+  ): RequestBuilder<BaseUrlParamType, AuthParams> {
+    if (!pointer) {
+      return this;
     }
+    const targets: Record<
+      string,
+      (req: DefaultRequestBuilder<BaseUrlParamType, AuthParams>) => void
+    > = {
+      '$request.body': (req) =>
+        (req._body = updateByJsonPointer(this._body, point, updater)),
+      '$request.path': (req) =>
+        (req._pathParams = updateByJsonPointer(
+          this._pathParams,
+          point,
+          updater
+        )),
+      '$request.query': (req) =>
+        (req._queryParams = updateByJsonPointer(
+          this._queryParams,
+          point,
+          updater
+        )),
+      '$request.headers': (req) =>
+        (req._headerParams = updateByJsonPointer(
+          this._headerParams,
+          point,
+          updater
+        )),
+    };
+    const [prefix, point = ''] = pointer.split('#', 2);
+    const paramUpdater = targets[prefix];
+    if (!paramUpdater) {
+      return this;
+    }
+    const request = this._clone();
+    paramUpdater(request);
+    return request;
+  }
+  private _clone(): DefaultRequestBuilder<BaseUrlParamType, AuthParams> {
+    const cloned = new DefaultRequestBuilder(
+      this._httpClient,
+      this._baseUrlProvider,
+      this._apiErrorCtr,
+      this._authenticationProvider,
+      this._httpMethod,
+      this._xmlSerializer,
+      this._retryConfig,
+      this._path,
+      this._apiLogger
+    );
+
+    this.cloneParameters(cloned);
+    return cloned;
+  }
+  private cloneParameters(
+    cloned: DefaultRequestBuilder<BaseUrlParamType, AuthParams>
+  ): void {
+    cloned._accept = this._accept;
+    cloned._contentType = this._contentType;
+    cloned._headerParams = { ...this._headerParams };
+    cloned._body = this._body;
+    cloned._bodyType = this._bodyType;
+    cloned._stream = this._stream;
+    cloned._queryParams = { ...this._queryParams };
+    cloned._formPrefixFormat = this._formPrefixFormat;
+    cloned._pathStrings = this._pathStrings;
+    cloned._pathArgs = this._pathArgs;
+    cloned._pathParams = this._pathParams;
+    cloned._baseUrlArg = this._baseUrlArg;
+    cloned._validateResponse = this._validateResponse;
+    cloned._interceptors = [...this._interceptors];
+    cloned._authParams = this._authParams;
+    cloned._retryOption = this._retryOption;
+    cloned._apiErrorFactory = { ...this._apiErrorFactory };
+    cloned._errorTypes = [...this._errorTypes];
   }
   private _addResponseValidator(): void {
     this.interceptResponse((context) => {
@@ -559,6 +672,120 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
         apiLogger.logResponse(context.response);
         return context;
       });
+    }
+  }
+  private _getQueryUrl(): string {
+    const queryParts: string[] = [];
+    for (const [key, value] of Object.entries(this._queryParams)) {
+      const formatter = this._queryParamsPrefixFormat?.[key];
+      queryParts.push(urlEncodeObject({ [key]: value }, formatter));
+    }
+
+    const url = mergePath(
+      this._baseUrlProvider(this._baseUrlArg),
+      this._buildPath()
+    );
+
+    if (queryParts.length === 0) {
+      return sanitizeUrl(url);
+    }
+
+    const separator = url.indexOf('?') === -1 ? '?' : '&';
+    return sanitizeUrl(url + separator + queryParts.join('&'));
+  }
+  private _buildPath(): string | undefined {
+    if (this._pathStrings === undefined || this._pathArgs === undefined) {
+      return this._path;
+    }
+    for (const arg of this._pathArgs) {
+      if (
+        (arg instanceof SkipEncode || arg instanceof PathParam) &&
+        arg.key !== undefined &&
+        arg.key in this._pathParams
+      ) {
+        arg.value = this._pathParams[arg.key];
+      }
+    }
+    return pathTemplate(this._pathStrings, ...this._pathArgs);
+  }
+  private _getHttpRequestHeaders(): Record<string, string> {
+    const headers: Record<string, string> = {};
+
+    for (const [name, value] of Object.entries(this._headerParams)) {
+      if (typeof value === 'object') {
+        setHeader(headers, name, JSON.stringify(value));
+        continue;
+      }
+      setHeader(headers, name, String(value));
+    }
+
+    if (this._accept) {
+      setHeader(headers, ACCEPT_HEADER, this._accept);
+    }
+
+    if (this._contentTypeOptional) {
+      setHeaderIfNotSet(
+        headers,
+        CONTENT_TYPE_HEADER,
+        this._contentTypeOptional
+      );
+    }
+
+    if (this._contentType) {
+      setHeader(headers, CONTENT_TYPE_HEADER, this._contentType);
+    }
+
+    setHeader(headers, CONTENT_LENGTH_HEADER);
+
+    return headers;
+  }
+  private _getHttpRequestBody(): HttpRequestBody | undefined {
+    if (this._stream !== undefined) {
+      return { type: 'stream', content: this._stream };
+    }
+
+    if (this._body === undefined) {
+      return undefined;
+    }
+
+    switch (this._bodyType) {
+      case 'text':
+        return { type: 'text', content: String(this._body) };
+
+      case 'json':
+        return { type: 'text', content: JSON.stringify(this._body) };
+
+      case 'xml':
+        return {
+          type: 'text',
+          content: this._xmlSerializer.xmlSerialize(
+            this._body.data,
+            this._body.rootName
+          ),
+        };
+
+      case 'form':
+      case 'form-data': {
+        if (
+          typeof this._body !== 'object' ||
+          this._body === null ||
+          Array.isArray(this._body)
+        ) {
+          return undefined;
+        }
+
+        const type = this._bodyType;
+        const encoded = formDataEncodeObject(
+          this._body,
+          this._formPrefixFormat
+        );
+        const content = filterFileWrapperFromKeyValuePairs(encoded);
+
+        return type === 'form' ? { type, content } : { type, content: encoded };
+      }
+
+      default:
+        return undefined;
     }
   }
   private _addAuthentication() {
@@ -613,21 +840,26 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     });
   }
   private _addErrorHandlingInterceptor() {
-    this.interceptResponse((context) => {
-      const { response } = context;
+    this.intercept(async (req, opt, next) => {
+      const context = await next(req, opt);
       for (const { statusCode, errorConstructor, isTemplate, args } of this
         ._errorTypes) {
         if (
           (typeof statusCode === 'number' &&
-            response.statusCode === statusCode) ||
+            context.response.statusCode === statusCode) ||
           (typeof statusCode !== 'number' &&
-            response.statusCode >= statusCode[0] &&
-            response.statusCode <= statusCode[1])
+            context.response.statusCode >= statusCode[0] &&
+            context.response.statusCode <= statusCode[1])
         ) {
           if (isTemplate && args.length > 0) {
-            args[0] = updateErrorMessage(args[0], response);
+            args[0] = updateErrorMessage(args[0], context.response);
           }
-          throw new errorConstructor(context, ...args);
+          const error = new errorConstructor(context, ...args);
+          if (errorConstructor.prototype instanceof ApiError) {
+            // Load result only for the sub classes of ApiError
+            await loadResult(error);
+          }
+          throw error;
         }
       }
       return context;
