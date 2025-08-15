@@ -1,5 +1,7 @@
 import {
   defaults,
+  generateJSONSchema,
+  JSONSchema,
   nullable,
   optional,
   string,
@@ -103,6 +105,19 @@ describe('Defaults', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = defaults(string(), 'default value');
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        type: 'string',
+        default: 'default value',
+      });
     });
   });
 });

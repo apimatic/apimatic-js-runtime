@@ -1,4 +1,11 @@
-import { array, bigint, boolean, object } from '../../src';
+import {
+  JSONSchema,
+  array,
+  bigint,
+  boolean,
+  generateJSONSchema,
+  object,
+} from '../../src';
 import { validateAndMap, validateAndUnmap } from '../../src/schema';
 import { nullable } from '../../src/types/nullable';
 import { number } from '../../src/types/number';
@@ -16,6 +23,7 @@ import {
   Color,
   Human,
   humanSchema,
+  oneOfWithDiscriminator,
   Person,
   personSchema,
 } from '../types';
@@ -253,31 +261,13 @@ describe('OnyOf', () => {
     });
 
     it('should map oneOf with discriminator', () => {
-      const schema1 = object({
-        type: ['type', string()],
-        name: ['name', string()],
-        age: ['age', number()],
-      });
-
-      const schema2 = object({
-        type: ['type', string()],
-        title: ['title', string()],
-        rating: ['rating', string()],
-      });
-
-      const discriminatorMap = {
-        object1: schema1,
-        object2: schema2,
-      };
-
       const input = {
         type: 'object1', // The discriminator field value that matches schema1
         name: 'John',
         age: 30,
       };
 
-      const schema = oneOf([schema1, schema2], discriminatorMap, 'type');
-      const output = validateAndMap(input, schema);
+      const output = validateAndMap(input, oneOfWithDiscriminator);
 
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input); // The input should be unchanged since it matches schema1
@@ -459,34 +449,139 @@ describe('OnyOf', () => {
     });
 
     it('should unmap oneOf with discriminator', () => {
-      const schema1 = object({
-        type: ['type', string()],
-        name: ['name', string()],
-        age: ['age', number()],
-      });
-
-      const schema2 = object({
-        type: ['type', string()],
-        title: ['title', string()],
-        rating: ['rating', string()],
-      });
-
-      const discriminatorMap = {
-        object1: schema1,
-        object2: schema2,
-      };
-
       const input = {
         type: 'object1', // The discriminator field value that matches schema1
         name: 'John',
         age: 30,
       };
 
-      const schema = oneOf([schema1, schema2], discriminatorMap, 'type');
-      const output = validateAndUnmap(input, schema);
+      const output = validateAndUnmap(input, oneOfWithDiscriminator);
 
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input); // The input should be unchanged since it matches schema1
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for oneOf primitive types', () => {
+      const jsonSchema = generateJSONSchema(oneOf([string(), number()]));
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        oneOf: [
+          {
+            type: 'string',
+          },
+          {
+            type: 'number',
+          },
+        ],
+      });
+    });
+
+    it('should output a valid JSON Schema for oneOf objects without discriminator', () => {
+      const schema = oneOf([
+        object({
+          name: ['name', string()],
+        }),
+        object({
+          title: ['title', string()],
+        }),
+      ]);
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        oneOf: [
+          {
+            type: 'object',
+            required: ['name'],
+            properties: {
+              name: {
+                type: 'string',
+              },
+            },
+          },
+          {
+            type: 'object',
+            required: ['title'],
+            properties: {
+              title: {
+                type: 'string',
+              },
+            },
+          },
+        ],
+      });
+    });
+
+    it('should output a valid JSON Schema for oneOf objects with discriminator', () => {
+      const firstSchema = object({
+        type: ['type', string()],
+        name: ['name', string()],
+      });
+
+      const secondSchema = object({
+        type: ['type', string()],
+        title: ['title', string()],
+      });
+
+      const discriminatorMap = {
+        object1: firstSchema,
+        object2: secondSchema,
+      };
+
+      const schema = oneOf(
+        [firstSchema, secondSchema],
+        discriminatorMap,
+        'type'
+      );
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        oneOf: [
+          {
+            $ref: '#/$defs/schema1',
+          },
+          {
+            $ref: '#/$defs/schema2',
+          },
+        ],
+        discriminator: {
+          propertyName: 'type',
+          mapping: {
+            object1: '#/$defs/schema1',
+            object2: '#/$defs/schema2',
+          },
+        },
+        $defs: {
+          schema1: {
+            type: 'object',
+            required: ['type', 'name'],
+            properties: {
+              type: {
+                type: 'string',
+              },
+              name: {
+                type: 'string',
+              },
+            },
+          },
+          schema2: {
+            type: 'object',
+            required: ['type', 'title'],
+            properties: {
+              type: {
+                type: 'string',
+              },
+              title: {
+                type: 'string',
+              },
+            },
+          },
+        },
+      });
     });
   });
 });

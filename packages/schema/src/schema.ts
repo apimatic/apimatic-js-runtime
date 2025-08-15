@@ -1,4 +1,5 @@
 import { isOptionalNullable, objectKeyEncode } from './utils';
+import type { JSONSchemaContext, PartialJSONSchema } from './jsonSchemaTypes';
 
 /**
  * Schema defines a type and its validation and mapping functions.
@@ -22,6 +23,8 @@ export interface Schema<T, S = any> {
   ) => SchemaValidationError[];
   mapXml: (value: any, ctxt: SchemaContextCreator) => T;
   unmapXml: (value: T, ctxt: SchemaContextCreator) => any;
+
+  toJSONSchema: (context: JSONSchemaContext) => PartialJSONSchema;
 }
 
 /**

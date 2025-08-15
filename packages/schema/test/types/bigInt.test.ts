@@ -1,4 +1,10 @@
-import { bigint, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  bigint,
+  generateJSONSchema,
+  JSONSchema,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
 describe('bigint', () => {
   describe('Mapping', () => {
     it('should accept number in bigint constructor', () => {
@@ -185,6 +191,19 @@ describe('bigint', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = bigint();
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        type: 'integer',
+        format: 'int64',
+      });
     });
   });
 });

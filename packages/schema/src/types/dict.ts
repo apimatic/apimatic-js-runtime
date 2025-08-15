@@ -90,5 +90,9 @@ export function dict<T, S>(
       }
       return output;
     },
+    toJSONSchema: (context) => ({
+      type: 'object',
+      additionalProperties: itemSchema.toJSONSchema(context),
+    }),
   };
 }

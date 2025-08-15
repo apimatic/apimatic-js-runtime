@@ -1,4 +1,11 @@
-import { array, string, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  array,
+  generateJSONSchema,
+  JSONSchema,
+  string,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
 
 describe('Array', () => {
   describe('Mapping', () => {
@@ -131,6 +138,20 @@ describe('Array', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for an array', () => {
+      const jsonSchema = generateJSONSchema(array(string()));
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: 'https://json-schema.org/draft-07/schema',
+        type: 'array',
+        items: {
+          type: 'string',
+        },
+      });
     });
   });
 });
