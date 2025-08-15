@@ -25,6 +25,7 @@ import {
   boolean,
   nullable,
   optional,
+  bigint,
 } from '../../../schema';
 import {
   FORM_URLENCODED_CONTENT_TYPE,
