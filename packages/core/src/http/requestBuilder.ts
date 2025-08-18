@@ -175,10 +175,13 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
   ): RequestBuilder<BaseUrlParamType, AuthParams>;
   paginate<TItem, TPagedResponse>(
     createPagedIterable: (
-      req: this,
+      req: RequestBuilder<BaseUrlParamType, AuthParams>,
       updater: (
-        req: this
-      ) => (pointer: string | null, setter: (value: any) => any) => this
+        req: RequestBuilder<BaseUrlParamType, AuthParams>
+      ) => (
+        pointer: string | null,
+        setter: (value: any) => any
+      ) => RequestBuilder<BaseUrlParamType, AuthParams>
     ) => PagedAsyncIterable<TItem, TPagedResponse>
   ): PagedAsyncIterable<TItem, TPagedResponse>;
   call(requestOptions?: RequestOptions): Promise<ApiResponse<void>>;
@@ -555,10 +558,13 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
   }
   public paginate<TItem, TPagedResponse>(
     createPagedIterable: (
-      req: this,
+      req: RequestBuilder<BaseUrlParamType, AuthParams>,
       updater: (
-        req: this
-      ) => (pointer: string | null, setter: (value: any) => any) => this
+        req: RequestBuilder<BaseUrlParamType, AuthParams>
+      ) => (
+        pointer: string | null,
+        setter: (value: any) => any
+      ) => RequestBuilder<BaseUrlParamType, AuthParams>
     ) => PagedAsyncIterable<TItem, TPagedResponse>
   ): PagedAsyncIterable<TItem, TPagedResponse> {
     return createPagedIterable(this, (req) =>
