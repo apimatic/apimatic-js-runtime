@@ -34,25 +34,10 @@ export class ApiError<T = {}>
 }
 
 export async function loadResult<T>(error: ApiError<T>): Promise<void> {
+  const bodyString = await convertFromStream(error.body);
   try {
-    error.result = await parseBody<T>(error.body);
-  } catch (error) {
-    if (process.env.NODE_ENV !== 'production' && console) {
-      // tslint:disable-next-line:no-console
-      console.warn(
-        `Unexpected error: Could not parse HTTP response body. ${error.message}`
-      );
-    }
+    error.result = JSONBig().parse(bodyString);
+  } catch (_) {
+    // ignore updating result if body is not a valid JSON.
   }
-}
-
-async function parseBody<T>(
-  body: string | Blob | NodeJS.ReadableStream
-): Promise<T | undefined> {
-  const jsonString = await convertFromStream(body);
-  if (body === '') {
-    return undefined;
-  }
-  const jsonBig = JSONBig();
-  return jsonBig.parse(jsonString);
 }

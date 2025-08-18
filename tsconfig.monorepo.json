@@ -39,6 +39,9 @@
     },
     {
       "path": "./packages/pagination"
+    },
+    {
+      "path": "./packages/proxy"
     }
   ]
 }

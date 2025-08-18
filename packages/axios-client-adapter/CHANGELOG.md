@@ -3,6 +3,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.3.15](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.14...@apimatic/axios-client-adapter@0.3.15) (2025-08-13)
+
+**Note:** Version bump only for package @apimatic/axios-client-adapter
+
+### [0.3.14](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.13...@apimatic/axios-client-adapter@0.3.14) (2025-07-28)
+
+### Features
+
+- **axios-client-adapter:** add support for configurable proxy ([#257](https://github.com/apimatic/apimatic-js-runtime/issues/257)) ([42464a6](https://github.com/apimatic/apimatic-js-runtime/commit/42464a680539b29f477dc634342464eb40940e34))
+
+### [0.3.13](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.12...@apimatic/axios-client-adapter@0.3.13) (2025-07-22)
+
+### Bug Fixes
+
+- **axios-client-adapter:** remove http proxy dependencies ([#256](https://github.com/apimatic/apimatic-js-runtime/issues/256)) ([0609c03](https://github.com/apimatic/apimatic-js-runtime/commit/0609c03d700dd24e376aa610c3aaa92b07967f41))
+
+### [0.3.12](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.11...@apimatic/axios-client-adapter@0.3.12) (2025-07-22)
+
+### Features
+
+- **axios-client-adapter:** add support for configurable proxy ([#254](https://github.com/apimatic/apimatic-js-runtime/issues/254)) ([881045f](https://github.com/apimatic/apimatic-js-runtime/commit/881045fcaa4e7ec396916880620eae50f1f49183))
+
 ### [0.3.11](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/axios-client-adapter@0.3.10...@apimatic/axios-client-adapter@0.3.11) (2025-07-15)
 
 **Note:** Version bump only for package @apimatic/axios-client-adapter

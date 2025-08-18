@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.3.7](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/http-query@0.3.6...@apimatic/http-query@0.3.7) (2025-08-13)
+
+**Note:** Version bump only for package @apimatic/http-query
+
 ### [0.3.6](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/http-query@0.3.5...@apimatic/http-query@0.3.6) (2025-07-11)
 
 ### Bug Fixes

@@ -37,6 +37,7 @@ import {
   tabPrefix,
   unindexedPrefix,
 } from '@apimatic/http-query';
+import { ApiErrorChild } from '../errors/apiErrorChild';
 
 const authParams = {
   username: 'maryam-adnan',
@@ -1066,7 +1067,7 @@ describe('updateRequestByJsonPointer tests', () => {
   });
 });
 
-describe('test default request builder behavior to test retries', () => {
+describe('test default request builder throwing errors', () => {
   const noneAuthenticationProvider = () => passThroughInterceptor;
   function mockHttpClientAdapterToTestRetries(): HttpClientInterface {
     return async (request, requestOptions) => {
@@ -1074,6 +1075,7 @@ describe('test default request builder behavior to test retries', () => {
         return {
           statusCode: 400,
           headers: {},
+          body: '{"key": "value"}',
         } as HttpResponse;
       }
       const statusCode = requestOptions?.abortSignal?.aborted ? 400 : 500;
@@ -1082,47 +1084,78 @@ describe('test default request builder behavior to test retries', () => {
       );
     };
   }
-  it('should test request builder with retries and response returning 500 error code', async () => {
+  const errorRequestBuilder = () =>
+    defaultRequestBuilder(
+      '/test/requestBuilder/errorResponse',
+      undefined,
+      noneAuthenticationProvider,
+      mockHttpClientAdapterToTestRetries()
+    );
+  it('should test request builder with timeout', async () => {
     try {
-      const reqBuilder = defaultRequestBuilder(
-        '/test/requestBuilder/errorResponse',
-        undefined,
-        noneAuthenticationProvider,
-        mockHttpClientAdapterToTestRetries()
-      );
-      await reqBuilder.callAsText();
+      await errorRequestBuilder().callAsText();
     } catch (error) {
       expect(error.message).toEqual(
         'Time out error against http method GET and status code 500'
       );
     }
   });
-  it('should test request builder with throwOn', async () => {
+
+  it('should test request builder throwOn with single status', async () => {
     try {
-      const reqBuilder = defaultRequestBuilder(
-        '/test/requestBuilder/errorResponse',
-        undefined,
-        noneAuthenticationProvider,
-        mockHttpClientAdapterToTestRetries()
-      );
-      reqBuilder.text('result');
+      const reqBuilder = errorRequestBuilder();
+      reqBuilder.text('');
       reqBuilder.throwOn(
         400,
         ApiError,
         true,
-        'Global Error template 500: {$statusCode}, accept => {$response.header.content-type}, body => {$response.body}.'
+        'Single status Error: {$statusCode}, accept => {$response.header.content-type}, body => {$response.body}.'
       );
-      reqBuilder.throwOn(400, ApiError, 'Server responded with a bad request');
-      reqBuilder.throwOn(
-        [400, 500],
-        ApiError,
-        true,
-        'Global Error template 500: {$statusCode}, accept => {$response.header.content-type}, body => {$response.body}.'
-      );
+      await reqBuilder.callAsText();
     } catch (error) {
-      expect(error.message).toEqual(
-        'Time out error against http method GET and status code 500'
-      );
+      if (error instanceof ApiError) {
+        expect(error.result).toBe(undefined);
+        expect(error.statusCode).toEqual(400);
+        expect(error.message).toEqual(
+          'Single status Error: 400, accept => , body => {"key":"value"}.'
+        );
+        return;
+      }
     }
+    fail();
+  });
+
+  it('should test request builder throwOn with status range', async () => {
+    try {
+      const reqBuilder = errorRequestBuilder();
+      reqBuilder.text('');
+      reqBuilder.throwOn([399, 401], ApiError, false, 'Error with range');
+      await reqBuilder.callAsText();
+    } catch (error) {
+      if (error instanceof ApiError) {
+        expect(error.result).toBe(undefined);
+        expect(error.statusCode).toEqual(400);
+        expect(error.message).toEqual('Error with range');
+        return;
+      }
+    }
+    fail();
+  });
+
+  it('should test request builder throwOn with sub class of ApiError', async () => {
+    try {
+      const reqBuilder = errorRequestBuilder();
+      reqBuilder.text('');
+      reqBuilder.throwOn(400, ApiErrorChild, false, 'ApiError sub class');
+      await reqBuilder.callAsText();
+    } catch (error) {
+      if (error instanceof ApiErrorChild) {
+        expect(error.result).toEqual({ key: 'value' });
+        expect(error.statusCode).toEqual(400);
+        expect(error.message).toEqual('ApiError sub class');
+        return;
+      }
+    }
+    fail();
   });
 });

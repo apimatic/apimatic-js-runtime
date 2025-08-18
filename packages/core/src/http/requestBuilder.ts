@@ -60,7 +60,7 @@ import {
 } from './retryConfiguration';
 import { convertToStream } from '@apimatic/convert-to-stream';
 import { XmlSerializerInterface, XmlSerialization } from '../xml/xmlSerializer';
-import { loadResult } from '../errors/apiError';
+import { ApiError, loadResult } from '../errors/apiError';
 import { PathParam } from './pathParam';
 
 export type RequestBuilderFactory<BaseUrlParamType, AuthParams> = (
@@ -855,7 +855,10 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
             args[0] = updateErrorMessage(args[0], context.response);
           }
           const error = new errorConstructor(context, ...args);
-          await loadResult(error);
+          if (errorConstructor.prototype instanceof ApiError) {
+            // Load result only for the sub classes of ApiError
+            await loadResult(error);
+          }
           throw error;
         }
       }
