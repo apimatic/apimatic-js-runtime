@@ -5,6 +5,7 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 describe('bigint', () => {
   describe('Mapping', () => {
     it('should accept number in bigint constructor', () => {
@@ -200,7 +201,7 @@ describe('bigint', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         type: 'integer',
         format: 'int64',
       });

@@ -12,6 +12,7 @@ import {
   validateAndUnmap,
   JSONSchema,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Discriminated Object', () => {
   const baseType = strictObject({
@@ -279,7 +280,7 @@ describe('Discriminated Object', () => {
     it('should output a valid JSON Schema as anyOf with discriminator', () => {
       const jsonSchema = generateJSONSchema(discriminatedSchema);
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         anyOf: [
           {
             $ref: '#/$defs/schema1',

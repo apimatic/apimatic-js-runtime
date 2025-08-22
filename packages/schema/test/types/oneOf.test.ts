@@ -29,6 +29,7 @@ import {
 } from '../types';
 import { dict } from '../../src/types/dict';
 import { stringEnum } from '../../src/types/stringEnum';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('OnyOf', () => {
   describe('Mapping', () => {
@@ -467,7 +468,7 @@ describe('OnyOf', () => {
       const jsonSchema = generateJSONSchema(oneOf([string(), number()]));
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         oneOf: [
           {
             type: 'string',
@@ -491,7 +492,7 @@ describe('OnyOf', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         oneOf: [
           {
             type: 'object',
@@ -539,7 +540,7 @@ describe('OnyOf', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         oneOf: [
           {
             $ref: '#/$defs/schema1',

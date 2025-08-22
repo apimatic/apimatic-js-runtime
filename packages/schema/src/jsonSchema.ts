@@ -4,6 +4,7 @@ import type {
   JSONSchema,
   PartialJSONSchema,
 } from './jsonSchemaTypes';
+import { META_SCHEMA } from './jsonSchemaTypes';
 import type { Schema } from './schema';
 
 export function generateJSONSchema<T extends Schema<any, any>>(
@@ -26,7 +27,7 @@ export function generateJSONSchema<T extends Schema<any, any>>(
   const partialJsonSchema = schema.toJSONSchema(context);
 
   return {
-    $schema: 'https://json-schema.org/draft-07/schema',
+    $schema: META_SCHEMA,
     ...partialJsonSchema,
     ...(schemaRegistry.size > 0 && { $defs }),
   };

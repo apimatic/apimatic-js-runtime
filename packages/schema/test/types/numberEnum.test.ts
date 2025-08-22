@@ -1,4 +1,5 @@
 import { generateJSONSchema, JSONSchema, numberEnum } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Number Enum', () => {
   enum SampleNumberEnum {
@@ -14,7 +15,7 @@ describe('Number Enum', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         enum: [2, 4, 8, 16],
       });
     });

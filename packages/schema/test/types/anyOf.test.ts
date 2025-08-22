@@ -20,6 +20,7 @@ import {
   anyOfWithDiscriminator,
 } from '../types';
 import { boolean } from '../../src/types/boolean';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 describe('AnyOf', () => {
   describe('Mapping', () => {
     it('should accept anyOf primitives', () => {
@@ -321,7 +322,7 @@ describe('AnyOf', () => {
       const jsonSchema = generateJSONSchema(anyOf([string(), number()]));
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         anyOf: [
           {
             type: 'string',
@@ -345,7 +346,7 @@ describe('AnyOf', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         anyOf: [
           {
             type: 'object',
@@ -393,7 +394,7 @@ describe('AnyOf', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         anyOf: [
           {
             $ref: '#/$defs/schema1',

@@ -1,6 +1,8 @@
 import type { JSONSchema7 } from 'json-schema';
 import type { Schema } from './schema';
 
+export const META_SCHEMA = 'https://json-schema.org/draft-07/schema';
+
 export type SchemaName = string;
 export type SchemaRef = `#/$defs/${SchemaName}` | '#';
 export interface JSONSchemaContext {

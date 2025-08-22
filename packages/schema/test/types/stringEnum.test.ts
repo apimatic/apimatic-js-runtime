@@ -5,6 +5,7 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('String Enum', () => {
   enum SampleStringEnum {
@@ -95,7 +96,7 @@ describe('String Enum', () => {
       const jsonSchema = generateJSONSchema(schema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         enum: ['_hearts', '_spades', '_clubs', '_diamonds'],
       });
     });
