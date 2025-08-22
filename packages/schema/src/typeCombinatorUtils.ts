@@ -13,9 +13,8 @@ export type SchemaType<T extends Schema<any, any>> = T extends Schema<
 >
   ? U
   : never;
-export type ArraySchemaType<
-  T extends Array<Schema<any, any>>
-> = T[number] extends Schema<any, any> ? SchemaType<T[number]> : never;
+export type ArraySchemaType<T extends Array<Schema<any, any>>> =
+  T[number] extends Schema<any, any> ? SchemaType<T[number]> : never;
 
 /**
  * Type helper to work with schemas of a discriminated oneOf or anyOf type
