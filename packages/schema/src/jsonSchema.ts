@@ -1,8 +1,8 @@
 import type {
-  JSONSchemaDefinition,
   SchemaName,
   JSONSchemaContext,
   JSONSchema,
+  PartialJSONSchema,
 } from './jsonSchemaTypes';
 import type { Schema } from './schema';
 
@@ -10,7 +10,7 @@ export function generateJSONSchema<T extends Schema<any, any>>(
   schema: T
 ): JSONSchema {
   const schemaRegistry: Map<Schema<any, any>, SchemaName> = new Map();
-  const $defs: Record<SchemaName, JSONSchemaDefinition> = {};
+  const $defs: Record<SchemaName, PartialJSONSchema> = {};
   const context: JSONSchemaContext = {
     getRootSchema: () => schema,
     registerSchema: (s) => {

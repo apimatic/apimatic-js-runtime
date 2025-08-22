@@ -1,7 +1,6 @@
-import type { JSONSchema7, JSONSchema7Definition } from 'json-schema';
+import type { JSONSchema7 } from 'json-schema';
 import type { Schema } from './schema';
 
-export type JSONSchemaDefinition = JSONSchema7Definition;
 export type SchemaName = string;
 export type SchemaRef = `#/$defs/${SchemaName}` | '#';
 export interface JSONSchemaContext {
@@ -26,9 +25,10 @@ export interface JSONSchemaContext {
    * This is different from `registerSchema` which is used to keep track of
    * recursion.
    */
-  addDefinition: (schemaId: SchemaName, def: JSONSchemaDefinition) => void;
+  addDefinition: (schemaId: SchemaName, def: PartialJSONSchema) => void;
 }
 export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
+
 /**
  * The equivalent JSON Schema representation of the Schema interface.
  * It targets the superset of JSON Schema 2020-12 specified in OpenAPI 3.1.0.
@@ -36,10 +36,13 @@ export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
  * NOTE: Future compatibility with JSON Schema draft-07 is not guaranteed.
  * draft-07 was chosen as a base type since many existing libraries already use it.
  */
-export interface JSONSchema extends JSONSchema7 {
-  $schema: 'https://json-schema.org/draft-07/schema';
-  discriminator?: {
-    propertyName: string;
-    mapping?: { [discriminatorValue: string]: string };
-  };
-}
+export type JSONSchema = OpenAPIExtension<JSONSchema7>;
+
+type OpenAPIExtension<T> = T extends object
+  ? { [K in keyof T]: OpenAPIExtension<T[K]> } & {
+      discriminator?: {
+        propertyName: string;
+        mapping?: { [discriminatorValue: string]: string };
+      };
+    }
+  : T;
