@@ -5,9 +5,27 @@ export type JSONSchemaDefinition = JSONSchema7Definition;
 export type SchemaName = string;
 export type SchemaRef = `#/$defs/${SchemaName}` | '#';
 export interface JSONSchemaContext {
+  /**
+   * @returns the Schema that is being converted to JSON Schema
+   * i.e. the root of the schema tree
+   */
   getRootSchema: <T, V>() => Schema<T, V>;
+  /**
+   * The context maintains a collection of schemas that have been visited.
+   * Use this to add a schema that has been visited.
+   */
   registerSchema: <T, V>(schema: Schema<T, V>) => SchemaName;
+  /**
+   * Can be used for checking if a schema has already been visited
+   * e.g. recursive schemas
+   * @returns schema name if it has been visited otherwise returns false
+   */
   getRegisteredSchema: <T, V>(schema: Schema<T, V>) => SchemaName | false;
+  /**
+   * Add a JSON Schema to the global $defs property.
+   * This is different from `registerSchema` which is used to keep track of
+   * recursion.
+   */
   addDefinition: (schemaId: SchemaName, def: JSONSchemaDefinition) => void;
 }
 export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
