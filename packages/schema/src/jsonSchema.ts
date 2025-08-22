@@ -1,10 +1,10 @@
-import type {
-  SchemaName,
-  JSONSchemaContext,
-  JSONSchema,
-  PartialJSONSchema,
+import {
+  type SchemaName,
+  type JSONSchemaContext,
+  type JSONSchema,
+  type PartialJSONSchema,
+  META_SCHEMA,
 } from './jsonSchemaTypes';
-import { META_SCHEMA } from './jsonSchemaTypes';
 import type { Schema } from './schema';
 
 export function generateJSONSchema<T extends Schema<any, any>>(
