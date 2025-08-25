@@ -33,6 +33,7 @@ describe('Self-Referencing', () => {
           $ref: '#/$defs/schema1',
         },
       },
+      additionalProperties: false,
       $defs: {
         schema1: {
           type: 'object',
@@ -45,6 +46,7 @@ describe('Self-Referencing', () => {
               $ref: '#',
             },
           },
+          additionalProperties: false,
         },
       },
     });
@@ -64,6 +66,7 @@ describe('Self-Referencing', () => {
         },
       },
       required: ['senior'],
+      additionalProperties: false,
       $defs: {
         schema1: {
           type: 'object',
@@ -75,6 +78,7 @@ describe('Self-Referencing', () => {
               $ref: '#/$defs/schema2',
             },
           },
+          additionalProperties: false,
         },
         schema2: {
           type: 'object',
@@ -87,6 +91,7 @@ describe('Self-Referencing', () => {
               $ref: '#/$defs/schema1',
             },
           },
+          additionalProperties: false,
         },
       },
     });

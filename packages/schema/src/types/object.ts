@@ -246,6 +246,7 @@ function internalObject<
           key,
           propSchema,
         })),
+        skipAdditionalPropValidation,
         mapAdditionalProps,
         additionalPropsSchema
       ),
@@ -255,6 +256,7 @@ function internalObject<
 function generateObjectSchema(
   context: JSONSchemaContext,
   objectSchemaEntries: Array<{ key: string; propSchema: Schema<any, any> }>,
+  skipAdditionalPropValidation: boolean,
   mapAdditionalProps: boolean | [string, Schema<any, any>],
   additionalPropsSchema: Schema<any, any> | undefined
 ): PartialJSONSchema {
@@ -266,15 +268,18 @@ function generateObjectSchema(
     .filter(({ propSchema }) => !propSchema.type().startsWith('Optional<'))
     .map(({ key }) => key);
 
+  const additionalProperties: undefined | boolean | PartialJSONSchema =
+    skipAdditionalPropValidation && !mapAdditionalProps
+      ? undefined
+      : mapAdditionalProps
+      ? additionalPropsSchema?.toJSONSchema(context) ?? true
+      : false;
+
   return {
     type: 'object',
     ...(objectSchemaEntries.length && { properties }),
     ...(required.length && { required }),
-    ...(mapAdditionalProps && {
-      additionalProperties: additionalPropsSchema
-        ? additionalPropsSchema.toJSONSchema(context)
-        : true,
-    }),
+    ...(additionalProperties !== undefined && { additionalProperties }),
   };
 }
 

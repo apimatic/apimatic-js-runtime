@@ -312,6 +312,7 @@ describe('Discriminated Object', () => {
                 type: 'number',
               },
             },
+            additionalProperties: false
           },
           schema2: {
             type: 'object',
@@ -327,6 +328,7 @@ describe('Discriminated Object', () => {
                 type: 'boolean',
               },
             },
+            additionalProperties: false
           },
           schema3: {
             type: 'object',
@@ -342,6 +344,7 @@ describe('Discriminated Object', () => {
                 type: 'boolean',
               },
             },
+            additionalProperties: false
           },
         },
       });
