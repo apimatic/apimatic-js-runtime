@@ -24,7 +24,7 @@ describe('Strict Object', () => {
         $schema: META_SCHEMA,
         type: 'object',
         properties: {
-          foo: { type: 'string' }
+          foo: { type: 'string' },
         },
         required: ['foo'],
         additionalProperties: false,
