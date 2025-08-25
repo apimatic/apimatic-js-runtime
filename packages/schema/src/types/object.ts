@@ -264,7 +264,7 @@ function generateObjectSchema(
   for (const { key, propSchema } of objectSchemaEntries) {
     properties[key] = propSchema.toJSONSchema(context);
   }
-  const required = objectSchemaEntries
+  const required: string[] = objectSchemaEntries
     .filter(({ propSchema }) => !propSchema.type().startsWith('Optional<'))
     .map(({ key }) => key);
 
