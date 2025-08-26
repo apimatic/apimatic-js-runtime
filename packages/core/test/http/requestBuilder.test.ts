@@ -26,7 +26,7 @@ import {
   nullable,
   optional,
   bigint,
-} from '../../../schema';
+} from '@apimatic/schema';
 import {
   FORM_URLENCODED_CONTENT_TYPE,
   TEXT_CONTENT_TYPE,
