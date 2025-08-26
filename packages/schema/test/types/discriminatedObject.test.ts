@@ -282,15 +282,9 @@ describe('Discriminated Object', () => {
       expect(jsonSchema).toStrictEqual<JSONSchema>({
         $schema: META_SCHEMA,
         anyOf: [
-          {
-            $ref: '#/$defs/schema1',
-          },
-          {
-            $ref: '#/$defs/schema2',
-          },
-          {
-            $ref: '#/$defs/schema3',
-          },
+          { $ref: '#/$defs/schema1' },
+          { $ref: '#/$defs/schema2' },
+          { $ref: '#/$defs/schema3' },
         ],
         discriminator: {
           propertyName: 'type unmapped',
@@ -303,48 +297,56 @@ describe('Discriminated Object', () => {
         $defs: {
           schema1: {
             type: 'object',
-            required: ['base field'],
             properties: {
-              'type unmapped': {
-                type: 'string',
-              },
-              'base field': {
-                type: 'number',
-              },
+              'type unmapped': { type: 'string' },
+              'base field': { type: 'number' },
             },
+            required: ['base field'],
             additionalProperties: false,
           },
           schema2: {
-            type: 'object',
-            required: ['base field', 'child1 field'],
-            properties: {
-              'type unmapped': {
-                type: 'string',
+            allOf: [
+              {
+                type: 'object',
+                properties: {
+                  'type unmapped': { type: 'string' },
+                  'base field': { type: 'number' },
+                },
+                required: ['base field'],
+                additionalProperties: false,
               },
-              'base field': {
-                type: 'number',
+              {
+                type: 'object',
+                properties: {
+                  'type unmapped': { type: 'string' },
+                  'child1 field': { type: 'boolean' },
+                },
+                required: ['child1 field'],
+                additionalProperties: false,
               },
-              'child1 field': {
-                type: 'boolean',
-              },
-            },
-            additionalProperties: false,
+            ],
           },
           schema3: {
-            type: 'object',
-            required: ['base field', 'child2 field'],
-            properties: {
-              'type unmapped': {
-                type: 'string',
+            allOf: [
+              {
+                type: 'object',
+                properties: {
+                  'type unmapped': { type: 'string' },
+                  'base field': { type: 'number' },
+                },
+                required: ['base field'],
+                additionalProperties: false,
               },
-              'base field': {
-                type: 'number',
+              {
+                type: 'object',
+                properties: {
+                  'type unmapped': { type: 'string' },
+                  'child2 field': { type: 'boolean' },
+                },
+                required: ['child2 field'],
+                additionalProperties: false,
               },
-              'child2 field': {
-                type: 'boolean',
-              },
-            },
-            additionalProperties: false,
+            ],
           },
         },
       });
