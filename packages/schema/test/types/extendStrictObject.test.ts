@@ -348,14 +348,7 @@ describe('Extend Strict Object', () => {
       expect(jsonSchema).toStrictEqual({
         $schema: META_SCHEMA,
         allOf: [
-          {
-            type: 'object',
-            required: ['user_id'],
-            properties: {
-              user_id: { type: 'string' },
-            },
-            additionalProperties: false,
-          },
+          { $ref: '#/$defs/schema1' },
           {
             type: 'object',
             required: ['user_age'],
@@ -365,6 +358,16 @@ describe('Extend Strict Object', () => {
             additionalProperties: false,
           },
         ],
+        $defs: {
+          schema1: {
+            type: 'object',
+            required: ['user_id'],
+            properties: {
+              user_id: { type: 'string' },
+            },
+            additionalProperties: false,
+          },
+        },
       });
     });
   });

@@ -309,14 +309,7 @@ describe('Extend Object/Expando Object', () => {
       expect(jsonSchema).toStrictEqual({
         $schema: META_SCHEMA,
         allOf: [
-          {
-            type: 'object',
-            required: ['user_id'],
-            properties: {
-              user_id: { type: 'string' },
-            },
-            additionalProperties: false,
-          },
+          { $ref: '#/$defs/schema1' },
           {
             type: 'object',
             required: ['user_age'],
@@ -326,6 +319,16 @@ describe('Extend Object/Expando Object', () => {
             additionalProperties: true,
           },
         ],
+        $defs: {
+          schema1: {
+            type: 'object',
+            required: ['user_id'],
+            properties: {
+              user_id: { type: 'string' },
+            },
+            additionalProperties: false,
+          }
+        }
       });
     });
 
@@ -338,14 +341,7 @@ describe('Extend Object/Expando Object', () => {
       expect(jsonSchema).toStrictEqual({
         $schema: META_SCHEMA,
         allOf: [
-          {
-            type: 'object',
-            required: ['user_id'],
-            properties: {
-              user_id: { type: 'string' },
-            },
-            additionalProperties: false,
-          },
+          { $ref: '#/$defs/schema1' },
           {
             type: 'object',
             properties: {
@@ -354,6 +350,16 @@ describe('Extend Object/Expando Object', () => {
             additionalProperties: true,
           },
         ],
+        $defs: {
+          schema1: {
+            type: 'object',
+            required: ['user_id'],
+            properties: {
+              user_id: { type: 'string' },
+            },
+            additionalProperties: false,
+          },
+        },
       });
     });
 
@@ -369,14 +375,7 @@ describe('Extend Object/Expando Object', () => {
       expect(jsonSchema).toStrictEqual({
         $schema: META_SCHEMA,
         allOf: [
-          {
-            type: 'object',
-            required: ['user_id'],
-            properties: {
-              user_id: { type: 'string' },
-            },
-            additionalProperties: false,
-          },
+          { $ref: '#/$defs/schema1' },
           {
             type: 'object',
             required: ['user_age'],
@@ -385,6 +384,16 @@ describe('Extend Object/Expando Object', () => {
             },
           },
         ],
+        $defs: {
+          schema1: {
+            type: 'object',
+            required: ['user_id'],
+            properties: {
+              user_id: { type: 'string' },
+            },
+            additionalProperties: false,
+          },
+        }
       });
     });
   });

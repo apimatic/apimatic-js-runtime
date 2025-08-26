@@ -298,8 +298,12 @@ describe('Discriminated Object', () => {
           schema1: {
             type: 'object',
             properties: {
-              'type unmapped': { type: 'string' },
-              'base field': { type: 'number' },
+              'type unmapped': {
+                type: 'string',
+              },
+              'base field': {
+                type: 'number',
+              },
             },
             required: ['base field'],
             additionalProperties: false,
@@ -307,19 +311,17 @@ describe('Discriminated Object', () => {
           schema2: {
             allOf: [
               {
-                type: 'object',
-                properties: {
-                  'type unmapped': { type: 'string' },
-                  'base field': { type: 'number' },
-                },
-                required: ['base field'],
-                additionalProperties: false,
+                $ref: '#/$defs/schema1',
               },
               {
                 type: 'object',
                 properties: {
-                  'type unmapped': { type: 'string' },
-                  'child1 field': { type: 'boolean' },
+                  'type unmapped': {
+                    type: 'string',
+                  },
+                  'child1 field': {
+                    type: 'boolean',
+                  },
                 },
                 required: ['child1 field'],
                 additionalProperties: false,
@@ -329,19 +331,17 @@ describe('Discriminated Object', () => {
           schema3: {
             allOf: [
               {
-                type: 'object',
-                properties: {
-                  'type unmapped': { type: 'string' },
-                  'base field': { type: 'number' },
-                },
-                required: ['base field'],
-                additionalProperties: false,
+                $ref: '#/$defs/schema1',
               },
               {
                 type: 'object',
                 properties: {
-                  'type unmapped': { type: 'string' },
-                  'child2 field': { type: 'boolean' },
+                  'type unmapped': {
+                    type: 'string',
+                  },
+                  'child2 field': {
+                    type: 'boolean',
+                  },
                 },
                 required: ['child2 field'],
                 additionalProperties: false,
