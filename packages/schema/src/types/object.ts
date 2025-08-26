@@ -52,10 +52,8 @@ export interface StrictObjectSchema<
   readonly objectSchema: T;
 }
 
-export interface ObjectSchema<
-  V extends string,
-  T extends AnyObjectSchema<V>
-> extends Schema<
+export interface ObjectSchema<V extends string, T extends AnyObjectSchema<V>>
+  extends Schema<
     ObjectType<T> & { [key: string]: unknown },
     MappedObjectType<T> & { [key: string]: unknown }
   > {
@@ -80,10 +78,9 @@ export interface ExtendedObjectSchema<
  * A strict-object does not allow additional properties during mapping or
  * unmapping. Additional properties will result in a validation error.
  */
-export function strictObject<
-  V extends string,
-  T extends AnyObjectSchema<V>
->(objectSchema: T): StrictObjectSchema<V, T> {
+export function strictObject<V extends string, T extends AnyObjectSchema<V>>(
+  objectSchema: T
+): StrictObjectSchema<V, T> {
   const schema = internalObject(objectSchema, false, false);
   schema.type = () =>
     `StrictObject<{${Object.keys(objectSchema)
@@ -98,10 +95,9 @@ export function strictObject<
  * The object schema allows additional properties during mapping and unmapping. The
  * additional properties are copied over as is.
  */
-export function expandoObject<
-  V extends string,
-  T extends AnyObjectSchema<V>
->(objectSchema: T): ObjectSchema<V, T> {
+export function expandoObject<V extends string, T extends AnyObjectSchema<V>>(
+  objectSchema: T
+): ObjectSchema<V, T> {
   return internalObject(objectSchema, true, true);
 }
 
@@ -134,10 +130,9 @@ export function typedExpandoObject<
  * The Object schema allows additional properties during mapping and unmapping
  * but discards them.
  */
-export function object<
-  V extends string,
-  T extends AnyObjectSchema<V>
->(objectSchema: T): StrictObjectSchema<V, T> {
+export function object<V extends string, T extends AnyObjectSchema<V>>(
+  objectSchema: T
+): StrictObjectSchema<V, T> {
   const schema = internalObject(objectSchema, true, false);
   schema.type = () =>
     `Object<{${Object.keys(objectSchema).map(objectKeyEncode).join(',')}}>`;
@@ -162,8 +157,8 @@ export function extendStrictObject<
       allOf: [
         context.getOrRegisterSchema(parentObjectSchema),
         strictObject(objectSchema).toJSONSchema(context),
-      ]
-    })
+      ],
+    }),
   };
 }
 
@@ -185,8 +180,8 @@ export function extendExpandoObject<
       allOf: [
         context.getOrRegisterSchema(parentObjectSchema),
         expandoObject(objectSchema).toJSONSchema(context),
-      ]
-    })
+      ],
+    }),
   };
 }
 
@@ -208,18 +203,15 @@ export function extendObject<
       allOf: [
         context.getOrRegisterSchema(parentObjectSchema),
         object(objectSchema).toJSONSchema(context),
-      ]
-    })
+      ],
+    }),
   };
 }
 
 /**
  * Internal utility to create object schema with different options.
  */
-function internalObject<
-  V extends string,
-  T extends AnyObjectSchema<V>
->(
+function internalObject<V extends string, T extends AnyObjectSchema<V>>(
   objectSchema: T,
   skipAdditionalPropValidation: boolean,
   mapAdditionalProps: boolean | [string, Schema<any, any>]
