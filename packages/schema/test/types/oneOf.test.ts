@@ -469,14 +469,15 @@ describe('OnyOf', () => {
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
         $schema: META_SCHEMA,
-        oneOf: [
-          {
+        oneOf: [{ $ref: '#/$defs/schema1' }, { $ref: '#/$defs/schema2' }],
+        $defs: {
+          schema1: {
             type: 'string',
           },
-          {
+          schema2: {
             type: 'number',
           },
-        ],
+        },
       });
     });
 
@@ -493,8 +494,9 @@ describe('OnyOf', () => {
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
         $schema: META_SCHEMA,
-        oneOf: [
-          {
+        oneOf: [{ $ref: '#/$defs/schema1' }, { $ref: '#/$defs/schema2' }],
+        $defs: {
+          schema1: {
             type: 'object',
             required: ['name'],
             properties: {
@@ -503,7 +505,7 @@ describe('OnyOf', () => {
               },
             },
           },
-          {
+          schema2: {
             type: 'object',
             required: ['title'],
             properties: {
@@ -512,7 +514,7 @@ describe('OnyOf', () => {
               },
             },
           },
-        ],
+        },
       });
     });
 
