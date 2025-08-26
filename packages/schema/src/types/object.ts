@@ -21,9 +21,9 @@ import {
 import { dict } from './dict';
 import { optional } from './optional';
 
-type AnyObjectSchema = Record<
+type AnyObjectSchema<V = string> = Record<
   string,
-  [string, Schema<any, any>, ObjectXmlOptions?]
+  [V, Schema<any, any>, ObjectXmlOptions?]
 >;
 
 type AllValues<T extends AnyObjectSchema> = {
@@ -47,14 +47,14 @@ export interface ObjectXmlOptions {
 
 export interface StrictObjectSchema<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
+  T extends AnyObjectSchema<V>
 > extends Schema<ObjectType<T>, MappedObjectType<T>> {
   readonly objectSchema: T;
 }
 
 export interface ObjectSchema<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
+  T extends AnyObjectSchema<V>
 > extends Schema<
     ObjectType<T> & { [key: string]: unknown },
     MappedObjectType<T> & { [key: string]: unknown }
@@ -64,7 +64,7 @@ export interface ObjectSchema<
 
 export interface ExtendedObjectSchema<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   K extends string,
   U
 > extends Schema<
@@ -82,7 +82,7 @@ export interface ExtendedObjectSchema<
  */
 export function strictObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
+  T extends AnyObjectSchema<V>
 >(objectSchema: T): StrictObjectSchema<V, T> {
   const schema = internalObject(objectSchema, false, false);
   schema.type = () =>
@@ -100,7 +100,7 @@ export function strictObject<
  */
 export function expandoObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
+  T extends AnyObjectSchema<V>
 >(objectSchema: T): ObjectSchema<V, T> {
   return internalObject(objectSchema, true, true);
 }
@@ -114,7 +114,7 @@ export function expandoObject<
  */
 export function typedExpandoObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   K extends string,
   S extends Schema<any, any>
 >(
@@ -136,7 +136,7 @@ export function typedExpandoObject<
  */
 export function object<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
+  T extends AnyObjectSchema<V>
 >(objectSchema: T): StrictObjectSchema<V, T> {
   const schema = internalObject(objectSchema, true, false);
   schema.type = () =>
@@ -149,9 +149,9 @@ export function object<
  */
 export function extendStrictObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   A extends string,
-  B extends Record<string, [A, Schema<any, any>, ObjectXmlOptions?]>
+  B extends AnyObjectSchema<A>
 >(
   parentObjectSchema: StrictObjectSchema<V, T>,
   objectSchema: B
@@ -172,9 +172,9 @@ export function extendStrictObject<
  */
 export function extendExpandoObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   A extends string,
-  B extends Record<string, [A, Schema<any, any>, ObjectXmlOptions?]>
+  B extends AnyObjectSchema<A>
 >(
   parentObjectSchema: ObjectSchema<V, T>,
   objectSchema: B
@@ -195,9 +195,9 @@ export function extendExpandoObject<
  */
 export function extendObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   A extends string,
-  B extends Record<string, [A, Schema<any, any>, ObjectXmlOptions?]>
+  B extends AnyObjectSchema<A>
 >(
   parentObjectSchema: StrictObjectSchema<V, T>,
   objectSchema: B
@@ -218,7 +218,7 @@ export function extendObject<
  */
 function internalObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
+  T extends AnyObjectSchema<V>
 >(
   objectSchema: T,
   skipAdditionalPropValidation: boolean,
