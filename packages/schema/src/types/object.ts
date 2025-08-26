@@ -258,10 +258,7 @@ function internalObject<V extends string, T extends AnyObjectSchema<V>>(
     toJSONSchema: (context) =>
       generateObjectSchema(
         context,
-        Object.entries(objectSchema).map(([, [key, propSchema]]) => ({
-          key,
-          propSchema,
-        })),
+        objectSchema,
         skipAdditionalPropValidation,
         mapAdditionalProps,
         additionalPropsSchema
@@ -269,13 +266,16 @@ function internalObject<V extends string, T extends AnyObjectSchema<V>>(
   };
 }
 
-function generateObjectSchema(
+function generateObjectSchema<V extends string>(
   context: JSONSchemaContext,
-  objectSchemaEntries: Array<{ key: string; propSchema: Schema<any, any> }>,
+  objectSchema: AnyObjectSchema<V>,
   skipAdditionalPropValidation: boolean,
   mapAdditionalProps: boolean | [string, Schema<any, any>],
   additionalPropsSchema: Schema<any, any> | undefined
 ): PartialJSONSchema {
+  const objectSchemaEntries = Object.entries(objectSchema).map(
+    ([, [key, propSchema]]) => ({ key, propSchema })
+  );
   const properties: Record<string, PartialJSONSchema> = {};
   for (const { key, propSchema } of objectSchemaEntries) {
     properties[key] = propSchema.toJSONSchema(context);
