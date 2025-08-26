@@ -22,12 +22,6 @@ export interface JSONSchemaContext {
    * @returns schema name if it has been visited otherwise returns false
    */
   getRegisteredSchema: <T, V>(schema: Schema<T, V>) => SchemaName | false;
-  /**
-   * Add a JSON Schema to the global $defs property.
-   * This is different from `registerSchema` which is used to keep track of
-   * recursion.
-   */
-  addDefinition: (schemaId: SchemaName, def: PartialJSONSchema) => void;
 }
 export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
 

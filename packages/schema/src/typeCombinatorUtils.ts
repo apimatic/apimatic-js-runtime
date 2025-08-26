@@ -56,8 +56,6 @@ export function toCombinatorJSONSchemaWithDiscriminator<
   const discriminatorMapping: { [val: SchemaName]: SchemaRef } = {};
   Object.keys(discriminatorMap).forEach((key, index) => {
     const schemaName = context.registerSchema(schemas[index]);
-    context.addDefinition(schemaName, schemas[index].toJSONSchema(context));
-
     const schemaRef: SchemaRef = `#/$defs/${schemaName}`;
     types.push({ $ref: schemaRef });
     discriminatorMapping[key] = schemaRef;

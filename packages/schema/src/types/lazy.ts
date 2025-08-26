@@ -41,8 +41,6 @@ function getLazyJSONSchema<T, V>(
   }
 
   const schemaName = context.registerSchema(schema);
-  const jsonSchema = schema.toJSONSchema(context);
-  context.addDefinition(schemaName, jsonSchema);
   return {
     $ref: `#/$defs/${schemaName}`,
   };
