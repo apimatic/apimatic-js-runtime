@@ -55,9 +55,9 @@ export function toCombinatorJSONSchemaWithDiscriminator<
   const types: Array<{ $ref: SchemaRef }> = [];
   const discriminatorMapping: { [val: SchemaName]: SchemaRef } = {};
   Object.keys(discriminatorMap).forEach((key, index) => {
-    const schemaRef = context.getOrRegisterSchema(schemas[index]);
-    types.push({ $ref: schemaRef });
-    discriminatorMapping[key] = schemaRef;
+    const refObject = context.getOrRegisterSchema(schemas[index]);
+    types.push(refObject);
+    discriminatorMapping[key] = refObject.$ref;
   });
   return {
     [oneOfOrAnyOf]: types,

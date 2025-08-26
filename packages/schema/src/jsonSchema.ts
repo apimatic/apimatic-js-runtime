@@ -4,7 +4,6 @@ import {
   type JSONSchema,
   type PartialJSONSchema,
   META_SCHEMA,
-  SchemaRef,
 } from './jsonSchemaTypes';
 import type { Schema } from './schema';
 
@@ -14,20 +13,20 @@ export function generateJSONSchema<T extends Schema<any, any>>(
   const schemaRegistry: Map<Schema<any, any>, SchemaName> = new Map();
   const $defs: Record<SchemaName, PartialJSONSchema> = {};
   const context: JSONSchemaContext = {
-    getOrRegisterSchema: (schema): SchemaRef => {
+    getOrRegisterSchema: (schema) => {
       if (schema === rootSchema) {
-        return '#';
+        return { $ref: '#' };
       }
 
       const existingSchemaName = schemaRegistry.get(schema);
       if (existingSchemaName) {
-        return `#/$defs/${existingSchemaName}`;
+        return { $ref: `#/$defs/${existingSchemaName}` };
       }
 
       const schemaName = `schema${schemaRegistry.size + 1}`;
       schemaRegistry.set(schema, schemaName);
       $defs[schemaName] ??= schema.toJSONSchema(context);
-      return `#/$defs/${schemaName}`;
+      return { $ref: `#/$defs/${schemaName}` };
     },
   };
   const partialJsonSchema = rootSchema.toJSONSchema(context);

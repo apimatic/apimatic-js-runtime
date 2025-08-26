@@ -160,7 +160,7 @@ export function extendStrictObject<
     ...strictObject({ ...parentObjectSchema.objectSchema, ...objectSchema }),
     toJSONSchema: (context) => ({
       allOf: [
-        { $ref: context.getOrRegisterSchema(parentObjectSchema) },
+        context.getOrRegisterSchema(parentObjectSchema),
         strictObject(objectSchema).toJSONSchema(context),
       ]
     })
@@ -183,7 +183,7 @@ export function extendExpandoObject<
     ...expandoObject({ ...parentObjectSchema.objectSchema, ...objectSchema }),
     toJSONSchema: (context) => ({
       allOf: [
-        { $ref: context.getOrRegisterSchema(parentObjectSchema) },
+        context.getOrRegisterSchema(parentObjectSchema),
         expandoObject(objectSchema).toJSONSchema(context),
       ]
     })
@@ -206,7 +206,7 @@ export function extendObject<
     ...object({ ...parentObjectSchema.objectSchema, ...objectSchema }),
     toJSONSchema: (context) => ({
       allOf: [
-        { $ref: context.getOrRegisterSchema(parentObjectSchema) },
+        context.getOrRegisterSchema(parentObjectSchema),
         object(objectSchema).toJSONSchema(context),
       ]
     })

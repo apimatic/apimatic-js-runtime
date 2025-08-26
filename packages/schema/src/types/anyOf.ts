@@ -37,7 +37,7 @@ function createAnyOfWithoutDiscriminator<T extends Array<Schema<any, any>>>(
     mapXml: (value, ctxt) => matchAndMapXml(schemas, value, ctxt),
     unmapXml: (value, ctxt) => matchAndUnmapXml(schemas, value, ctxt),
     toJSONSchema: (context) => ({
-      anyOf: schemas.map((schema) => ({ $ref: context.getOrRegisterSchema(schema) })),
+      anyOf: schemas.map((schema) => context.getOrRegisterSchema(schema)),
     }),
   };
 }

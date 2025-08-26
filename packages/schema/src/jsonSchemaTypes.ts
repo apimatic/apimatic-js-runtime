@@ -7,12 +7,12 @@ export type SchemaName = string;
 export type SchemaRef = `#/$defs/${SchemaName}` | '#';
 export interface JSONSchemaContext {
   /**
-   * Returns a reference to a schema if it's been visited.
+   * Returns a reference object for a schema if it's been visited.
    * Adds the schema to the registry if it hasn't been visited yet.
    * @param schema Schema to check
-   * @returns Schema reference
+   * @returns Schema reference object
    */
-  getOrRegisterSchema: <T, V>(schema: Schema<T, V>) => SchemaRef;
+  getOrRegisterSchema: <T, V>(schema: Schema<T, V>) => { $ref: SchemaRef };
 }
 export type PartialJSONSchema = Omit<JSONSchema, '$schema' | '$defs'>;
 
