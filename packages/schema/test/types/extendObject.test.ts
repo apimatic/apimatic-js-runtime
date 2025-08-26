@@ -1,5 +1,7 @@
 import {
   extendExpandoObject,
+  extendObject,
+  generateJSONSchema,
   number,
   optional,
   SchemaMappedType,
@@ -9,8 +11,9 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
-describe('Extend Strict Object', () => {
+describe('Extend Object/Expando Object', () => {
   const idObject = strictObject({
     id: ['user_id', string()],
   });
@@ -290,6 +293,99 @@ describe('Extend Strict Object', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a JSON Schema with allOf using parent and child schema w/ additionalProperties', () => {
+      const userSchema = extendExpandoObject(idObject, {
+        age: ['user_age', number()],
+      });
+
+      // Act: generate JSON Schema for the extended schema
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      // Assert: expect allOf with $ref to parent and inlined child, using $defs
+      expect(jsonSchema).toStrictEqual({
+        $schema: META_SCHEMA,
+        allOf: [
+          {
+            type: 'object',
+            required: ['user_id'],
+            properties: {
+              user_id: { type: 'string' },
+            },
+            additionalProperties: false,
+          },
+          {
+            type: 'object',
+            required: ['user_age'],
+            properties: {
+              user_age: { type: 'number' },
+            },
+            additionalProperties: true,
+          },
+        ],
+      });
+    });
+
+    it('should output a JSON Schema with allOf for optional properties w/ additionalProperties', () => {
+      const userSchema = extendExpandoObject(idObject, {
+        age: ['user_age', optional(number())],
+      });
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      expect(jsonSchema).toStrictEqual({
+        $schema: META_SCHEMA,
+        allOf: [
+          {
+            type: 'object',
+            required: ['user_id'],
+            properties: {
+              user_id: { type: 'string' },
+            },
+            additionalProperties: false,
+          },
+          {
+            type: 'object',
+            properties: {
+              user_age: { type: 'number' },
+            },
+            additionalProperties: true,
+          },
+        ],
+      });
+    });
+
+    it('should output a JSON Schema with allOf using parent and child schema w/ additionalProperties', () => {
+      const userSchema = extendObject(idObject, {
+        age: ['user_age', number()],
+      });
+
+      // Act: generate JSON Schema for the extended schema
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      // Assert: expect allOf with $ref to parent and inlined child, using $defs
+      expect(jsonSchema).toStrictEqual({
+        $schema: META_SCHEMA,
+        allOf: [
+          {
+            type: 'object',
+            required: ['user_id'],
+            properties: {
+              user_id: { type: 'string' },
+            },
+            additionalProperties: false,
+          },
+          {
+            type: 'object',
+            required: ['user_age'],
+            properties: {
+              user_age: { type: 'number' },
+            },
+          },
+        ],
+      });
     });
   });
 });

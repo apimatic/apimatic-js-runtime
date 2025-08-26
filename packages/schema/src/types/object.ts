@@ -156,7 +156,15 @@ export function extendStrictObject<
   parentObjectSchema: StrictObjectSchema<V, T>,
   objectSchema: B
 ): StrictObjectSchema<string, T & B> {
-  return strictObject({ ...parentObjectSchema.objectSchema, ...objectSchema });
+  return {
+    ...strictObject({ ...parentObjectSchema.objectSchema, ...objectSchema }),
+    toJSONSchema: (context) => ({
+      allOf: [
+        parentObjectSchema.toJSONSchema(context),
+        strictObject(objectSchema).toJSONSchema(context),
+      ]
+    })
+  };
 }
 
 /**
@@ -171,7 +179,15 @@ export function extendExpandoObject<
   parentObjectSchema: ObjectSchema<V, T>,
   objectSchema: B
 ): ObjectSchema<string, T & B> {
-  return expandoObject({ ...parentObjectSchema.objectSchema, ...objectSchema });
+  return {
+    ...expandoObject({ ...parentObjectSchema.objectSchema, ...objectSchema }),
+    toJSONSchema: (context) => ({
+      allOf: [
+        parentObjectSchema.toJSONSchema(context),
+        expandoObject(objectSchema).toJSONSchema(context),
+      ]
+    })
+  };
 }
 
 /**
@@ -186,7 +202,15 @@ export function extendObject<
   parentObjectSchema: StrictObjectSchema<V, T>,
   objectSchema: B
 ): StrictObjectSchema<string, T & B> {
-  return object({ ...parentObjectSchema.objectSchema, ...objectSchema });
+  return {
+    ...object({ ...parentObjectSchema.objectSchema, ...objectSchema }),
+    toJSONSchema: (context) => ({
+      allOf: [
+        parentObjectSchema.toJSONSchema(context),
+        object(objectSchema).toJSONSchema(context),
+      ]
+    })
+  };
 }
 
 /**
