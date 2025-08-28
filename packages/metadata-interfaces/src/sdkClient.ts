@@ -1,0 +1,1 @@
+export type { CoreClientInterface } from "@apimatic/core-interfaces";

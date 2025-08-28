@@ -26,6 +26,9 @@
       "path": "./packages/http-query"
     },
     {
+      "path": "./packages/metadata-interfaces"
+    },
+    {
       "path": "./packages/xml-adapter"
     },
     {

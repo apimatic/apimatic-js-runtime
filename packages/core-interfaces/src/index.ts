@@ -7,3 +7,5 @@ export * from './httpRequest';
 export * from './httpResponse';
 export * from './retryConfiguration';
 export * from './logging';
+export * from './coreClientInterface';
+
