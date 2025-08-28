@@ -165,6 +165,32 @@ export function extendStrictObject<
 /**
  * Create an object schema that extends an existing schema.
  */
+export function extendTypedExpandoObject<
+  V extends string,
+  A extends string,
+  B extends AnyObjectSchema<A>,
+  K extends string,
+  S extends Schema<any, any>
+>(
+  parentObjectSchema: ExtendedObjectSchema<V, any, string, any>,
+  additionalPropertyKey: K,
+  additionalPropertySchema: S,
+  objectSchema: B
+): ExtendedObjectSchema<V, any, string, any> {
+  return {
+    ...typedExpandoObject({ ...parentObjectSchema.objectSchema, ...objectSchema }, additionalPropertyKey, additionalPropertySchema  ),
+    toJSONSchema: (context) => ({
+      allOf: [
+        context.getOrRegisterSchema(parentObjectSchema),
+        typedExpandoObject(objectSchema, additionalPropertyKey, additionalPropertySchema).toJSONSchema(context),
+      ],
+    }),
+  };
+}
+
+/**
+ * Create an object schema that extends an existing schema.
+ */
 export function extendExpandoObject<
   V extends string,
   T extends AnyObjectSchema<V>,
