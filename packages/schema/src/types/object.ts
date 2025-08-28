@@ -311,11 +311,10 @@ function generateObjectSchema<V extends string>(
     .map(({ key }) => key);
 
   const additionalProperties: undefined | boolean | PartialJSONSchema =
-    skipAdditionalPropValidation && !mapAdditionalProps
+  additionalPropsSchema?.toJSONSchema(context) ??
+    (skipAdditionalPropValidation && !mapAdditionalProps
       ? undefined
-      : mapAdditionalProps
-      ? additionalPropsSchema?.toJSONSchema(context) ?? true
-      : false;
+      : mapAdditionalProps === true);
 
   return {
     type: 'object',
