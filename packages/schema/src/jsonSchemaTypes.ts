@@ -5,6 +5,9 @@ export const META_SCHEMA = 'https://json-schema.org/draft-07/schema';
 
 export type SchemaName = string;
 export type SchemaRef = `#/$defs/${SchemaName}` | '#';
+/**
+ * Keeps track of visited schemas and assigns unique references to them.
+ */
 export interface JSONSchemaContext {
   /**
    * Returns a reference object for a schema if it's been visited.
