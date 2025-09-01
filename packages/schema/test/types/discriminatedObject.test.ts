@@ -11,6 +11,7 @@ import {
   validateAndMap,
   validateAndUnmap,
   JSONSchema,
+  object,
 } from '../../src';
 import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
@@ -277,7 +278,7 @@ describe('Discriminated Object', () => {
   });
 
   describe('To JSON Schema', () => {
-    it('should output a valid JSON Schema as anyOf with discriminator', () => {
+    it('should output a valid JSON Schema as anyOf with discriminator for inheritance using extended schemas', () => {
       const jsonSchema = generateJSONSchema(discriminatedSchema);
       expect(jsonSchema).toStrictEqual<JSONSchema>({
         $schema: META_SCHEMA,
@@ -347,6 +348,97 @@ describe('Discriminated Object', () => {
                 additionalProperties: false,
               },
             ],
+          },
+        },
+      });
+    });
+
+    it('should output a valid JSON Schema as anyOf with discriminator for inheritance using regular schemas', () => {
+      const type1 = object({
+        type: ['type unmapped', optional(string())],
+        field1: ['child1 field', boolean()],
+        baseField: ['base field', number()],
+      });
+
+      const type2 = object({
+        type: ['type unmapped', optional(string())],
+        field2: ['child2 field', boolean()],
+        baseField: ['base field', number()],
+      });
+
+      const baseType = object({
+        type: ['type unmapped', optional(string())],
+        baseField: ['base field', number()],
+      });
+
+      const discriminatedUnion = discriminatedObject(
+        'type',
+        'type unmapped',
+        {
+          base: baseType,
+          child1: type1,
+          child2: type2,
+        },
+        'base'
+      );
+      const jsonSchema = generateJSONSchema(discriminatedUnion);
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        anyOf: [
+          { $ref: '#/$defs/schema1' },
+          { $ref: '#/$defs/schema2' },
+          { $ref: '#/$defs/schema3' },
+        ],
+        discriminator: {
+          propertyName: 'type unmapped',
+          mapping: {
+            base: '#/$defs/schema1',
+            child1: '#/$defs/schema2',
+            child2: '#/$defs/schema3',
+          },
+        },
+        $defs: {
+          schema1: {
+            type: 'object',
+            properties: {
+              'type unmapped': {
+                type: 'string',
+              },
+              'base field': {
+                type: 'number',
+              },
+            },
+            required: ['base field'],
+          },
+          schema2: {
+            type: 'object',
+            properties: {
+              'type unmapped': {
+                type: 'string',
+              },
+              'child1 field': {
+                type: 'boolean',
+              },
+              'base field': {
+                type: 'number',
+              },
+            },
+            required: ['child1 field', 'base field'],
+          },
+          schema3: {
+            type: 'object',
+            properties: {
+              'type unmapped': {
+                type: 'string',
+              },
+              'child2 field': {
+                type: 'boolean',
+              },
+              'base field': {
+                type: 'number',
+              },
+            },
+            required: ['child2 field', 'base field'],
           },
         },
       });
