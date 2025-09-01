@@ -327,8 +327,8 @@ describe('Extend Object/Expando Object', () => {
               user_id: { type: 'string' },
             },
             additionalProperties: false,
-          }
-        }
+          },
+        },
       });
     });
 
@@ -393,7 +393,7 @@ describe('Extend Object/Expando Object', () => {
             },
             additionalProperties: false,
           },
-        }
+        },
       });
     });
   });

@@ -23,7 +23,6 @@ describe('extendTypedExpandoObject', () => {
     }
   );
 
-
   describe('Mapping', () => {
     it('should map valid object with additional typed properties', () => {
       const input = {
@@ -32,7 +31,7 @@ describe('extendTypedExpandoObject', () => {
         foo: 'bar',
         bar: 'baz',
       };
-  const output = validateAndMap(input as any, extendedSchema);
+      const output = validateAndMap(input as any, extendedSchema);
       const expected = {
         id: 'John',
         age: 30,
@@ -47,7 +46,7 @@ describe('extendTypedExpandoObject', () => {
         user_id: 'John',
         user_age: 30,
       };
-  const output = validateAndMap(input as any, extendedSchema);
+      const output = validateAndMap(input as any, extendedSchema);
       const expected = {
         id: 'John',
         age: 30,
@@ -79,7 +78,7 @@ describe('extendTypedExpandoObject', () => {
         age: 30,
         extra: { foo: 'bar', bar: 'baz' },
       };
-  const output = validateAndUnmap(input as any, extendedSchema);
+      const output = validateAndUnmap(input as any, extendedSchema);
       const expected = {
         user_id: 'John',
         user_age: 30,
@@ -95,7 +94,7 @@ describe('extendTypedExpandoObject', () => {
         id: 'John',
         age: 30,
       };
-  const output = validateAndUnmap(input as any, extendedSchema);
+      const output = validateAndUnmap(input as any, extendedSchema);
       const expected = {
         user_id: 'John',
         user_age: 30,
@@ -119,7 +118,7 @@ describe('extendTypedExpandoObject', () => {
               user_age: { type: 'number' },
             },
             additionalProperties: {
-                type: 'string',
+              type: 'string',
             },
           },
         ],

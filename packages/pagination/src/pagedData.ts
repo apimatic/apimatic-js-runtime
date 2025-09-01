@@ -28,7 +28,8 @@ export function createPagedData<TItem, TPage, TRequest, TPagedResponse>(
 }
 
 class PagedData<TItem, TPage, TRequest, TPagedResponse>
-  implements PagedAsyncIterable<TItem, TPagedResponse> {
+  implements PagedAsyncIterable<TItem, TPagedResponse>
+{
   private readonly paginationStrategies: PaginationStrategy[];
   constructor(
     private readonly request: TRequest,

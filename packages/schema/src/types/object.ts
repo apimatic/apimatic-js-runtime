@@ -178,11 +178,19 @@ export function extendTypedExpandoObject<
   objectSchema: B
 ): ExtendedObjectSchema<V, any, string, any> {
   return {
-    ...typedExpandoObject({ ...parentObjectSchema.objectSchema, ...objectSchema }, additionalPropertyKey, additionalPropertySchema  ),
+    ...typedExpandoObject(
+      { ...parentObjectSchema.objectSchema, ...objectSchema },
+      additionalPropertyKey,
+      additionalPropertySchema
+    ),
     toJSONSchema: (context) => ({
       allOf: [
         context.getOrRegisterSchema(parentObjectSchema),
-        typedExpandoObject(objectSchema, additionalPropertyKey, additionalPropertySchema).toJSONSchema(context),
+        typedExpandoObject(
+          objectSchema,
+          additionalPropertyKey,
+          additionalPropertySchema
+        ).toJSONSchema(context),
       ],
     }),
   };
@@ -311,7 +319,7 @@ function generateObjectSchema<V extends string>(
     .map(({ key }) => key);
 
   const additionalProperties: undefined | boolean | PartialJSONSchema =
-  additionalPropsSchema?.toJSONSchema(context) ??
+    additionalPropsSchema?.toJSONSchema(context) ??
     (skipAdditionalPropValidation && !mapAdditionalProps
       ? undefined
       : mapAdditionalProps === true);
