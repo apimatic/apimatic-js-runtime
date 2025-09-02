@@ -341,7 +341,11 @@ describe('OnyOf', () => {
         age: 30,
       };
 
-      const schema = oneOf([schema1, schema2], discriminatorMap, 'type');
+      const schema = oneOf(
+        [schemaWithOptionalDiscriminator1, schemaWithOptionalDiscriminator2],
+        discriminatorMapOptional,
+        'type'
+      );
       const output = validateAndMap(input, schema);
 
       expect(output.errors).toBeFalsy();
