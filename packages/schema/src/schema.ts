@@ -85,12 +85,15 @@ export interface SchemaValidationError extends SchemaContext {
 }
 
 /**
- * Validate the value using the given schema.
+ * Check if the value is valid for the given schema.
  *
  * @param value Value to validate
  * @param schema Schema for type
  */
-export function validate<T>(value: unknown, schema: Schema<T>): value is T {
+export function isMappedValueValidForSchema<T>(
+  value: unknown,
+  schema: Schema<T>
+): value is T {
   const contextCreator = createSchemaContextCreator(
     createNewSchemaContext(value, schema.type())
   );
