@@ -88,12 +88,12 @@ describe('validate function', () => {
   describe('Object schema with mixed fields', () => {
     const userSchema = object({
       name: ['name', string()],
-      nickname: ['nickname', optional(string())],
+      nickname: ['nick_name', optional(string())],
       age: ['age', number()],
       address: [
         'address',
         object({
-          city: ['city', string()],
+          city: ['city name', string()],
           zip: ['zip', number()],
         }),
       ],
