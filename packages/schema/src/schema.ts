@@ -90,19 +90,12 @@ export interface SchemaValidationError extends SchemaContext {
  * @param value Value to validate
  * @param schema Schema for type
  */
-export function validate<T extends Schema<any, any>>(
-  value: unknown,
-  schema: T
-): boolean {
+export function validate<T>(value: unknown, schema: Schema<T>): value is T {
   const contextCreator = createSchemaContextCreator(
     createNewSchemaContext(value, schema.type())
   );
   const validationResult = schema.validateBeforeUnmap(value, contextCreator);
-  if (validationResult.length === 0) {
-    return true;
-  } else {
-    return false;
-  }
+  return validationResult.length === 0;
 }
 
 /**

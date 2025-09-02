@@ -1,4 +1,4 @@
-import { array, bigint, boolean, object } from '../../src';
+import { array, bigint, boolean, object, optional } from '../../src';
 import { validateAndMap, validateAndUnmap } from '../../src/schema';
 import { nullable } from '../../src/types/nullable';
 import { number } from '../../src/types/number';
@@ -252,24 +252,24 @@ describe('OnyOf', () => {
       expect((output as any).result).toStrictEqual(input);
     });
 
+    const schema1 = object({
+      type: ['type', string()],
+      name: ['name', string()],
+      age: ['age', number()],
+    });
+
+    const schema2 = object({
+      type: ['type', string()],
+      title: ['title', string()],
+      rating: ['rating', string()],
+    });
+
+    const discriminatorMap = {
+      object1: schema1,
+      object2: schema2,
+    };
+
     it('should map oneOf with discriminator', () => {
-      const schema1 = object({
-        type: ['type', string()],
-        name: ['name', string()],
-        age: ['age', number()],
-      });
-
-      const schema2 = object({
-        type: ['type', string()],
-        title: ['title', string()],
-        rating: ['rating', string()],
-      });
-
-      const discriminatorMap = {
-        object1: schema1,
-        object2: schema2,
-      };
-
       const input = {
         type: 'object1', // The discriminator field value that matches schema1
         name: 'John',
@@ -281,6 +281,71 @@ describe('OnyOf', () => {
 
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual(input); // The input should be unchanged since it matches schema1
+    });
+
+    it('should map based on discriminator when both schemas are present', () => {
+      const input = {
+        type: 'object1', // The discriminator field value that matches schema1
+        name: 'John',
+        age: 30,
+        title: 'Developer',
+        rating: '5 stars',
+      };
+
+      const schema = oneOf([schema1, schema2], discriminatorMap, 'type');
+      const output = validateAndMap(input, schema);
+
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual({
+        type: 'object1',
+        name: 'John',
+        age: 30,
+      }); // The input should match schema1
+    });
+
+    it('should map to unknown type when discriminator does not match to any schema', () => {
+      const input = {
+        type: 'object',
+        name: 'John',
+        age: 30,
+        title: 'Developer',
+        rating: '5 stars',
+      };
+
+      const schema = oneOf([schema1, schema2], discriminatorMap, 'type');
+      const output = validateAndMap(input, schema);
+
+      expect(output.errors).toBeTruthy();
+    });
+
+    it('should map to correct object type when discriminator is optional', () => {
+      const schemaWithOptionalDiscriminator1 = object({
+        type: ['type', optional(string())],
+        name: ['name', string()],
+        age: ['age', number()],
+      });
+
+      const schemaWithOptionalDiscriminator2 = object({
+        type: ['type', optional(string())],
+        title: ['title', string()],
+        rating: ['rating', string()],
+      });
+
+      const discriminatorMapOptional = {
+        object1: schemaWithOptionalDiscriminator1,
+        object2: schemaWithOptionalDiscriminator2,
+      };
+
+      const input = {
+        name: 'John',
+        age: 30,
+      };
+
+      const schema = oneOf([schema1, schema2], discriminatorMap, 'type');
+      const output = validateAndMap(input, schema);
+
+      expect(output.errors).toBeFalsy();
+      expect((output as any).result).toStrictEqual(input);
     });
   });
 
