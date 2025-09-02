@@ -1,4 +1,4 @@
-import { type HttpMethod } from "./httpRequest";
+import { type HttpMethod } from './httpRequest';
 export type CoreRequestBuilderFactory = (
   httpMethod: HttpMethod,
   path?: string

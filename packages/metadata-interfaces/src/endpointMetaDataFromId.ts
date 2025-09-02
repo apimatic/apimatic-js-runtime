@@ -1,5 +1,5 @@
-import type { ApiResponse } from "@apimatic/core-interfaces";
-import type { JSONSchema, Schema, SchemaMappedType, SchemaType, ValidationResult } from "@apimatic/schema";
+import type { ApiResponse } from '@apimatic/core-interfaces';
+import type { JSONSchema, Schema, SchemaMappedType, SchemaType, ValidationResult } from '@apimatic/schema';
 
 export interface EndpointMetaDataInterface<
   CoreReqSchema extends Schema<any, any>,
