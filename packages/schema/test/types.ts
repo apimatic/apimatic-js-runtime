@@ -1,8 +1,7 @@
-import { Schema } from '../src/schema';
 import { anyOf, bigint, boolean, object, oneOf, optional } from '../src';
 import { string } from '../src/types/string';
 import { number } from '../src/types/number';
-import { validateAndMap } from '../src/schema';
+import { validateAndMap, Schema } from '../src/schema';
 import { lazy } from '../src/types/lazy';
 export interface Animal {
   species: string;

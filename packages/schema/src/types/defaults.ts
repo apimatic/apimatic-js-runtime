@@ -33,6 +33,7 @@ export function defaults<M, U, V extends M & U>(
       ...schema.toJSONSchema(context),
       // `defaultValue` has no restrictions, assuming it matches the schema it describes.
       // https://json-schema.org/draft/2020-12/draft-bhutton-json-schema-validation-01#name-default
+      // https://json-schema.org/draft-07/draft-handrews-json-schema-validation-01#rfc.section.10.2
       default: defaultValue as any,
     }),
   };

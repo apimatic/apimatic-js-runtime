@@ -57,9 +57,8 @@ describe('test custom query authentication scheme', () => {
       authParams: Record<string, string>
     ) => {
       const urlHaveParams = request.url.includes('?');
-      const authenticationProvider = customQueryAuthenticationProvider(
-        authParams
-      );
+      const authenticationProvider =
+        customQueryAuthenticationProvider(authParams);
       const handler = authenticationProvider(enableAuthentication);
       const interceptor = [handler];
       const client = async (req) => {

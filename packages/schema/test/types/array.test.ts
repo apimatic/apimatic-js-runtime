@@ -6,6 +6,7 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Array', () => {
   describe('Mapping', () => {
@@ -146,7 +147,7 @@ describe('Array', () => {
       const jsonSchema = generateJSONSchema(array(string()));
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         type: 'array',
         items: {
           type: 'string',

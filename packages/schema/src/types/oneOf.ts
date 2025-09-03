@@ -37,7 +37,7 @@ function createOneOfWithoutDiscriminator<T extends Array<Schema<any, any>>>(
     mapXml: (value, ctxt) => matchAndMapXml(schemas, value, ctxt),
     unmapXml: (value, ctxt) => matchAndUnmapXml(schemas, value, ctxt),
     toJSONSchema: (context) => ({
-      oneOf: schemas.map((schema) => schema.toJSONSchema(context)),
+      oneOf: schemas.map((schema) => context.getOrRegisterSchema(schema)),
     }),
   };
 }

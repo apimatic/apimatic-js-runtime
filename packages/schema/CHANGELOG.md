@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.7.18](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.17...@apimatic/schema@0.7.18) (2025-08-13)
+
+**Note:** Version bump only for package @apimatic/schema
+
+### [0.7.17](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.16...@apimatic/schema@0.7.17) (2025-07-11)
+
+### Bug Fixes
+
+- **core:** populate error.result for all response types ([#250](https://github.com/apimatic/apimatic-js-runtime/issues/250)) ([6266f34](https://github.com/apimatic/apimatic-js-runtime/commit/6266f34bfb4cbfae2ade0958923aa55c0a81826b))
+
 ### [0.7.16](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.15...@apimatic/schema@0.7.16) (2025-05-15)
 
 **Note:** Version bump only for package @apimatic/schema

@@ -13,6 +13,7 @@ import {
   JSONSchema,
   generateJSONSchema,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Expando Object', () => {
   const userSchema = expandoObject({
@@ -580,13 +581,13 @@ describe('Expando Object', () => {
 
   describe('To JSON Schema', () => {
     it('should output a valid JSON Schema for an object with additional properties', () => {
-      const userSchema = expandoObject({
+      const simpleUserSchema = expandoObject({
         id: ['id', string()],
       });
-      const jsonSchema = generateJSONSchema(userSchema);
+      const jsonSchema = generateJSONSchema(simpleUserSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         type: 'object',
         properties: {
           id: {
@@ -599,17 +600,17 @@ describe('Expando Object', () => {
     });
 
     it('should output a valid JSON Schema for an object with typed additional properties', () => {
-      const userSchema = typedExpandoObject(
+      const simpleUserSchema = typedExpandoObject(
         {
           id: ['id', string()],
         },
         'additionalProps',
         number()
       );
-      const jsonSchema = generateJSONSchema(userSchema);
+      const jsonSchema = generateJSONSchema(simpleUserSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         type: 'object',
         properties: {
           id: {

@@ -1,32 +1,38 @@
-import type {
-  JSONSchemaDefinition,
-  SchemaName,
-  JSONSchemaContext,
-  JSONSchema,
+import {
+  type SchemaName,
+  type JSONSchemaContext,
+  type JSONSchema,
+  type PartialJSONSchema,
+  META_SCHEMA,
 } from './jsonSchemaTypes';
 import type { Schema } from './schema';
 
 export function generateJSONSchema<T extends Schema<any, any>>(
-  schema: T
+  rootSchema: T
 ): JSONSchema {
   const schemaRegistry: Map<Schema<any, any>, SchemaName> = new Map();
-  const $defs: Record<SchemaName, JSONSchemaDefinition> = {};
+  const $defs: Record<SchemaName, PartialJSONSchema> = {};
   const context: JSONSchemaContext = {
-    getRootSchema: () => schema,
-    registerSchema: (s) => {
+    getOrRegisterSchema: (schema) => {
+      if (schema === rootSchema) {
+        return { $ref: '#' };
+      }
+
+      const existingSchemaName = schemaRegistry.get(schema);
+      if (existingSchemaName) {
+        return { $ref: `#/$defs/${existingSchemaName}` };
+      }
+
       const schemaName = `schema${schemaRegistry.size + 1}`;
-      schemaRegistry.set(s, schemaName);
-      return schemaName;
-    },
-    getRegisteredSchema: (s) => schemaRegistry.get(s) ?? false,
-    addDefinition: (name, def) => {
-      $defs[name] ??= def;
+      schemaRegistry.set(schema, schemaName);
+      $defs[schemaName] ??= schema.toJSONSchema(context);
+      return { $ref: `#/$defs/${schemaName}` };
     },
   };
-  const partialJsonSchema = schema.toJSONSchema(context);
+  const partialJsonSchema = rootSchema.toJSONSchema(context);
 
   return {
-    $schema: 'https://json-schema.org/draft-07/schema',
+    $schema: META_SCHEMA,
     ...partialJsonSchema,
     ...(schemaRegistry.size > 0 && { $defs }),
   };

@@ -1,5 +1,6 @@
 import {
   extendStrictObject,
+  generateJSONSchema,
   number,
   optional,
   SchemaMappedType,
@@ -9,6 +10,7 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Extend Strict Object', () => {
   const idObject = strictObject({
@@ -330,6 +332,43 @@ describe('Extend Strict Object', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a JSON Schema with allOf without additionalProperties', () => {
+      const userSchema = extendStrictObject(idObject, {
+        age: ['user_age', number()],
+      });
+
+      // Act: generate JSON Schema for the extended schema
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      // Assert: expect allOf with $ref to parent and inlined child, using $defs
+      expect(jsonSchema).toStrictEqual({
+        $schema: META_SCHEMA,
+        allOf: [
+          { $ref: '#/$defs/schema1' },
+          {
+            type: 'object',
+            required: ['user_age'],
+            properties: {
+              user_age: { type: 'number' },
+            },
+            additionalProperties: false,
+          },
+        ],
+        $defs: {
+          schema1: {
+            type: 'object',
+            required: ['user_id'],
+            properties: {
+              user_id: { type: 'string' },
+            },
+            additionalProperties: false,
+          },
+        },
+      });
     });
   });
 });

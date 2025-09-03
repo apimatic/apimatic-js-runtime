@@ -21,28 +21,24 @@ import {
 import { dict } from './dict';
 import { optional } from './optional';
 
-type AnyObjectSchema = Record<
+type AnyObjectSchema<V = string> = Record<
   string,
-  [string, Schema<any, any>, ObjectXmlOptions?]
+  [V, Schema<any, any>, ObjectXmlOptions?]
 >;
 
 type AllValues<T extends AnyObjectSchema> = {
   [P in keyof T]: { key: P; value: T[P][0]; schema: T[P][1] };
 }[keyof T];
 
-export type MappedObjectType<T extends AnyObjectSchema> = OptionalizeObject<
-  {
-    [P in AllValues<T>['value']]: SchemaMappedType<
-      Extract<AllValues<T>, { value: P }>['schema']
-    >;
-  }
->;
+export type MappedObjectType<T extends AnyObjectSchema> = OptionalizeObject<{
+  [P in AllValues<T>['value']]: SchemaMappedType<
+    Extract<AllValues<T>, { value: P }>['schema']
+  >;
+}>;
 
-export type ObjectType<T extends AnyObjectSchema> = OptionalizeObject<
-  {
-    [K in keyof T]: SchemaType<T[K][1]>;
-  }
->;
+export type ObjectType<T extends AnyObjectSchema> = OptionalizeObject<{
+  [K in keyof T]: SchemaType<T[K][1]>;
+}>;
 
 export interface ObjectXmlOptions {
   isAttr?: boolean;
@@ -51,15 +47,13 @@ export interface ObjectXmlOptions {
 
 export interface StrictObjectSchema<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
+  T extends AnyObjectSchema<V>
 > extends Schema<ObjectType<T>, MappedObjectType<T>> {
   readonly objectSchema: T;
 }
 
-export interface ObjectSchema<
-  V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
-> extends Schema<
+export interface ObjectSchema<V extends string, T extends AnyObjectSchema<V>>
+  extends Schema<
     ObjectType<T> & { [key: string]: unknown },
     MappedObjectType<T> & { [key: string]: unknown }
   > {
@@ -68,7 +62,7 @@ export interface ObjectSchema<
 
 export interface ExtendedObjectSchema<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   K extends string,
   U
 > extends Schema<
@@ -84,10 +78,9 @@ export interface ExtendedObjectSchema<
  * A strict-object does not allow additional properties during mapping or
  * unmapping. Additional properties will result in a validation error.
  */
-export function strictObject<
-  V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
->(objectSchema: T): StrictObjectSchema<V, T> {
+export function strictObject<V extends string, T extends AnyObjectSchema<V>>(
+  objectSchema: T
+): StrictObjectSchema<V, T> {
   const schema = internalObject(objectSchema, false, false);
   schema.type = () =>
     `StrictObject<{${Object.keys(objectSchema)
@@ -102,10 +95,9 @@ export function strictObject<
  * The object schema allows additional properties during mapping and unmapping. The
  * additional properties are copied over as is.
  */
-export function expandoObject<
-  V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
->(objectSchema: T): ObjectSchema<V, T> {
+export function expandoObject<V extends string, T extends AnyObjectSchema<V>>(
+  objectSchema: T
+): ObjectSchema<V, T> {
   return internalObject(objectSchema, true, true);
 }
 
@@ -118,7 +110,7 @@ export function expandoObject<
  */
 export function typedExpandoObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   K extends string,
   S extends Schema<any, any>
 >(
@@ -138,10 +130,9 @@ export function typedExpandoObject<
  * The Object schema allows additional properties during mapping and unmapping
  * but discards them.
  */
-export function object<
-  V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
->(objectSchema: T): StrictObjectSchema<V, T> {
+export function object<V extends string, T extends AnyObjectSchema<V>>(
+  objectSchema: T
+): StrictObjectSchema<V, T> {
   const schema = internalObject(objectSchema, true, false);
   schema.type = () =>
     `Object<{${Object.keys(objectSchema).map(objectKeyEncode).join(',')}}>`;
@@ -153,14 +144,56 @@ export function object<
  */
 export function extendStrictObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   A extends string,
-  B extends Record<string, [A, Schema<any, any>, ObjectXmlOptions?]>
+  B extends AnyObjectSchema<A>
 >(
   parentObjectSchema: StrictObjectSchema<V, T>,
   objectSchema: B
 ): StrictObjectSchema<string, T & B> {
-  return strictObject({ ...parentObjectSchema.objectSchema, ...objectSchema });
+  return {
+    ...strictObject({ ...parentObjectSchema.objectSchema, ...objectSchema }),
+    toJSONSchema: (context) => ({
+      allOf: [
+        context.getOrRegisterSchema(parentObjectSchema),
+        strictObject(objectSchema).toJSONSchema(context),
+      ],
+    }),
+  };
+}
+
+/**
+ * Create an object schema that extends an existing schema.
+ */
+export function extendTypedExpandoObject<
+  V extends string,
+  A extends string,
+  B extends AnyObjectSchema<A>,
+  K extends string,
+  S extends Schema<any, any>
+>(
+  parentObjectSchema: ExtendedObjectSchema<V, any, string, any>,
+  additionalPropertyKey: K,
+  additionalPropertySchema: S,
+  objectSchema: B
+): ExtendedObjectSchema<V, any, string, any> {
+  return {
+    ...typedExpandoObject(
+      { ...parentObjectSchema.objectSchema, ...objectSchema },
+      additionalPropertyKey,
+      additionalPropertySchema
+    ),
+    toJSONSchema: (context) => ({
+      allOf: [
+        context.getOrRegisterSchema(parentObjectSchema),
+        typedExpandoObject(
+          objectSchema,
+          additionalPropertyKey,
+          additionalPropertySchema
+        ).toJSONSchema(context),
+      ],
+    }),
+  };
 }
 
 /**
@@ -168,14 +201,22 @@ export function extendStrictObject<
  */
 export function extendExpandoObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   A extends string,
-  B extends Record<string, [A, Schema<any, any>, ObjectXmlOptions?]>
+  B extends AnyObjectSchema<A>
 >(
   parentObjectSchema: ObjectSchema<V, T>,
   objectSchema: B
 ): ObjectSchema<string, T & B> {
-  return expandoObject({ ...parentObjectSchema.objectSchema, ...objectSchema });
+  return {
+    ...expandoObject({ ...parentObjectSchema.objectSchema, ...objectSchema }),
+    toJSONSchema: (context) => ({
+      allOf: [
+        context.getOrRegisterSchema(parentObjectSchema),
+        expandoObject(objectSchema).toJSONSchema(context),
+      ],
+    }),
+  };
 }
 
 /**
@@ -183,23 +224,28 @@ export function extendExpandoObject<
  */
 export function extendObject<
   V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>,
+  T extends AnyObjectSchema<V>,
   A extends string,
-  B extends Record<string, [A, Schema<any, any>, ObjectXmlOptions?]>
+  B extends AnyObjectSchema<A>
 >(
   parentObjectSchema: StrictObjectSchema<V, T>,
   objectSchema: B
 ): StrictObjectSchema<string, T & B> {
-  return object({ ...parentObjectSchema.objectSchema, ...objectSchema });
+  return {
+    ...object({ ...parentObjectSchema.objectSchema, ...objectSchema }),
+    toJSONSchema: (context) => ({
+      allOf: [
+        context.getOrRegisterSchema(parentObjectSchema),
+        object(objectSchema).toJSONSchema(context),
+      ],
+    }),
+  };
 }
 
 /**
  * Internal utility to create object schema with different options.
  */
-function internalObject<
-  V extends string,
-  T extends Record<string, [V, Schema<any, any>, ObjectXmlOptions?]>
->(
+function internalObject<V extends string, T extends AnyObjectSchema<V>>(
   objectSchema: T,
   skipAdditionalPropValidation: boolean,
   mapAdditionalProps: boolean | [string, Schema<any, any>]
@@ -246,39 +292,43 @@ function internalObject<
     toJSONSchema: (context) =>
       generateObjectSchema(
         context,
-        Object.entries(objectSchema).map(([, [key, propSchema]]) => ({
-          key,
-          propSchema,
-        })),
+        objectSchema,
+        skipAdditionalPropValidation,
         mapAdditionalProps,
         additionalPropsSchema
       ),
   };
 }
 
-function generateObjectSchema(
+function generateObjectSchema<V extends string>(
   context: JSONSchemaContext,
-  objectSchemaEntries: Array<{ key: string; propSchema: Schema<any, any> }>,
+  objectSchema: AnyObjectSchema<V>,
+  skipAdditionalPropValidation: boolean,
   mapAdditionalProps: boolean | [string, Schema<any, any>],
   additionalPropsSchema: Schema<any, any> | undefined
 ): PartialJSONSchema {
+  const objectSchemaEntries = Object.entries(objectSchema).map(
+    ([, [key, propSchema]]) => ({ key, propSchema })
+  );
   const properties: Record<string, PartialJSONSchema> = {};
   for (const { key, propSchema } of objectSchemaEntries) {
     properties[key] = propSchema.toJSONSchema(context);
   }
-  const required = objectSchemaEntries
+  const required: string[] = objectSchemaEntries
     .filter(({ propSchema }) => !propSchema.type().startsWith('Optional<'))
     .map(({ key }) => key);
+
+  const additionalProperties: undefined | boolean | PartialJSONSchema =
+    additionalPropsSchema?.toJSONSchema(context) ??
+    (skipAdditionalPropValidation && !mapAdditionalProps
+      ? undefined
+      : mapAdditionalProps === true);
 
   return {
     type: 'object',
     ...(objectSchemaEntries.length && { properties }),
     ...(required.length && { required }),
-    ...(mapAdditionalProps && {
-      additionalProperties: additionalPropsSchema
-        ? additionalPropsSchema.toJSONSchema(context)
-        : true,
-    }),
+    ...(additionalProperties !== undefined && { additionalProperties }),
   };
 }
 

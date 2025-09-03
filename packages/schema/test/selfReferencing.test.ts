@@ -1,5 +1,6 @@
 import type { JSONSchema } from '../src';
 import { generateJSONSchema, lazy, strictObject, validateAndMap } from '../src';
+import { META_SCHEMA } from '../src/jsonSchemaTypes';
 import { Boss, bossSchema } from './bossSchema';
 
 describe('Self-Referencing', () => {
@@ -22,7 +23,7 @@ describe('Self-Referencing', () => {
 
   it('should generate valid JSON Schema for self-referencing schemas', () => {
     expect(generateJSONSchema(bossSchema)).toStrictEqual<JSONSchema>({
-      $schema: 'https://json-schema.org/draft-07/schema',
+      $schema: META_SCHEMA,
       type: 'object',
       properties: {
         promotedAt: {
@@ -32,6 +33,7 @@ describe('Self-Referencing', () => {
           $ref: '#/$defs/schema1',
         },
       },
+      additionalProperties: false,
       $defs: {
         schema1: {
           type: 'object',
@@ -44,6 +46,7 @@ describe('Self-Referencing', () => {
               $ref: '#',
             },
           },
+          additionalProperties: false,
         },
       },
     });
@@ -55,7 +58,7 @@ describe('Self-Referencing', () => {
     });
 
     expect(generateJSONSchema(schema)).toStrictEqual<JSONSchema>({
-      $schema: 'https://json-schema.org/draft-07/schema',
+      $schema: META_SCHEMA,
       type: 'object',
       properties: {
         senior: {
@@ -63,6 +66,7 @@ describe('Self-Referencing', () => {
         },
       },
       required: ['senior'],
+      additionalProperties: false,
       $defs: {
         schema1: {
           type: 'object',
@@ -74,6 +78,7 @@ describe('Self-Referencing', () => {
               $ref: '#/$defs/schema2',
             },
           },
+          additionalProperties: false,
         },
         schema2: {
           type: 'object',
@@ -86,6 +91,7 @@ describe('Self-Referencing', () => {
               $ref: '#/$defs/schema1',
             },
           },
+          additionalProperties: false,
         },
       },
     });

@@ -13,9 +13,8 @@ export type SchemaType<T extends Schema<any, any>> = T extends Schema<
 >
   ? U
   : never;
-export type ArraySchemaType<
-  T extends Array<Schema<any, any>>
-> = T[number] extends Schema<any, any> ? SchemaType<T[number]> : never;
+export type ArraySchemaType<T extends Array<Schema<any, any>>> =
+  T[number] extends Schema<any, any> ? SchemaType<T[number]> : never;
 
 /**
  * Type helper to work with schemas of a discriminated oneOf or anyOf type
@@ -56,12 +55,9 @@ export function toCombinatorJSONSchemaWithDiscriminator<
   const types: Array<{ $ref: SchemaRef }> = [];
   const discriminatorMapping: { [val: SchemaName]: SchemaRef } = {};
   Object.keys(discriminatorMap).forEach((key, index) => {
-    const schemaName = context.registerSchema(schemas[index]);
-    context.addDefinition(schemaName, schemas[index].toJSONSchema(context));
-
-    const schemaRef: SchemaRef = `#/$defs/${schemaName}`;
-    types.push({ $ref: schemaRef });
-    discriminatorMapping[key] = schemaRef;
+    const refObject = context.getOrRegisterSchema(schemas[index]);
+    types.push(refObject);
+    discriminatorMapping[key] = refObject.$ref;
   });
   return {
     [oneOfOrAnyOf]: types,

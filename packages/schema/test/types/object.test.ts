@@ -12,6 +12,7 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Object', () => {
   describe('Mapping', () => {
@@ -355,7 +356,7 @@ describe('Object', () => {
       const jsonSchema = generateJSONSchema(userSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         type: 'object',
         required: ['ID', 'AGE'],
         properties: {
@@ -377,7 +378,7 @@ describe('Object', () => {
       const jsonSchema = generateJSONSchema(userSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         type: 'object',
         required: ['id'],
         properties: {
@@ -398,7 +399,7 @@ describe('Object', () => {
       const jsonSchema = generateJSONSchema(userSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         type: 'object',
         required: ['id'],
         properties: {
@@ -423,7 +424,7 @@ describe('Object', () => {
       const jsonSchema = generateJSONSchema(userSchema);
 
       expect(jsonSchema).toStrictEqual<JSONSchema>({
-        $schema: 'https://json-schema.org/draft-07/schema',
+        $schema: META_SCHEMA,
         type: 'object',
         properties: {
           id: {
