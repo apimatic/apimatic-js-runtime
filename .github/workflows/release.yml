@@ -23,7 +23,9 @@ on:
 jobs:
   release:
     name: Publish the npm package
-    if: github.ref == 'refs/heads/master'
+    if: >-
+      ((github.ref == 'refs/heads/master' && github.event.inputs.version_type != 'prerelease (unstable or experimental changes 0.0.0-alpha.X)') ||
+      (github.ref != 'refs/heads/master' && github.event.inputs.version_type == 'prerelease (unstable or experimental changes 0.0.0-alpha.X)'))
     runs-on: ubuntu-latest
     environment: Production
     steps:
