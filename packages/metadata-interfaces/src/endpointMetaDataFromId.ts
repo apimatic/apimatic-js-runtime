@@ -1,5 +1,11 @@
 import type { ApiResponse } from '@apimatic/core-interfaces';
-import type { JSONSchema, Schema, SchemaMappedType, SchemaType, ValidationResult } from '@apimatic/schema';
+import type {
+  JSONSchema,
+  Schema,
+  SchemaMappedType,
+  SchemaType,
+  ValidationResult,
+} from '@apimatic/schema';
 
 export interface EndpointMetaDataInterface<
   CoreReqSchema extends Schema<any, any>,
@@ -15,7 +21,9 @@ export interface EndpointMetaDataInterface<
   readonly description?: string;
 }
 
-export interface RequestSchemaInterface<CoreReqSchema extends Schema<any, any>> {
+export interface RequestSchemaInterface<
+  CoreReqSchema extends Schema<any, any>
+> {
   readonly schema: CoreReqSchema;
 
   toJSONSchema(): JSONSchema;
@@ -25,7 +33,10 @@ export interface RequestSchemaInterface<CoreReqSchema extends Schema<any, any>> 
   ): ValidationResult<SchemaType<CoreReqSchema>>;
 }
 
-export type EndpointsObject = Record<string, EndpointMetaDataInterface<any, any>>;
+export type EndpointsObject = Record<
+  string,
+  EndpointMetaDataInterface<any, any>
+>;
 
 export type EnvVar = {
   name: string;

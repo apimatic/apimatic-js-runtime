@@ -9,4 +9,3 @@ export * from './retryConfiguration';
 export * from './logging';
 export type { PagedAsyncIterable } from './pagedAsyncIterable';
 export * from './coreClientInterface';
-
