@@ -10,18 +10,22 @@ on:
           - patch: for fixes with non-breaking changes (bumps 0.0.X)
           - minor: for new features with breaking changes (bumps 0.X.0)
           - major: for bumping major version with breaking changes (bumps X.0.0)
+          - prerelease (unstable or experimental changes 0.0.0-alpha.X)
         required: true
         type: choice
         options:
           - patch (fixes with non-breaking changes 0.0.X)
           - minor (features with breaking changes 0.X.0)
           - major (major version bump for breaking changes X.0.0)
+          - prerelease (unstable or experimental changes 0.0.0-alpha.X)
         default: patch (fixes with non-breaking changes 0.0.X)
 
 jobs:
   release:
     name: Publish the npm package
-    if: github.ref == 'refs/heads/master'
+    if: >-
+      ((github.ref == 'refs/heads/master' && github.event.inputs.version_type != 'prerelease (unstable or experimental changes 0.0.0-alpha.X)') ||
+      (github.ref != 'refs/heads/master' && github.event.inputs.version_type == 'prerelease (unstable or experimental changes 0.0.0-alpha.X)'))
     runs-on: ubuntu-latest
     environment: Production
     steps:
@@ -37,6 +41,9 @@ jobs:
               ;;
             "major (major version bump for breaking changes X.0.0)")
               echo "version=major" >> $GITHUB_ENV
+              ;;
+            "prerelease (unstable or experimental changes 0.0.0-alpha.X)")
+              echo "version=prerelease" >> $GITHUB_ENV
               ;;
           esac
 
