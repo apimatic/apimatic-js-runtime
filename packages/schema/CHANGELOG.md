@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.7.19](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.18...@apimatic/schema@0.7.19) (2025-09-02)
+
+### Features
+
+- **schema:** add isMappedValueValidForSchema function ([#274](https://github.com/apimatic/apimatic-js-runtime/issues/274)) ([4d66e0c](https://github.com/apimatic/apimatic-js-runtime/commit/4d66e0c615a6e766980c285d949f403221c2128e))
+
 ### [0.7.18](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.17...@apimatic/schema@0.7.18) (2025-08-13)
 
 **Note:** Version bump only for package @apimatic/schema
