@@ -1,11 +1,14 @@
 import {
   defaults,
+  generateJSONSchema,
+  JSONSchema,
   nullable,
   optional,
   string,
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Defaults', () => {
   describe('Mapping', () => {
@@ -103,6 +106,19 @@ describe('Defaults', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = defaults(string(), 'default value');
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'string',
+        default: 'default value',
+      });
     });
   });
 });

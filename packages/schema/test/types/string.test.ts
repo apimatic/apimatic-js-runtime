@@ -1,4 +1,11 @@
-import { string, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  generateJSONSchema,
+  JSONSchema,
+  string,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('String', () => {
   describe('Mapping', () => {
@@ -70,6 +77,18 @@ describe('String', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = string();
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'string',
+      });
     });
   });
 });

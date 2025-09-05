@@ -10,7 +10,10 @@ import {
   typedExpandoObject,
   object,
   anyOf,
+  JSONSchema,
+  generateJSONSchema,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Expando Object', () => {
   const userSchema = expandoObject({
@@ -573,6 +576,52 @@ describe('Expando Object', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for an object with additional properties', () => {
+      const simpleUserSchema = expandoObject({
+        id: ['id', string()],
+      });
+      const jsonSchema = generateJSONSchema(simpleUserSchema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+        },
+        required: ['id'],
+        additionalProperties: true,
+      });
+    });
+
+    it('should output a valid JSON Schema for an object with typed additional properties', () => {
+      const simpleUserSchema = typedExpandoObject(
+        {
+          id: ['id', string()],
+        },
+        'additionalProps',
+        number()
+      );
+      const jsonSchema = generateJSONSchema(simpleUserSchema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'object',
+        properties: {
+          id: {
+            type: 'string',
+          },
+        },
+        required: ['id'],
+        additionalProperties: {
+          type: 'number',
+        },
+      });
     });
   });
 });

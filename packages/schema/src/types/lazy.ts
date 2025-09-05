@@ -1,4 +1,4 @@
-import { Schema } from '../schema';
+import type { Schema } from '../schema';
 import { once } from '../utils';
 
 /**
@@ -16,5 +16,6 @@ export function lazy<T, V>(schemaFn: () => Schema<T, V>): Schema<T, V> {
     unmapXml: (...args) => getSchema().unmapXml(...args),
     validateBeforeMapXml: (...args) =>
       getSchema().validateBeforeMapXml(...args),
+    toJSONSchema: (context) => context.getOrRegisterSchema(getSchema()),
   };
 }

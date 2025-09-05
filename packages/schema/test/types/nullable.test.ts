@@ -1,10 +1,14 @@
 import {
+  boolean,
+  generateJSONSchema,
+  JSONSchema,
   nullable,
   optional,
   string,
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Nullable', () => {
   describe('Mapping', () => {
@@ -108,6 +112,42 @@ describe('Nullable', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for nullable strings', () => {
+      const schema = nullable(string());
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        oneOf: [
+          {
+            type: 'null',
+          },
+          {
+            type: 'string',
+          },
+        ],
+      });
+    });
+
+    it('should output a valid JSON Schema for nullable booleans', () => {
+      const schema = nullable(boolean());
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        oneOf: [
+          {
+            type: 'null',
+          },
+          {
+            type: 'boolean',
+          },
+        ],
+      });
     });
   });
 });

@@ -3,6 +3,7 @@
  */
 
 import { Schema, SchemaContextCreator, SchemaValidationError } from './schema';
+import { JSONSchemaContext, PartialJSONSchema } from './jsonSchemaTypes';
 
 export function arrayEntries<T>(arr: T[]) {
   const entries: Array<[number, T]> = [];
@@ -52,6 +53,7 @@ export interface SymmetricSchema<T> {
     ctxt: SchemaContextCreator
   ) => SchemaValidationError[];
   map: (value: T, ctxt: SchemaContextCreator) => T;
+  toJSONSchema: (context: JSONSchemaContext) => PartialJSONSchema;
 }
 
 /**
@@ -66,6 +68,7 @@ export function createSymmetricSchema<T>(
     validateBeforeUnmap: schema.validate,
     map: schema.map,
     unmap: schema.map,
+    toJSONSchema: schema.toJSONSchema,
   });
 }
 
@@ -81,6 +84,7 @@ interface BasicSchema<T, S = unknown> {
   ) => SchemaValidationError[];
   map: (value: S, ctxt: SchemaContextCreator) => T;
   unmap: (value: T, ctxt: SchemaContextCreator) => S;
+  toJSONSchema: (context: JSONSchemaContext) => PartialJSONSchema;
 }
 
 /** Create a basic schema where XML mapping and validation is the same as for JSON */

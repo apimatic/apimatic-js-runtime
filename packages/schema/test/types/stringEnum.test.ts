@@ -1,4 +1,11 @@
-import { stringEnum, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  generateJSONSchema,
+  JSONSchema,
+  stringEnum,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('String Enum', () => {
   enum SampleStringEnum {
@@ -80,6 +87,18 @@ describe('String Enum', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema', () => {
+      const schema = stringEnum(SampleStringEnum);
+      const jsonSchema = generateJSONSchema(schema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        enum: ['_hearts', '_spades', '_clubs', '_diamonds'],
+      });
     });
   });
 });

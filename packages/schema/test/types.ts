@@ -1,8 +1,7 @@
-import { Schema } from '../lib/schema';
-import { bigint, boolean, object, oneOf, optional } from '../src';
+import { anyOf, bigint, boolean, object, oneOf, optional } from '../src';
 import { string } from '../src/types/string';
 import { number } from '../src/types/number';
-import { validateAndMap } from '../src/schema';
+import { validateAndMap, Schema } from '../src/schema';
 import { lazy } from '../src/types/lazy';
 export interface Animal {
   species: string;
@@ -73,3 +72,31 @@ export enum Color {
   Green = 'green',
   Blue = 'blue',
 }
+
+const schema1 = object({
+  type: ['type', string()],
+  name: ['name', string()],
+  age: ['age', number()],
+});
+
+const schema2 = object({
+  type: ['type', string()],
+  title: ['title', string()],
+  rating: ['rating', string()],
+});
+
+const discriminatorMap = {
+  object1: schema1,
+  object2: schema2,
+};
+
+export const anyOfWithDiscriminator = anyOf(
+  [schema1, schema2],
+  discriminatorMap,
+  'type'
+);
+export const oneOfWithDiscriminator = oneOf(
+  [schema1, schema2],
+  discriminatorMap,
+  'type'
+);

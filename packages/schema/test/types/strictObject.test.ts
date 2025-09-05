@@ -1,4 +1,6 @@
 import {
+  generateJSONSchema,
+  type JSONSchema,
   number,
   optional,
   SchemaMappedType,
@@ -8,8 +10,27 @@ import {
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Strict Object', () => {
+  describe('toJSONSchema', () => {
+    it('should not allow additionalProperties', () => {
+      const schema = strictObject({
+        foo: ['foo', string()],
+      });
+      const jsonSchema = generateJSONSchema(schema);
+      // additionalProperties should be absent (or false) for strictObject
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'object',
+        properties: {
+          foo: { type: 'string' },
+        },
+        required: ['foo'],
+        additionalProperties: false,
+      });
+    });
+  });
   const userSchema = strictObject({
     id: ['user_id', string()],
     age: ['user_age', number()],

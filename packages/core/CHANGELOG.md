@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.27-alpha.0](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.26...@apimatic/core@0.10.27-alpha.0) (2025-09-04)
+
+### Bug Fixes
+
+- package import instead of local import ([038932d](https://github.com/apimatic/apimatic-js-runtime/commit/038932d6c10058ae46792e89bdaf1dedfed037bf))
+- **tests:** depend on package name not relative path ([7fe0196](https://github.com/apimatic/apimatic-js-runtime/commit/7fe019653e742b767c1236805f5d2982776ee5b3))
+- **tests:** missing import ([6574dbc](https://github.com/apimatic/apimatic-js-runtime/commit/6574dbcb5406ac1226a187946bc924507928d4c4))
+
 ### [0.10.26](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.25...@apimatic/core@0.10.26) (2025-09-04)
 
 **Note:** Version bump only for package @apimatic/core

@@ -1,4 +1,12 @@
-import { dict, string, validateAndMap, validateAndUnmap } from '../../src';
+import {
+  dict,
+  generateJSONSchema,
+  JSONSchema,
+  string,
+  validateAndMap,
+  validateAndUnmap,
+} from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Dictionary', () => {
   describe('Mapping', () => {
@@ -143,6 +151,20 @@ describe('Dictionary', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for an array', () => {
+      const jsonSchema = generateJSONSchema(dict(string()));
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'object',
+        additionalProperties: {
+          type: 'string',
+        },
+      });
     });
   });
 });

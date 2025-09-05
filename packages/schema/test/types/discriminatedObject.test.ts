@@ -2,6 +2,7 @@ import {
   boolean,
   discriminatedObject,
   extendStrictObject,
+  generateJSONSchema,
   nullable,
   number,
   optional,
@@ -9,27 +10,30 @@ import {
   string,
   validateAndMap,
   validateAndUnmap,
+  JSONSchema,
+  object,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Discriminated Object', () => {
   const baseType = strictObject({
-    type: ['type mapped', optional(string())],
+    type: ['type unmapped', optional(string())],
     baseField: ['base field', number()],
   });
 
   const childType1 = extendStrictObject(baseType, {
-    type: ['type mapped', optional(string())],
+    type: ['type unmapped', optional(string())],
     child1Field: ['child1 field', boolean()],
   });
 
   const childType2 = extendStrictObject(baseType, {
-    type: ['type mapped', optional(string())],
+    type: ['type unmapped', optional(string())],
     child2Field: ['child2 field', boolean()],
   });
 
   const discriminatedSchema = discriminatedObject(
     'type',
-    'type mapped',
+    'type unmapped',
     {
       base: baseType,
       child1: childType1,
@@ -45,7 +49,7 @@ describe('Discriminated Object', () => {
   describe('Mapping', () => {
     it('should map to child type on discriminator match', () => {
       const input = {
-        'type mapped': 'child1',
+        'type unmapped': 'child1',
         'base field': 123123,
         'child1 field': true,
       };
@@ -60,7 +64,7 @@ describe('Discriminated Object', () => {
 
     it('should map to child type without discriminator match', () => {
       const input = {
-        'type mapped': 'hello world',
+        'type unmapped': 'hello world',
         'base field': 123123,
         'child1 field': true,
       };
@@ -88,7 +92,7 @@ describe('Discriminated Object', () => {
 
     it('should map to base type on discriminator match', () => {
       const input = {
-        'type mapped': 'base',
+        'type unmapped': 'base',
         'base field': 123123,
       };
       const output = validateAndMap(input, discriminatedSchema);
@@ -101,7 +105,7 @@ describe('Discriminated Object', () => {
 
     it('should map to base type without discriminator match', () => {
       const input = {
-        'type mapped': 'hello world',
+        'type unmapped': 'hello world',
         'base field': 123123,
       };
       const output = validateAndMap(input, discriminatedSchema);
@@ -114,7 +118,7 @@ describe('Discriminated Object', () => {
 
     it('should fail on schema invalidation', () => {
       const input = {
-        'type mapped': 'child1',
+        'type unmapped': 'child1',
         'base field': 123123,
         'child1 field': 101,
       };
@@ -127,7 +131,7 @@ describe('Discriminated Object', () => {
               Object {
                 "base field": 123123,
                 "child1 field": 101,
-                "type mapped": "child1",
+                "type unmapped": "child1",
               },
               101,
             ],
@@ -166,7 +170,7 @@ describe('Discriminated Object', () => {
       const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
-        'type mapped': 'child1',
+        'type unmapped': 'child1',
         'base field': 123123,
         'child1 field': true,
       });
@@ -181,7 +185,7 @@ describe('Discriminated Object', () => {
       const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
-        'type mapped': 'hello world',
+        'type unmapped': 'hello world',
         'base field': 123123,
         'child1 field': true,
       });
@@ -208,7 +212,7 @@ describe('Discriminated Object', () => {
       const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
-        'type mapped': 'base',
+        'type unmapped': 'base',
         'base field': 123123,
       });
     });
@@ -221,7 +225,7 @@ describe('Discriminated Object', () => {
       const output = validateAndUnmap(input, discriminatedSchema);
       expect(output.errors).toBeFalsy();
       expect((output as any).result).toStrictEqual({
-        'type mapped': 'hello world',
+        'type unmapped': 'hello world',
         'base field': 123123,
       });
     });
@@ -270,6 +274,174 @@ describe('Discriminated Object', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema as anyOf with discriminator for inheritance using extended schemas', () => {
+      const jsonSchema = generateJSONSchema(discriminatedSchema);
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        anyOf: [
+          { $ref: '#/$defs/schema1' },
+          { $ref: '#/$defs/schema2' },
+          { $ref: '#/$defs/schema3' },
+        ],
+        discriminator: {
+          propertyName: 'type unmapped',
+          mapping: {
+            base: '#/$defs/schema1',
+            child1: '#/$defs/schema2',
+            child2: '#/$defs/schema3',
+          },
+        },
+        $defs: {
+          schema1: {
+            type: 'object',
+            properties: {
+              'type unmapped': {
+                type: 'string',
+              },
+              'base field': {
+                type: 'number',
+              },
+            },
+            required: ['base field'],
+            additionalProperties: false,
+          },
+          schema2: {
+            allOf: [
+              {
+                $ref: '#/$defs/schema1',
+              },
+              {
+                type: 'object',
+                properties: {
+                  'type unmapped': {
+                    type: 'string',
+                  },
+                  'child1 field': {
+                    type: 'boolean',
+                  },
+                },
+                required: ['child1 field'],
+                additionalProperties: false,
+              },
+            ],
+          },
+          schema3: {
+            allOf: [
+              {
+                $ref: '#/$defs/schema1',
+              },
+              {
+                type: 'object',
+                properties: {
+                  'type unmapped': {
+                    type: 'string',
+                  },
+                  'child2 field': {
+                    type: 'boolean',
+                  },
+                },
+                required: ['child2 field'],
+                additionalProperties: false,
+              },
+            ],
+          },
+        },
+      });
+    });
+
+    it('should output a valid JSON Schema as anyOf with discriminator for inheritance using regular schemas', () => {
+      const type1 = object({
+        type: ['type unmapped', optional(string())],
+        field1: ['child1 field', boolean()],
+        baseField: ['base field', number()],
+      });
+
+      const type2 = object({
+        type: ['type unmapped', optional(string())],
+        field2: ['child2 field', boolean()],
+        baseField: ['base field', number()],
+      });
+
+      const baseType = object({
+        type: ['type unmapped', optional(string())],
+        baseField: ['base field', number()],
+      });
+
+      const discriminatedUnion = discriminatedObject(
+        'type',
+        'type unmapped',
+        {
+          base: baseType,
+          child1: type1,
+          child2: type2,
+        },
+        'base'
+      );
+      const jsonSchema = generateJSONSchema(discriminatedUnion);
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        anyOf: [
+          { $ref: '#/$defs/schema1' },
+          { $ref: '#/$defs/schema2' },
+          { $ref: '#/$defs/schema3' },
+        ],
+        discriminator: {
+          propertyName: 'type unmapped',
+          mapping: {
+            base: '#/$defs/schema1',
+            child1: '#/$defs/schema2',
+            child2: '#/$defs/schema3',
+          },
+        },
+        $defs: {
+          schema1: {
+            type: 'object',
+            properties: {
+              'type unmapped': {
+                type: 'string',
+              },
+              'base field': {
+                type: 'number',
+              },
+            },
+            required: ['base field'],
+          },
+          schema2: {
+            type: 'object',
+            properties: {
+              'type unmapped': {
+                type: 'string',
+              },
+              'child1 field': {
+                type: 'boolean',
+              },
+              'base field': {
+                type: 'number',
+              },
+            },
+            required: ['child1 field', 'base field'],
+          },
+          schema3: {
+            type: 'object',
+            properties: {
+              'type unmapped': {
+                type: 'string',
+              },
+              'child2 field': {
+                type: 'boolean',
+              },
+              'base field': {
+                type: 'number',
+              },
+            },
+            required: ['child2 field', 'base field'],
+          },
+        },
+      });
     });
   });
 });

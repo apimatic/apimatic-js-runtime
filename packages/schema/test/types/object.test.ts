@@ -1,15 +1,18 @@
 import {
+  generateJSONSchema,
   lazy,
   nullable,
   number,
   object,
   optional,
+  JSONSchema,
   SchemaMappedType,
   SchemaType,
   string,
   validateAndMap,
   validateAndUnmap,
 } from '../../src';
+import { META_SCHEMA } from '../../src/jsonSchemaTypes';
 
 describe('Object', () => {
   describe('Mapping', () => {
@@ -341,6 +344,101 @@ describe('Object', () => {
           },
         ]
       `);
+    });
+  });
+
+  describe('To JSON Schema', () => {
+    it('should output a valid JSON Schema for an object with required properties', () => {
+      const userSchema = object({
+        id: ['ID', string()],
+        age: ['AGE', number()],
+      });
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'object',
+        required: ['ID', 'AGE'],
+        properties: {
+          ID: {
+            type: 'string',
+          },
+          AGE: {
+            type: 'number',
+          },
+        },
+      });
+    });
+
+    it('should output a valid JSON Schema for an object with required and optional properties', () => {
+      const userSchema = object({
+        id: ['id', string()],
+        age: ['age', optional(number())],
+      });
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: {
+            type: 'string',
+          },
+          age: {
+            type: 'number',
+          },
+        },
+      });
+    });
+
+    it('should output a valid JSON Schema for an object with required nullable property', () => {
+      const userSchema = object({
+        id: ['id', nullable(string())],
+      });
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'object',
+        required: ['id'],
+        properties: {
+          id: {
+            oneOf: [
+              {
+                type: 'null',
+              },
+              {
+                type: 'string',
+              },
+            ],
+          },
+        },
+      });
+    });
+
+    it('should output a valid JSON Schema for an object with optional nullable property', () => {
+      const userSchema = object({
+        id: ['id', optional(nullable(string()))],
+      });
+      const jsonSchema = generateJSONSchema(userSchema);
+
+      expect(jsonSchema).toStrictEqual<JSONSchema>({
+        $schema: META_SCHEMA,
+        type: 'object',
+        properties: {
+          id: {
+            oneOf: [
+              {
+                type: 'null',
+              },
+              {
+                type: 'string',
+              },
+            ],
+          },
+        },
+      });
     });
   });
 });

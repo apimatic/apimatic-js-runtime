@@ -18,7 +18,15 @@ import {
 import { ApiError } from '../../src/errors/apiError';
 import { RequestRetryOption } from '../../src/http/retryConfiguration';
 import { employeeSchema, Employee } from '../../../schema/test/employeeSchema';
-import { array, bigint, number, string } from '../../../schema';
+import {
+  array,
+  number,
+  string,
+  boolean,
+  nullable,
+  optional,
+  bigint,
+} from '@apimatic/schema';
 import {
   FORM_URLENCODED_CONTENT_TYPE,
   TEXT_CONTENT_TYPE,
@@ -27,7 +35,6 @@ import { FileWrapper } from '../../src/fileWrapper';
 import fs from 'fs';
 import path from 'path';
 import { bossSchema } from '../../../schema/test/bossSchema';
-import { boolean, nullable, optional } from '@apimatic/schema/src';
 import {
   ArrayPrefixFunction,
   commaPrefix,
