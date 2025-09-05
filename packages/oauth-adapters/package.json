@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/oauth-adapters",
   "author": "APIMatic Ltd.",
-  "version": "0.4.15",
+  "version": "0.4.16",
   "license": "MIT",
   "sideEffects": false,
   "main": "lib/index.js",
@@ -58,7 +58,6 @@
     "@apimatic/core-interfaces": "^0.2.12",
     "@apimatic/file-wrapper": "^0.3.7",
     "@apimatic/http-headers": "^0.3.7",
-    "@apimatic/schema": "^0.7.19",
     "tslib": "^2.8.1"
   },
   "publishConfig": {
