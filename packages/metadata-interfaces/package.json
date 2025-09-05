@@ -56,7 +56,7 @@
   },
   "dependencies": {
     "@apimatic/core-interfaces": "^0.2.9",
-    "@apimatic/schema": "^0.7.16",
+    "@apimatic/schema": "^0.7.21-alpha.0",
     "tslib": "^2.8.1"
   },
   "publishConfig": {
