@@ -8,5 +8,5 @@ export * from './httpResponse';
 export * from './retryConfiguration';
 export * from './logging';
 export type { PagedAsyncIterable } from './pagedAsyncIterable';
-export type { SignatureVerificationResult } from './signatureVerificationResult';
+export * from './signatureVerificationResult';
 export type { SignatureVerifier } from './signatureVerifier';
