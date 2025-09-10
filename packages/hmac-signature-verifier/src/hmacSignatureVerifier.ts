@@ -11,12 +11,12 @@ type HmacEncoding = 'hex' | 'base64' | 'base64url';
 type HmacAlgorithm = 'sha256' | 'sha512';
 
 export class HmacSignatureVerifier implements SignatureVerifier {
-  private secretKey: string;
-  private encoding: HmacEncoding;
-  private signatureHeader: string;
-  private signatureValueTemplate: string | undefined;
-  private hmacAlgorithm: HmacAlgorithm;
-  private templateResolver: ((req: HttpRequest) => Buffer) | undefined;
+  private readonly secretKey: string;
+  private readonly encoding: HmacEncoding;
+  private readonly signatureHeader: string;
+  private readonly signatureValueTemplate: string | undefined;
+  private readonly hmacAlgorithm: HmacAlgorithm;
+  private readonly templateResolver: ((req: HttpRequest) => Buffer) | undefined;
 
   constructor(
     secretKey: string,
@@ -76,15 +76,19 @@ export class HmacSignatureVerifier implements SignatureVerifier {
       return createSignatureVerificationFailure('Missing signature header');
     }
 
+    const resolvedTemplate = this.templateResolver?.(req);
+
+    let bodyContent = '';
+    if (req.body?.type === 'text') {
+      bodyContent = req.body.content;
+    }
+
     const signingBytes =
-      this.templateResolver?.(req) &&
-      Buffer.isBuffer(this.templateResolver(req)) &&
-      this.templateResolver(req).length > 0
-        ? this.templateResolver(req)
-        : Buffer.from(
-            req.body?.type === 'text' ? req.body.content : '',
-            'utf8'
-          );
+      resolvedTemplate &&
+      Buffer.isBuffer(resolvedTemplate) &&
+      resolvedTemplate.length > 0
+        ? resolvedTemplate
+        : Buffer.from(bodyContent, 'utf8');
 
     let calculatedSignature = createHmac(this.hmacAlgorithm, this.secretKey)
       .update(signingBytes)

@@ -23,6 +23,15 @@ export function convertExpressRequest(req: any): HttpRequest {
     throw new Error(`Invalid HTTP method: ${req.method}`);
   }
 
+  const host = req.get('host');
+  if (!host || host.trim() === '' || host === 'undefined') {
+    throw new Error('Missing host header');
+  }
+
+  if (req.protocol !== 'http' && req.protocol !== 'https') {
+    throw new Error(`Invalid protocol: ${req.protocol}`);
+  }
+
   const url = `${req.protocol}://${req.get('host')}${req.originalUrl}`;
   if (!isValidUrl(url)) {
     throw new Error(`Invalid URL: ${url}`);
@@ -56,13 +65,8 @@ function isHttpMethod(method: any): method is HttpMethod {
 function isValidUrl(url: string): boolean {
   try {
     const parsedUrl = new URL(url);
-
     const validProtocols = ['http:', 'https:'];
     if (!validProtocols.includes(parsedUrl.protocol)) {
-      return false;
-    }
-
-    if (!parsedUrl.hostname) {
       return false;
     }
 
@@ -89,5 +93,5 @@ function toBodyContent(body: unknown): HttpRequestTextBody {
     return { type: 'text', content: JSON.stringify(body) };
   }
 
-  return { type: 'text', content: String(body) };
+  return { type: 'text', content: body.toString() };
 }
