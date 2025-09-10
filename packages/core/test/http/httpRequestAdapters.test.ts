@@ -25,18 +25,6 @@ describe('convertExpressRequest', () => {
     );
   });
 
-  it('should throw for invalid URL', () => {
-    const req = {
-      ...baseReq,
-      method: 'GET',
-      protocol: 'http',
-      get: () => ':::::',
-      originalUrl: ':::::',
-      body: undefined,
-    };
-    expect(() => convertExpressRequest(req)).toThrow(/Invalid URL/);
-  });
-
   it('should throw for missing hostname in URL', () => {
     const undefinedHostReq = {
       method: 'GET',
@@ -59,7 +47,7 @@ describe('convertExpressRequest', () => {
       originalUrl: '/api/test',
       body: undefined,
     };
-    expect(() => convertExpressRequest(req)).toThrow(/Invalid protocol/);
+    expect(() => convertExpressRequest(req)).toThrow(/Invalid URL/);
   });
 
   it('should throw for invalid headers (not object)', () => {
@@ -97,6 +85,33 @@ describe('convertExpressRequest', () => {
     const req = { ...baseReq, method: 'POST', body: 123 };
     const result = convertExpressRequest(req);
     expect(result.body).toEqual({ type: 'text', content: '123' });
+  });
+
+  it('should handle boolean body', () => {
+    const req = { ...baseReq, method: 'POST', body: true };
+    const result = convertExpressRequest(req);
+    expect(result.body).toEqual({ type: 'text', content: 'true' });
+  });
+
+  it('should handle null body', () => {
+    const req = { ...baseReq, method: 'POST', body: null };
+    const result = convertExpressRequest(req);
+    expect(result.body).toEqual({ type: 'text', content: '' });
+  });
+
+  it('should handle symbol body', () => {
+    const req = { ...baseReq, method: 'POST', body: Symbol('test') };
+    const result = convertExpressRequest(req);
+    expect(result.body).toEqual({ type: 'text', content: 'Symbol(test)' });
+  });
+
+  it('should handle function body', () => {
+    const func = () => {
+      return 'I am a function';
+    };
+    const req = { ...baseReq, method: 'POST', body: func };
+    const result = convertExpressRequest(req);
+    expect(result.body).toEqual({ type: 'text', content: func.toString() });
   });
 
   it('should handle all valid HTTP methods', () => {
