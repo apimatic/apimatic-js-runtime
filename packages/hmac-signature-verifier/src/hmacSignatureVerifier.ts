@@ -1,7 +1,8 @@
-import { HttpRequest, getHeader } from '@apimatic/core';
+import { getHeader } from '@apimatic/http-headers';
 import {
   createSignatureVerificationFailure,
   createSignatureVerificationSuccess,
+  HttpRequest,
   SignatureVerificationResult,
   SignatureVerifier,
 } from '@apimatic/core-interfaces';

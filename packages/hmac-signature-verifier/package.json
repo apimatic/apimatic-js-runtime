@@ -36,7 +36,7 @@
   ],
   "dependencies": {
     "@apimatic/core-interfaces": "^0.2.12",
-    "@apimatic/core": "^0.10.26"
+    "@apimatic/http-headers": "^0.3.7"
   },
   "publishConfig": {
     "access": "public"
