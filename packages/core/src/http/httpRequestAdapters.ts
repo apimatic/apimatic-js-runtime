@@ -60,7 +60,7 @@ function isHttpMethod(method: any): method is HttpMethod {
 
 function isValidUrl(url: string): boolean {
   const protocolRegex = /^https?:\/\/[^/]+/;
-  const match = url.match(protocolRegex);
+  const match = protocolRegex.exec(url);
   return match !== null;
 }
 
@@ -93,5 +93,5 @@ function toBodyContent(body: unknown): HttpRequestTextBody {
     return { type: 'text', content: body.toString() };
   }
 
-  return { type: 'text', content: String(body) };
+  return { type: 'text', content: body.toString() };
 }
