@@ -40,7 +40,7 @@ export class HmacSignatureVerifier implements SignatureVerifier {
       throw new Error('templateResolver must be a function if provided');
     }
     if (hmacAlgorithm !== 'sha256' && hmacAlgorithm !== 'sha512') {
-      throw new Error('hmacAlgorithm must be either \'sha256\' or \'sha512\'');
+      throw new Error(`hmacAlgorithm must be either 'sha256' or 'sha512'`);
     }
     if (
       encoding !== 'hex' &&
@@ -48,7 +48,7 @@ export class HmacSignatureVerifier implements SignatureVerifier {
       encoding !== 'base64url'
     ) {
       throw new Error(
-        'encoding must be either \'hex\' or \'base64\' or \'base64url\''
+        `encoding must be either 'hex' or 'base64' or 'base64url'`
       );
     }
     if (
