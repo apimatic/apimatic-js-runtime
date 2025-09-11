@@ -173,7 +173,7 @@ function replaceBodyPlaceholders(
   return message;
 }
 
-function extractValueFromJsonPointer(obj: any, pointer: string): any {
+export function extractValueFromJsonPointer(obj: any, pointer: string): any {
   if (pointer === '') {
     return obj;
   }
