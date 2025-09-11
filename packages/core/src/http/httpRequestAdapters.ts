@@ -77,21 +77,14 @@ function toBodyContent(body: unknown): HttpRequestTextBody {
     return { type: 'text', content: body };
   }
 
-  if (
-    typeof body === 'number' ||
-    typeof body === 'boolean' ||
-    typeof body === 'bigint'
-  ) {
-    return { type: 'text', content: String(body) };
-  }
-
   if (typeof body === 'object') {
-    return { type: 'text', content: JSON.stringify(body) };
+    return {
+      type: 'text',
+      content: JSON.stringify(body, (_key, value) =>
+        typeof value === 'bigint' ? String(value) : value
+      ),
+    };
   }
 
-  if (typeof body === 'symbol') {
-    return { type: 'text', content: body.toString() };
-  }
-
-  return { type: 'text', content: body.toString() };
+  return { type: 'text', content: String(body) };
 }

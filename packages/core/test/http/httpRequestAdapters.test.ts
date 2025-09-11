@@ -107,11 +107,37 @@ describe('convertExpressRequest', () => {
 
   it('should handle function body', () => {
     const func = () => {
-      return 'I am a function';
+      return 'test';
     };
     const req = { ...baseReq, method: 'POST', body: func };
     const result = convertExpressRequest(req);
     expect(result.body).toEqual({ type: 'text', content: func.toString() });
+  });
+
+  it('should handle array body with string and BigInt', () => {
+    const arr = ['john', BigInt(1234567891298373746474783)];
+    const req = { ...baseReq, method: 'POST', body: arr };
+    const result = convertExpressRequest(req);
+    expect(result.body).toEqual({
+      type: 'text',
+      content: JSON.stringify([
+        'john',
+        BigInt(1234567891298373746474783).toString(),
+      ]),
+    });
+  });
+
+  it('should handle object body with BigInt', () => {
+    const obj = { name: 'john', value: BigInt(1234567891298373746474783) };
+    const req = { ...baseReq, method: 'POST', body: obj };
+    const result = convertExpressRequest(req);
+    expect(result.body).toEqual({
+      type: 'text',
+      content: JSON.stringify({
+        name: 'john',
+        value: BigInt(1234567891298373746474783).toString(),
+      }),
+    });
   });
 
   it('should handle all valid HTTP methods', () => {
