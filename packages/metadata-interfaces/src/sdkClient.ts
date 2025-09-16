@@ -1,1 +1,1 @@
-export type { CoreClientInterface } from '@apimatic/core-interfaces';
+export type CoreClientInterface = object & { readonly __brand: unique symbol };

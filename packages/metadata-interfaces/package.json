@@ -55,7 +55,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "@apimatic/core-interfaces": "^0.2.9",
+    "@apimatic/core-interfaces": "^0.2.12",
     "@apimatic/schema": "^0.7.21-alpha.0",
     "tslib": "^2.8.1"
   },
