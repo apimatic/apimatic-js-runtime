@@ -4,7 +4,7 @@ import { httpMcpServer } from './httpMcpServer.js';
 import { getServer } from './mcpServer.js';
 import { Command } from 'commander';
 import type {
-  CoreClientInterface,
+  CoreClient,
   EndpointsObject,
 } from '@apimatic/metadata-interfaces';
 
@@ -15,7 +15,7 @@ export interface McpServerConfig {
 
 export interface SdkMetadata {
   endpoints: EndpointsObject;
-  clientFactory: () => CoreClientInterface;
+  clientFactory: () => CoreClient;
 }
 
 export async function executeMcpServerCli(
@@ -60,7 +60,7 @@ export async function executeMcpServerCli(
 async function stdioMcpServer(
   serverName: string,
   endpoints: EndpointsObject,
-  client: CoreClientInterface
+  client: CoreClient
 ) {
   const stdioTransport = new StdioServerTransport();
   const server = getServer(serverName, endpoints, client);

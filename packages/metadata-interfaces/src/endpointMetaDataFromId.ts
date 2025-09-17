@@ -7,7 +7,7 @@ import type {
   ValidationResult,
 } from '@apimatic/schema';
 
-export interface EndpointMetaDataInterface<
+export interface EndpointMetadataInterface<
   CoreReqSchema extends Schema<any, any>,
   Result
 > {
@@ -35,5 +35,5 @@ export interface RequestSchemaInterface<
 
 export type EndpointsObject = Record<
   string,
-  EndpointMetaDataInterface<any, any>
+  EndpointMetadataInterface<any, any>
 >;

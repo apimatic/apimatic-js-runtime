@@ -2,8 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createToolFromEndpoint } from '../src/toolUtils.js';
 import type {
-  CoreClientInterface,
-  EndpointMetaDataInterface,
+  CoreClient,
+  EndpointMetadataInterface,
   EndpointsObject,
   RequestSchemaInterface,
 } from '@apimatic/metadata-interfaces';
@@ -43,7 +43,7 @@ test('createToolFromEndpoint returns ToolDefinition and handler calls endpoint',
         };
       },
       description: 'Creates an order',
-    } satisfies EndpointMetaDataInterface<any, { id: string }>,
+    } satisfies EndpointMetadataInterface<any, { id: string }>,
 
     'orders-GetOrder': {
       name: 'GetOrder',
@@ -67,10 +67,10 @@ test('createToolFromEndpoint returns ToolDefinition and handler calls endpoint',
         };
       },
       description: 'Gets an order',
-    } satisfies EndpointMetaDataInterface<any, { id: string }>,
+    } satisfies EndpointMetadataInterface<any, { id: string }>,
   };
 
-  const sdkClient: CoreClientInterface = {
+  const sdkClient: CoreClient = {
     getRequestBuilderFactory: () => () => ({}),
   };
 

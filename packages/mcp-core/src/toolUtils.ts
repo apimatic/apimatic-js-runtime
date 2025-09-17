@@ -4,8 +4,8 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { createErrorMessage, stringifyRawJson } from './utils.js';
 import type {
-  CoreClientInterface,
-  EndpointMetaDataInterface,
+  CoreClient,
+  EndpointMetadataInterface,
   EndpointsObject,
 } from '@apimatic/metadata-interfaces';
 import type { JSONSchema } from '@apimatic/metadata-interfaces';
@@ -18,7 +18,7 @@ export type ToolDefinition = {
 export function createToolFromEndpoint(
   endpointId: string,
   endpoints: EndpointsObject,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ): ToolDefinition {
   const endpoint = endpoints[endpointId];
   if (!endpoint) {
@@ -41,9 +41,9 @@ export function createToolFromEndpoint(
 }
 
 async function handleEndpoint(
-  endpoint: EndpointMetaDataInterface<any, any>,
+  endpoint: EndpointMetadataInterface<any, any>,
   args: unknown,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ): Promise<CallToolResult> {
   const validationResult = endpoint.requestSchema.validateAndMap(args as any);
   if (validationResult.errors) {

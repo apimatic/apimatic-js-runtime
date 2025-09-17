@@ -7,7 +7,7 @@ import { InMemoryEventStore } from '@modelcontextprotocol/sdk/examples/shared/in
 import { randomUUID } from 'node:crypto';
 import { getServer } from './mcpServer.js';
 import type {
-  CoreClientInterface,
+  CoreClient,
   EndpointsObject,
 } from '@apimatic/metadata-interfaces';
 
@@ -15,7 +15,7 @@ export function httpMcpServer(
   serverName: string,
   port: number,
   endpoints: EndpointsObject,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ) {
   const app = express();
   app.use(cors());
@@ -50,7 +50,9 @@ export function httpMcpServer(
 
     // Close all active transports to properly clean up resources
     for (const sessionId in transports) {
-      if (!transports.hasOwnProperty(sessionId)) { continue; }
+      if (!transports.hasOwnProperty(sessionId)) {
+        continue;
+      }
       try {
         console.log(`Closing transport for session ${sessionId}`);
         await transports[sessionId]?.close();
@@ -76,7 +78,7 @@ function mapEndpoints(
   serverName: string,
   transports: Transports,
   endpoints: EndpointsObject,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ) {
   // =============================================================================
   // STREAMABLE HTTP TRANSPORT (PROTOCOL VERSION 2025-03-26)
@@ -159,7 +161,7 @@ async function handleStatefulMCPRequest(
   res: Response,
   serverName: string,
   endpoints: EndpointsObject,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ) {
   console.log('Handling stateful request...');
   try {
@@ -236,7 +238,7 @@ async function handleStatelessMCPRequest(
   res: Response,
   serverName: string,
   endpoints: EndpointsObject,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ) {
   console.log('Handling stateless request...');
   const server = getServer(serverName, endpoints, sdkClient);

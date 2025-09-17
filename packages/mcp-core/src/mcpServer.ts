@@ -1,5 +1,5 @@
 import type {
-  CoreClientInterface,
+  CoreClient,
   EndpointsObject,
 } from '@apimatic/metadata-interfaces';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
@@ -17,7 +17,7 @@ import { createToolFromEndpoint, type ToolDefinition } from './toolUtils.js';
 export function getServer(
   serverName: string,
   endpoints: EndpointsObject,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ): Server {
   const server = new Server(
     { name: serverName, version: '1.0.0' },
@@ -39,7 +39,7 @@ export function getServer(
  */
 async function handleListTools(
   endpoints: EndpointsObject,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ): Promise<ListToolsResult> {
   const allTools = getAllTools(endpoints, sdkClient);
   return {
@@ -53,7 +53,7 @@ async function handleListTools(
 async function handleCallTool(
   request: CallToolRequest,
   endpoints: EndpointsObject,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ): Promise<CallToolResult> {
   const { name, arguments: args } = request.params;
   const allTools = getAllTools(endpoints, sdkClient);
@@ -69,11 +69,13 @@ async function handleCallTool(
  */
 function getAllTools(
   endpoints: EndpointsObject,
-  sdkClient: CoreClientInterface
+  sdkClient: CoreClient
 ): Record<string, ToolDefinition> {
   const toolMap: Record<string, ToolDefinition> = {};
   for (const key in endpoints) {
-    if (!endpoints.hasOwnProperty(key)) { continue; }
+    if (!endpoints.hasOwnProperty(key)) {
+      continue;
+    }
     const endpointId = key;
     toolMap[endpointId] = createToolFromEndpoint(
       endpointId,
