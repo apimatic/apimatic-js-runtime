@@ -1,18 +1,9 @@
 import { type CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { Readable } from 'stream';
+import JSONBig from '@apimatic/json-bigint';
 
 export function stringifyRawJson(object: unknown): string {
-  return JSON.stringify(object, (_, value: unknown) => {
-    // TODO: This is a bug. The bigint by its nature is such a large number
-    // that it doesn't fit in the normal 'Number' type in JavaScript. That's
-    // why they create another type for it. To parse or serialize JSON when
-    // bigint is involved, you need to use a JSON parser that has built-in
-    // support for it. You cannot hack bigint supported by using a "replacer"
-    // method in an existing JSON parser/serializer. We use such a library
-    // in our SDKs; however, we should only use that library when the SDK
-    // is expecting bigint to be used.
-    return typeof value === 'bigint' ? Number(value) : value;
-  });
+  return JSONBig().stringify(object);
 }
 
 export async function createErrorMessage(
