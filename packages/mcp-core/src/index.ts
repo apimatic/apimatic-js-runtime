@@ -6,7 +6,6 @@ import { Command } from 'commander';
 import type {
   CoreClientInterface,
   EndpointsObject,
-  EnvVar,
 } from '@apimatic/metadata-interfaces';
 
 export interface McpServerConfig {
@@ -17,7 +16,6 @@ export interface McpServerConfig {
 export interface SdkMetadata {
   endpoints: EndpointsObject;
   clientFactory: () => CoreClientInterface;
-  envVariables: EnvVar[];
 }
 
 export async function executeMcpServerCli(
@@ -62,7 +60,7 @@ export async function executeMcpServerCli(
 async function stdioMcpServer(
   serverName: string,
   endpoints: EndpointsObject,
-  client: any
+  client: CoreClientInterface
 ) {
   const stdioTransport = new StdioServerTransport();
   const server = getServer(serverName, endpoints, client);

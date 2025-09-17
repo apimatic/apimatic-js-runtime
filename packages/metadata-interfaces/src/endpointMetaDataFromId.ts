@@ -37,12 +37,3 @@ export type EndpointsObject = Record<
   string,
   EndpointMetaDataInterface<any, any>
 >;
-
-export type EnvVar = {
-  name: string;
-  description: string;
-  isOptional: boolean;
-  isEnum: boolean;
-  defaultValue: string | null;
-  enumValues: string[] | null;
-};
