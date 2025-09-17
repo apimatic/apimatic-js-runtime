@@ -70,9 +70,7 @@ test('createToolFromEndpoint returns ToolDefinition and handler calls endpoint',
     } satisfies EndpointMetadataInterface<any, { id: string }>,
   };
 
-  const sdkClient: CoreClient = {
-    getRequestBuilderFactory: () => () => ({}),
-  };
+  const sdkClient = {} as unknown as CoreClient;
 
   const toolDef = createToolFromEndpoint(
     'orders-CreateOrder',
