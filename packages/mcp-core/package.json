@@ -33,6 +33,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@apimatic/json-bigint": "^1.2.0",
     "@apimatic/metadata-interfaces": "^0.0.1",
     "@modelcontextprotocol/sdk": "^1.11.0",
     "commander": "^14.0.0",

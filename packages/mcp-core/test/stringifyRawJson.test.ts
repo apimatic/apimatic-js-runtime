@@ -9,9 +9,12 @@ test('stringifyRawJson works like JSON.stringify for normal objects', () => {
 });
 
 test('stringifyRawJson converts bigint to number', () => {
-  const obj = { id: 123n, count: BigInt(42) };
+  const obj = { id: 123n, count: 1234567890123456789012345678901234567890n };
   const result = stringifyRawJson(obj);
-  assert.strictEqual(result, '{"id":123,"count":42}');
+  assert.strictEqual(
+    result,
+    '{"id":123,"count":1234567890123456789012345678901234567890}'
+  );
 });
 
 test('stringifyRawJson handles arrays with bigint', () => {
