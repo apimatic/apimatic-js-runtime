@@ -13,9 +13,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./packages/${{ inputs.package }}
 
     steps:
       - name: Checkout repo
@@ -28,15 +25,20 @@ jobs:
 
       - name: Install deps
         run: yarn
+        working-directory: ./packages/${{ inputs.package }}
 
       - name: Build
         run: yarn build
+        working-directory: ./packages/${{ inputs.package }}
 
       - name: Test
         run: yarn test
+        working-directory: ./packages/${{ inputs.package }}
 
       - name: Lint
         run: yarn lint
+        working-directory: ./packages/${{ inputs.package }}
 
       - name: Code formatting
         run: yarn check-style
+        working-directory: ./packages/${{ inputs.package }}
