@@ -24,7 +24,8 @@ jobs:
           node-version: ${{ inputs.node }}
 
       - name: Install deps
-        run: yarn install --ignore-engines
+        run: yarn install 
+        working-directory: ./packages/${{ inputs.package }}
 
       - name: Build
         run: yarn build
