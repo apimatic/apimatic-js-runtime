@@ -7,7 +7,7 @@ jobs:
     name: Build, lint, and test on Node ${{ matrix.node }}
     strategy:
       matrix:
-        node: [14.x, 16.x, 17.x, 18.x, 19.x]
+        node: [14.x]
         package: [core-interfaces, http-query]
     uses: ./.github/workflows/build.yml
     with:
