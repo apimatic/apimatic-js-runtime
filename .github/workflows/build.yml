@@ -24,8 +24,7 @@ jobs:
           node-version: ${{ inputs.node }}
 
       - name: Install deps
-        run: yarn
-        working-directory: ./packages/${{ inputs.package }}
+        run: yarn --cwd ./packages/${{ inputs.package }}
 
       - name: Build
         run: yarn build
