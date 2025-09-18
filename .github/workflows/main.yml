@@ -3,20 +3,25 @@ on: [push]
 
 jobs:
   # other packages
-  # build-other-packages:
-  #   name: Build, lint, and test on Node ${{ matrix.node }}
-  #   strategy:
-  #     matrix:
-  #       node: [14.x, 16.x, 17.x, 18.x, 19.x]
-  #       package: [core-interfaces, http-query]
-  #   uses: ./.github/workflows/build.yml
-  #   with:
-  #     node: ${{ matrix.node }}
-  #     package: ${{ matrix.package }}
+  build-other-packages:
+    name: Build, lint, and test on Node ${{ matrix.node }}
+    strategy:
+      matrix:
+        node: [14.x, 16.x, 17.x, 18.x, 19.x]
+        package: [core-interfaces, http-query]
+    uses: ./.github/workflows/build.yml
+    with:
+      node: ${{ matrix.node }}
+      package: ${{ matrix.package }}
 
   # mcp-core
   build-mcp-core:
+    name: Build, lint, and test on Node ${{ matrix.node }}
+    strategy:
+      matrix:
+        node: [22.x]
+        package: [mcp-core]
     uses: ./.github/workflows/build.yml
     with:
-      node: "22.x"
-      package: "mcp-core"
+      node: ${{ matrix.node }}
+      package: ${{ matrix.package }}
