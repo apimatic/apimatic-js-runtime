@@ -24,7 +24,7 @@ jobs:
           node-version: ${{ inputs.node }}
 
       - name: Install deps
-        run: yarn --cwd ./packages/${{ inputs.package }}
+        run: yarn install --frozen-lockfile --ignore-engines
 
       - name: Build
         run: yarn build

@@ -6,7 +6,6 @@ import type {
   SchemaType,
   ValidationResult,
 } from '@apimatic/schema';
-import { CoreClient } from './coreClient';
 
 export interface EndpointMetadataInterface<
   CoreReqSchema extends Schema<any, any>,
@@ -16,7 +15,7 @@ export interface EndpointMetadataInterface<
   readonly group: string;
   readonly requestSchema: RequestSchemaInterface<CoreReqSchema>;
   readonly call: (
-    client: CoreClient,
+    client: any,
     mappedRequest: SchemaType<CoreReqSchema>
   ) => Promise<ApiResponse<Result>>;
   readonly description?: string;
