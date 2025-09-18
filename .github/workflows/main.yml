@@ -1,36 +1,67 @@
+# name: CI
+# on: [push]
+# jobs:
+#   build:
+#     name: Build, lint, and test on Node ${{ matrix.node }} and ${{ matrix.os }}
+
+#     runs-on: ${{ matrix.os }}
+#     strategy:
+#       matrix:
+#         node: ["14.x", "16.x", "17.x", "18.x", "19.x"]
+#         os: [ubuntu-latest]
+#         # os: [ubuntu-latest, windows-latest, macOS-latest]
+
+#     steps:
+#       - name: Checkout repo
+#         uses: actions/checkout@v2
+
+#       - name: Use Node ${{ matrix.node }}
+#         uses: actions/setup-node@v1
+#         with:
+#           node-version: ${{ matrix.node }}
+
+#       - name: Install deps
+#         run: yarn
+
+#       - name: Build
+#         run: yarn build
+
+#       - name: Test
+#         run: yarn test
+
+#       - name: Lint
+#         run: yarn lint
+
+#       - name: Code formatting
+#         run: yarn check-style
+
+# .github/workflows/ci.yml
 name: CI
 on: [push]
-jobs:
-  build:
-    name: Build, lint, and test on Node ${{ matrix.node }} and ${{ matrix.os }}
 
+jobs:
+  # other packages
+  build-other-packages:
+    name: Build, lint, and test on Node ${{ matrix.node }} and ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ["14.x", "16.x", "17.x", "18.x", "19.x"]
-        os: [ubuntu-latest]
-        # os: [ubuntu-latest, windows-latest, macOS-latest]
+        node: [14.x, 16.x, 17.x, 18.x, 19.x]
+        package: [core-interfaces, http-query]
+    uses: ./.github/workflows/build.yml
+    with:
+      node: ${{ matrix.node }}
+      package: ${{ matrix.package }}
 
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
-
-      - name: Use Node ${{ matrix.node }}
-        uses: actions/setup-node@v1
-        with:
-          node-version: ${{ matrix.node }}
-
-      - name: Install deps
-        run: yarn
-
-      - name: Build
-        run: yarn build
-
-      - name: Test
-        run: yarn test
-
-      - name: Lint
-        run: yarn lint
-
-      - name: Code formatting
-        run: yarn check-style
+  # mcp-core
+  build-mcp-core:
+    name: Build, lint, and test on Node ${{ matrix.node }} and ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        node: [22.x]
+        package: [mcp-core]
+    uses: ./.github/workflows/build.yml
+    with:
+      node: ${{ matrix.node }}
+      package: ${{ matrix.package }}

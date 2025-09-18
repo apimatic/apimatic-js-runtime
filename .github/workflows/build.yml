@@ -1,0 +1,38 @@
+# .github/workflows/build.yml
+name: Build Package
+on:
+  workflow_call:
+    inputs:
+      node:
+        required: true
+        type: string
+      package:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Use Node ${{ inputs.node }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ inputs.node }}
+
+      - name: Install deps
+        run: yarn --cwd packages/${{ inputs.package }}
+
+      - name: Build
+        run: yarn --cwd packages/${{ inputs.package }} build
+
+      - name: Test
+        run: yarn --cwd packages/${{ inputs.package }} test
+
+      - name: Lint
+        run: yarn --cwd packages/${{ inputs.package }} lint
+
+      - name: Code formatting
+        run: yarn --cwd packages/${{ inputs.package }} check-style
