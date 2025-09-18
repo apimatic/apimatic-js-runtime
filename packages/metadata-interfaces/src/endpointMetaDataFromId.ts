@@ -24,10 +24,7 @@ export interface EndpointMetadataInterface<
 export interface RequestSchemaInterface<
   CoreReqSchema extends Schema<any, any>
 > {
-  readonly schema: CoreReqSchema;
-
   toJSONSchema(): JSONSchema;
-
   validateAndMap(
     args: SchemaMappedType<CoreReqSchema>
   ): ValidationResult<SchemaType<CoreReqSchema>>;
