@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "clean": "shx rm -rf dist",
+    "clean": "rimraf dist",
     "build": "tsc -p tsconfig.prod.json",
     "clean-build": "npm run clean && npm run build",
     "test": "tsc && node --test"
@@ -27,7 +27,6 @@
     "eslint": "^9.24.0",
     "globals": "^16.0.0",
     "nodemon": "^3.1.9",
-    "shx": "^0.4.0",
     "typescript": "^5.8.2",
     "typescript-eslint": "^8.29.1"
   },
