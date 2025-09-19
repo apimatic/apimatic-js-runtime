@@ -10,7 +10,6 @@ import type {
 
 test('createToolFromEndpoint returns ToolDefinition and handler calls endpoint', async () => {
   const requestSchema: RequestSchemaInterface<any> = {
-    schema: {} as any,
     toJSONSchema: () => ({
       type: 'object',
       properties: { id: { type: 'string' } },
