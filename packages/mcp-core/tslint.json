@@ -1,0 +1,22 @@
+{
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended", "tslint-config-prettier"],
+  "jsRules": {},
+  "rules": {
+    "trailing-comma": [false],
+    "object-literal-sort-keys": false,
+    "arrow-parens": false,
+    "quotemark": [true, "single"],
+    "ordered-imports": [false],
+    "variable-name": false,
+    "object-literal-key-quotes": false,
+    "interface-name": false,
+    "member-ordering": false,
+    "no-namespace": false,
+    "no-unused-expression": [true, "allow-fast-null-checks"],
+    "interface-over-type-literal": false,
+    "no-console": false
+  },
+  "rulesDirectory": [],
+  "ignorePaths": ["es/", "umd/", "lib/"]
+}

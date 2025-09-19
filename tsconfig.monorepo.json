@@ -26,6 +26,12 @@
       "path": "./packages/http-query"
     },
     {
+      "path": "./packages/metadata-interfaces"
+    },
+    {
+      "path": "./packages/mcp-core"
+    },
+    {
       "path": "./packages/xml-adapter"
     },
     {
