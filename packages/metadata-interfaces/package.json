@@ -52,7 +52,7 @@
     "rollup-plugin-typescript2": "^0.31.0",
     "size-limit": "^7.0.8",
     "ts-jest": "^26.4.0",
-    "typescript": "^5.9.2"
+    "typescript": "^5.2.0"
   },
   "dependencies": {
     "@apimatic/core-interfaces": "^0.2.12",
