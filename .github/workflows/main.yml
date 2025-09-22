@@ -26,6 +26,16 @@ jobs:
       - name: Install deps
         run: yarn
 
+      - name: Check for endpointMetadataFromId.ts
+        run: |
+          echo "Listing src directory..."
+          ls -l src
+          echo "Searching for endpointMetadataFromId.ts..."
+          find src -iname "endpointMetadataFromId.ts" || echo "File not found"
+          echo "Listing src directory..."
+          ls -l src
+          echo "Searching for coreClient.ts..."
+          find src -iname "coreClient.ts" || echo "File not found"
       - name: Build
         run: yarn build
 

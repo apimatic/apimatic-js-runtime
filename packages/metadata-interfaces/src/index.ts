@@ -1,3 +1,3 @@
-export * from './endpointMetadataFromId';
-export * from './coreClient';
+export * from './coreClient.js';
+export * from './endpointMetadataFromId.js';
 export { type JSONSchema } from '@apimatic/schema';
