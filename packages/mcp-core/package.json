@@ -13,7 +13,7 @@
     "clean": "rimraf dist",
     "build": "tsc -p tsconfig.prod.json",
     "clean-build": "npm run clean && npm run build",
-    "test": "tsc && node --test"
+    "test": "tsc && node --test ./dist/test/**/*.test.js"
   },
   "keywords": [],
   "author": "",
