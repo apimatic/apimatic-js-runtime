@@ -8,8 +8,20 @@ import {
 } from '@apimatic/core-interfaces';
 import { createHmac, timingSafeEqual } from 'crypto';
 
-type HmacEncoding = 'hex' | 'base64' | 'base64url';
-type HmacAlgorithm = 'SHA256' | 'SHA512';
+/**
+ * Output encodings for HMAC digests.
+ * - `hex`: Hexadecimal string.
+ * - `base64`: Standard Base64.
+ * - `base64url`: URL-safe Base64.
+ */
+export type HmacEncoding = 'hex' | 'base64' | 'base64url';
+
+/**
+ * Hash algorithms supported for HMAC.
+ * - `SHA256`
+ * - `SHA512`
+ */
+export type HmacAlgorithm = 'SHA256' | 'SHA512';
 
 /**
  * Verifies request signatures using HMAC with configurable algorithms and encodings.
