@@ -78,7 +78,7 @@ test('createToolFromEndpoint returns ToolDefinition and handler calls endpoint',
   );
 
   // Check metadata
-  assert.equal(toolDef.tool.name, 'orders-CreateOrder');
+  assert.equal(toolDef.tool.name, 'orders-create_order');
   assert.equal(toolDef.tool.description, 'Creates an order');
   assert.equal(toolDef.tool.inputSchema.type, 'object');
 

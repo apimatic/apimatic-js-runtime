@@ -2,7 +2,7 @@ import {
   type CallToolResult,
   type Tool,
 } from '@modelcontextprotocol/sdk/types.js';
-import { createErrorMessage, stringifyRawJson } from './utils.js';
+import { createErrorMessage, getToolName, stringifyRawJson } from './utils.js';
 import type {
   CoreClient,
   EndpointMetadataInterface,
@@ -32,7 +32,7 @@ export function createToolFromEndpoint(
 
   return {
     tool: {
-      name: endpointId,
+      name: getToolName(endpoint.group, endpoint.name),
       description: endpoint.description,
       inputSchema: schema as ObjectJSONSchema,
     },

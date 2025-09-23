@@ -75,3 +75,22 @@ function wrapErrorMessage(message: string): CallToolResult {
     isError: true, // Indicate to the LLM that the tool failed
   };
 }
+
+/**
+ * Generates a tool name by combining the endpoint group and name,
+ * which always matches the regex `^[a-z0-9_-]{1,64}$`.
+ */
+export function getToolName(endpointGroup: string, endpointName: string) {
+  if (!endpointGroup || !endpointName) {
+    throw new Error('Tool name creation failed. Endpoint group and name must be non-empty strings.');
+  }
+
+  const snakeCased = `${endpointGroup}-${endpointName}`
+    // Insert underscore before each uppercase letter (except at the start)
+    .replace(/([a-z0-9])([A-Z])/g, '$1_$2')
+    // Handle cases like "XMLHttpRequest" → "xml_http_request"
+    .replace(/([A-Z]+)([A-Z][a-z])/g, '$1_$2')
+    .toLowerCase();
+
+  return snakeCased.replace(/[^a-z0-9_-]/g, '_').substring(0, 64);
+}
