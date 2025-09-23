@@ -3,6 +3,16 @@ import {
   HttpRequest,
   HttpRequestTextBody,
 } from '@apimatic/core-interfaces';
+import JSONBig from '@apimatic/json-bigint';
+
+interface ExpressRequestSubset {
+  method?: string;
+  protocol: string;
+  originalUrl: string;
+  headers: Record<string, string | string[] | undefined>;
+  body?: any;
+  get(name: string): string | undefined;
+}
 
 const validHttpMethods: HttpMethod[] = [
   'GET',
@@ -16,11 +26,20 @@ const validHttpMethods: HttpMethod[] = [
   'UNLINK',
 ];
 
-export function convertExpressRequest(req: any): HttpRequest {
+/**
+ * Converts an Express request into a normalized HttpRequest.
+ *
+ * Validates method, headers, and URL, and serializes the body.
+ *
+ * @param req - The Express request to convert.
+ * @returns A standardized HttpRequest object.
+ * @throws Error if the method, host, or URL is invalid.
+ */
+export function convertExpressRequest(req: ExpressRequestSubset): HttpRequest {
   const method = req.method?.toUpperCase();
 
   if (!isHttpMethod(method)) {
-    throw new Error(`Invalid HTTP method: ${req.method}`);
+    throw new Error(`Unsupported HTTP method: ${req.method}`);
   }
 
   const host = req.get('host');
@@ -78,11 +97,12 @@ function toBodyContent(body: unknown): HttpRequestTextBody {
   }
 
   if (typeof body === 'object') {
+    if (Object.keys(body).length === 0) {
+      return { type: 'text', content: '' };
+    }
     return {
       type: 'text',
-      content: JSON.stringify(body, (_key, value) =>
-        typeof value === 'bigint' ? String(value) : value
-      ),
+      content: JSONBig.stringify(body),
     };
   }
 

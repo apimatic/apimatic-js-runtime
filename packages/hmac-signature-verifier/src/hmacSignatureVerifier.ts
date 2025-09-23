@@ -9,8 +9,11 @@ import {
 import { createHmac, timingSafeEqual } from 'crypto';
 
 type HmacEncoding = 'hex' | 'base64' | 'base64url';
-type HmacAlgorithm = 'sha256' | 'sha512';
+type HmacAlgorithm = 'SHA256' | 'SHA512';
 
+/**
+ * Verifies request signatures using HMAC with configurable algorithms and encodings.
+ */
 export class HmacSignatureVerifier implements SignatureVerifier {
   private readonly secretKey: string;
   private readonly encoding: HmacEncoding;
@@ -23,7 +26,7 @@ export class HmacSignatureVerifier implements SignatureVerifier {
     secretKey: string,
     signatureHeader: string,
     templateResolver?: (req: HttpRequest) => Buffer,
-    hmacAlgorithm: HmacAlgorithm = 'sha256',
+    hmacAlgorithm: HmacAlgorithm = 'SHA256',
     encoding: HmacEncoding = 'hex',
     signatureValueTemplate?: string
   ) {
@@ -39,8 +42,8 @@ export class HmacSignatureVerifier implements SignatureVerifier {
     ) {
       throw new Error('templateResolver must be a function if provided');
     }
-    if (hmacAlgorithm !== 'sha256' && hmacAlgorithm !== 'sha512') {
-      throw new Error(`hmacAlgorithm must be either 'sha256' or 'sha512'`);
+    if (hmacAlgorithm !== 'SHA256' && hmacAlgorithm !== 'SHA512') {
+      throw new Error(`hmacAlgorithm must be either 'SHA256' or 'SHA512'`);
     }
     if (
       encoding !== 'hex' &&
@@ -66,6 +69,12 @@ export class HmacSignatureVerifier implements SignatureVerifier {
     this.templateResolver = templateResolver;
   }
 
+  /**
+   * Validates the request’s signature against the expected HMAC digest.
+   *
+   * @param req HTTPRequest to verify.
+   * @returns A SignatureVerificationResult indicating success or failure.
+   */
   public verify(req: HttpRequest): SignatureVerificationResult {
     const headers = req.headers;
     if (!headers) {

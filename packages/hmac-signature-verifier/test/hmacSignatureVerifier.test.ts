@@ -1,11 +1,11 @@
 import { HmacSignatureVerifier } from '../src/hmacSignatureVerifier';
 import {
   createSignatureVerificationFailure,
-  extractValueFromJsonPointer,
+  getValueByJsonPointer,
   getHeader,
   HttpRequest,
 } from '@apimatic/core';
-import * as crypto from 'crypto';
+import { createHmac } from 'crypto';
 
 describe('HmacSignatureVerifier', () => {
   const secretKey = 'test_secret';
@@ -18,14 +18,14 @@ describe('HmacSignatureVerifier', () => {
     const xTimestampHeader =
       getHeader(request.headers ?? {}, 'X-Timestamp') ?? '';
     const customerName =
-      extractValueFromJsonPointer(request.body, '/customer/name') ?? '';
+      getValueByJsonPointer(request.body, '/customer/name') ?? '';
 
     const finalMessage = `${cookieHeader}:${xTimestampHeader}:${method}:${body}:${customerName}`;
 
     return Buffer.from(finalMessage, 'utf-8');
   };
 
-  const hmacAlgorithm = 'sha256';
+  const hmacAlgorithm = 'SHA256';
   const encoding = 'hex';
   const signatureValueTemplate = 'sha256={digest}';
 
@@ -144,8 +144,7 @@ describe('HmacSignatureVerifier', () => {
       signatureValueTemplate
     );
     const signingBytes = templateResolver(baseRequest);
-    const digest = crypto
-      .createHmac(hmacAlgorithm, secretKey)
+    const digest = createHmac(hmacAlgorithm, secretKey)
       .update(signingBytes)
       .digest(encoding);
     const signature = signatureValueTemplate.replace('{digest}', digest);
@@ -166,8 +165,7 @@ describe('HmacSignatureVerifier', () => {
       undefined
     );
     const signingBytes = templateResolver(baseRequest);
-    const digest = crypto
-      .createHmac(hmacAlgorithm, secretKey)
+    const digest = createHmac(hmacAlgorithm, secretKey)
       .update(signingBytes)
       .digest(encoding);
     const req = {
@@ -183,12 +181,11 @@ describe('HmacSignatureVerifier', () => {
       secretKey,
       signatureHeader,
       templateResolver,
-      'sha512',
+      'SHA512',
       'base64'
     );
     const signingBytes = templateResolver(baseRequest);
-    const digest = crypto
-      .createHmac('sha512', secretKey)
+    const digest = createHmac('SHA512', secretKey)
       .update(signingBytes)
       .digest('base64');
     const req = {
@@ -219,15 +216,12 @@ describe('HmacSignatureVerifier', () => {
       secretKey,
       signatureHeader,
       templateResolver,
-      'sha512',
+      'SHA512',
       'base64url'
     );
     const signingBytes = templateResolver(baseRequest);
     const digest = base64urlEncode(
-      crypto
-        .createHmac('sha512', secretKey)
-        .update(signingBytes)
-        .digest('base64')
+      createHmac('SHA512', secretKey).update(signingBytes).digest('base64')
     );
     const req = {
       ...baseRequest,
@@ -248,8 +242,7 @@ describe('HmacSignatureVerifier', () => {
       customTemplate
     );
     const signingBytes = templateResolver(baseRequest);
-    const digest = crypto
-      .createHmac(hmacAlgorithm, secretKey)
+    const digest = createHmac(hmacAlgorithm, secretKey)
       .update(signingBytes)
       .digest(encoding);
     const signature = customTemplate.replace('{digest}', digest);
@@ -271,8 +264,7 @@ describe('HmacSignatureVerifier', () => {
       signatureValueTemplate
     );
     const signingBytes = templateResolver(baseRequest);
-    const digest = crypto
-      .createHmac(hmacAlgorithm, secretKey)
+    const digest = createHmac(hmacAlgorithm, secretKey)
       .update(signingBytes)
       .digest(encoding);
     const signature = signatureValueTemplate.replace('{digest}', digest);
@@ -297,8 +289,7 @@ describe('HmacSignatureVerifier', () => {
       baseRequest.body?.type === 'text' ? baseRequest.body.content : '',
       'utf8'
     );
-    const digest = crypto
-      .createHmac(hmacAlgorithm, secretKey)
+    const digest = createHmac(hmacAlgorithm, secretKey)
       .update(signingBytes)
       .digest(encoding);
     const signature = signatureValueTemplate.replace('{digest}', digest);
@@ -326,8 +317,7 @@ describe('HmacSignatureVerifier', () => {
     };
 
     const signingBytes = Buffer.from('', 'utf8');
-    const digest = crypto
-      .createHmac(hmacAlgorithm, secretKey)
+    const digest = createHmac(hmacAlgorithm, secretKey)
       .update(signingBytes)
       .digest(encoding);
     const signature = signatureValueTemplate.replace('{digest}', digest);

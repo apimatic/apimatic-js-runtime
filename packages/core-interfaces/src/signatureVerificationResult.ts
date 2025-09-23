@@ -4,32 +4,52 @@ export interface SignatureVerificationResultMarker {
   [signatureVerificationResultMarker]: true;
 }
 
+/**
+ * Represents a successful signature verification.
+ */
 export interface SignatureVerificationSuccess
   extends SignatureVerificationResultMarker {
   success: true;
 }
 
+/**
+ * Represents a failed signature verification with an error message.
+ */
 export interface SignatureVerificationFailure
   extends SignatureVerificationResultMarker {
   success: false;
   error: string;
 }
 
+/**
+ * Union type for signature verification results:
+ * either SignatureVerificationSuccess or SignatureVerificationFailure.
+ */
 export type SignatureVerificationResult =
   | SignatureVerificationSuccess
   | SignatureVerificationFailure;
 
-export function isSignatureVerificationFailure(
+/**
+ * Type guard that checks if a value is a SignatureVerificationResult.
+ *
+ * @param result The value to validate.
+ * @returns True if the value is a SignatureVerificationResult, false otherwise.
+ */
+export function isSignatureVerificationResult(
   result: unknown
-): result is SignatureVerificationFailure {
+): result is SignatureVerificationResult {
   return (
     typeof result === 'object' &&
     result !== null &&
-    signatureVerificationResultMarker in result &&
-    (result as SignatureVerificationFailure).success === false
+    signatureVerificationResultMarker in result
   );
 }
 
+/**
+ * Creates a result object representing a successful signature verification.
+ *
+ * @returns A SignatureVerificationSuccess instance.
+ */
 export function createSignatureVerificationSuccess(): SignatureVerificationSuccess {
   return {
     [signatureVerificationResultMarker]: true,
@@ -37,6 +57,12 @@ export function createSignatureVerificationSuccess(): SignatureVerificationSucce
   };
 }
 
+/**
+ * Creates a result object representing a failed signature verification.
+ *
+ * @param error Error message describing the reason for failure.
+ * @returns A SignatureVerificationFailure instance with the provided error message.
+ */
 export function createSignatureVerificationFailure(
   error: string
 ): SignatureVerificationFailure {

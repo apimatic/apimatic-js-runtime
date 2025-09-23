@@ -1,5 +1,5 @@
 import {
-  isSignatureVerificationFailure,
+  isSignatureVerificationResult,
   createSignatureVerificationSuccess,
   createSignatureVerificationFailure,
 } from '../src/signatureVerificationResult';
@@ -29,21 +29,21 @@ describe('signatureVerificationResult', () => {
   describe('isSignatureVerificationFailure', () => {
     it('should return true for a SignatureVerificationFailure object', () => {
       const failure = createSignatureVerificationFailure('error');
-      expect(isSignatureVerificationFailure(failure)).toBe(true);
+      expect(isSignatureVerificationResult(failure)).toBe(true);
     });
 
-    it('should return false for a SignatureVerificationSuccess object', () => {
+    it('should return true for a SignatureVerificationSuccess object', () => {
       const success = createSignatureVerificationSuccess();
-      expect(isSignatureVerificationFailure(success)).toBe(false);
+      expect(isSignatureVerificationResult(success)).toBe(true);
     });
 
     it('should return false for unrelated objects', () => {
       expect(
-        isSignatureVerificationFailure({ success: false, error: 'err' })
+        isSignatureVerificationResult({ success: false, error: 'err' })
       ).toBe(false);
-      expect(isSignatureVerificationFailure(null)).toBe(false);
-      expect(isSignatureVerificationFailure(undefined)).toBe(false);
-      expect(isSignatureVerificationFailure('string')).toBe(false);
+      expect(isSignatureVerificationResult(null)).toBe(false);
+      expect(isSignatureVerificationResult(undefined)).toBe(false);
+      expect(isSignatureVerificationResult('string')).toBe(false);
     });
   });
 });
