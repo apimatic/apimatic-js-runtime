@@ -1,4 +1,4 @@
-import { HmacSignatureVerifier } from '../src/hmacVerifier';
+import { HmacSignatureVerifier } from '../src/hmacSignatureVerifier';
 import {
   createSignatureVerificationFailure,
   getValueByJsonPointer,

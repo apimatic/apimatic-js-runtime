@@ -1,1 +1,1 @@
-export { HmacSignatureVerifier } from './hmacVerifier';
+export { HmacSignatureVerifier } from './hmacSignatureVerifier';
