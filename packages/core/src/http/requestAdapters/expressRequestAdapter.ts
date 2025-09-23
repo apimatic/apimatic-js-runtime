@@ -6,7 +6,7 @@ import {
 import JSONBig from '@apimatic/json-bigint';
 
 interface ExpressRequestSubset {
-  method?: string;
+  method: string;
   protocol: string;
   originalUrl: string;
   headers: Record<string, string | string[] | undefined>;
