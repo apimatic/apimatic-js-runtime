@@ -77,7 +77,8 @@ function getAllTools(
       continue;
     }
     const endpointId = key;
-    toolMap[endpointId] = createToolFromEndpoint(
+    const sanitizedToolName = getToolName(endpointId);
+    toolMap[sanitizedToolName] = createToolFromEndpoint(
       endpointId,
       endpoints,
       sdkClient

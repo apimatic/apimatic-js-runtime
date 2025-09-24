@@ -32,7 +32,7 @@ export function createToolFromEndpoint(
 
   return {
     tool: {
-      name: getToolName(endpoint.group, endpoint.name),
+      name: getToolName(endpointId),
       description: endpoint.description,
       inputSchema: schema as ObjectJSONSchema,
     },
