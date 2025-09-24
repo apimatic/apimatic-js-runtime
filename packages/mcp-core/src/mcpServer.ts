@@ -13,6 +13,7 @@ import {
   type ListToolsResult,
 } from '@modelcontextprotocol/sdk/types.js';
 import { createToolFromEndpoint, type ToolDefinition } from './toolUtils.js';
+import { getToolName } from './utils.js';
 
 export function getServer(
   serverName: string,
@@ -24,11 +25,14 @@ export function getServer(
     { capabilities: { tools: {} } } // Indicate tool support
   );
 
+  // Prepare all tools from endpoints at startup
+  const allTools = getAllTools(endpoints, sdkClient);
+
   server.setRequestHandler(ListToolsRequestSchema, async () =>
-    handleListTools(endpoints, sdkClient)
+    handleListTools(allTools)
   );
   server.setRequestHandler(CallToolRequestSchema, (request) =>
-    handleCallTool(request, endpoints, sdkClient)
+    handleCallTool(request, allTools)
   );
 
   return server;
@@ -38,10 +42,8 @@ export function getServer(
  * Handles the 'tools/list' MCP request.
  */
 async function handleListTools(
-  endpoints: EndpointsObject,
-  sdkClient: CoreClient
+  allTools: Record<string, ToolDefinition>
 ): Promise<ListToolsResult> {
-  const allTools = getAllTools(endpoints, sdkClient);
   return {
     tools: Object.values(allTools).map((toolDefinition) => toolDefinition.tool),
   };
@@ -52,11 +54,9 @@ async function handleListTools(
  */
 async function handleCallTool(
   request: CallToolRequest,
-  endpoints: EndpointsObject,
-  sdkClient: CoreClient
+  allTools: Record<string, ToolDefinition>
 ): Promise<CallToolResult> {
   const { name, arguments: args } = request.params;
-  const allTools = getAllTools(endpoints, sdkClient);
   const toolDefinition = allTools[name];
   if (toolDefinition) {
     return await toolDefinition.handler(args);
