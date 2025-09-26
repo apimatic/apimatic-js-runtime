@@ -103,7 +103,7 @@ jobs:
             SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
 
   prerelease:
-    if: github.ref == 'refs/heads/alpha' && github.event.inputs.version_type == 'prerelease (unstable or experimental changes 0.0.0-alpha.X)'
+    if: github.ref != 'refs/heads/master' && github.event.inputs.version_type == 'prerelease (unstable or experimental changes 0.0.0-alpha.X)'
     name: Publish the npm package as an alpha release
     runs-on: ubuntu-latest
     environment: Production
