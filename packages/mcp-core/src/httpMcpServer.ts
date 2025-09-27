@@ -5,11 +5,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import { InMemoryEventStore } from '@modelcontextprotocol/sdk/examples/shared/inMemoryEventStore.js';
 import { randomUUID } from 'node:crypto';
-import { getServer } from './mcpServer.js';
-import type {
-  CoreClient,
-  EndpointsObject,
-} from '@apimatic/metadata-interfaces';
+import type { Server } from '@modelcontextprotocol/sdk/server';
 
 /**
  * Starts an HTTP MCP server using Express.
@@ -20,14 +16,12 @@ import type {
  *
  * @param serverName MCP Server Name that MCP Clients will see on initialization.
  * @param port Port number to listen on
- * @param endpoints Object containing metadata for all SDK endpoints
- * @param sdkClient SDK client instance used for API calls
+ * @param server MCP Server instance
  */
 export function httpMcpServer(
   serverName: string,
   port: number,
-  endpoints: EndpointsObject,
-  sdkClient: CoreClient
+  server: Server
 ) {
   const app = express();
   app.use(cors());
@@ -36,7 +30,7 @@ export function httpMcpServer(
   // Map to store transports by session ID
   const transports: Transports = {};
 
-  mapEndpoints(app, serverName, transports, endpoints, sdkClient);
+  mapEndpoints(app, server, transports);
 
   app.listen(port, () => {
     console.log(`${serverName} MCP Server listening on port ${port}`);
@@ -90,14 +84,9 @@ type Transports = {
 
 /**
  * Sets up Express routes for MCP protocol endpoints, handling POST, GET, and DELETE requests for session management and streaming.
+ * @param server MCP Server instance
  */
-function mapEndpoints(
-  app: Express,
-  serverName: string,
-  transports: Transports,
-  endpoints: EndpointsObject,
-  sdkClient: CoreClient
-) {
+function mapEndpoints(app: Express, server: Server, transports: Transports) {
   // =============================================================================
   // STREAMABLE HTTP TRANSPORT (PROTOCOL VERSION 2025-03-26)
   // =============================================================================
@@ -108,23 +97,9 @@ function mapEndpoints(
     const sessionId = req.headers['mcp-session-id'] as string | undefined;
 
     if (sessionId) {
-      await handleStatefulMCPRequest(
-        sessionId,
-        transports,
-        req,
-        res,
-        serverName,
-        endpoints,
-        sdkClient
-      );
+      await handleStatefulMCPRequest(sessionId, transports, req, res, server);
     } else {
-      await handleStatelessMCPRequest(
-        req,
-        res,
-        serverName,
-        endpoints,
-        sdkClient
-      );
+      await handleStatelessMCPRequest(req, res, server);
     }
   });
 
@@ -174,15 +149,14 @@ function mapEndpoints(
 
 /**
  * Handles MCP requests for sessions with a session ID, supporting initialization, reuse, and error handling for stateful communication.
+ * @param server MCP Server instance
  */
 async function handleStatefulMCPRequest(
   sessionId: string,
   transports: Transports,
   req: Request,
   res: Response,
-  serverName: string,
-  endpoints: EndpointsObject,
-  sdkClient: CoreClient
+  server: Server
 ) {
   console.log('Handling stateful request...');
   try {
@@ -218,7 +192,6 @@ async function handleStatefulMCPRequest(
 
       // Connect the transport to the MCP server BEFORE handling the request
       // so responses can flow back through the same transport
-      const server = getServer(serverName, endpoints, sdkClient);
       await server.connect(transport);
 
       await transport.handleRequest(req, res, req.body);
@@ -256,16 +229,14 @@ async function handleStatefulMCPRequest(
 
 /**
  * Processes MCP requests that do not use session IDs, enabling stateless interactions and automatic resource cleanup.
+ * @param server MCP Server instance
  */
 async function handleStatelessMCPRequest(
   req: Request,
   res: Response,
-  serverName: string,
-  endpoints: EndpointsObject,
-  sdkClient: CoreClient
+  server: Server
 ) {
   console.log('Handling stateless request...');
-  const server = getServer(serverName, endpoints, sdkClient);
   try {
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,

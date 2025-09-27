@@ -7,6 +7,7 @@ import type {
   CoreClient,
   EndpointsObject,
 } from '@apimatic/metadata-interfaces';
+import type { Server } from '@modelcontextprotocol/sdk/server';
 
 export interface McpServerConfig {
   name: string;
@@ -44,13 +45,14 @@ export async function executeMcpServerCli(
   try {
     const { clientFactory, endpoints } = sdkMetadata;
     const client = clientFactory();
+    const server = getServer(serverName, endpoints, client);
 
     if (transport === 'stdio') {
       console.error(`Starting MCP Server in stdio mode...`);
-      await stdioMcpServer(serverName, endpoints, client);
+      await stdioMcpServer(server);
     } else {
       console.log('Starting MCP Server in HTTP mode...');
-      httpMcpServer(serverName, port, endpoints, client);
+      httpMcpServer(serverName, port, server);
     }
   } catch (err: any) {
     if (err instanceof McpError) {
@@ -66,12 +68,7 @@ export async function executeMcpServerCli(
 /**
  * Initializes and starts an MCP server using standard input/output (stdio) as the transport layer.
  */
-async function stdioMcpServer(
-  serverName: string,
-  endpoints: EndpointsObject,
-  client: CoreClient
-) {
+async function stdioMcpServer(server: Server) {
   const stdioTransport = new StdioServerTransport();
-  const server = getServer(serverName, endpoints, client);
   await server.connect(stdioTransport);
 }
