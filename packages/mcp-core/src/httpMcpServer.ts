@@ -14,6 +14,8 @@ import type {
 /**
  * Starts an HTTP MCP server using Express.
  *
+ * Supports both stateless and stateful sessions with resumability via SSE.
+ *
  * NOTE: Currently ALL CORS Requests are allowed.
  *
  * @param serverName MCP Server Name that MCP Clients will see on initialization.
