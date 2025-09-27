@@ -15,6 +15,11 @@ import {
 import { createToolFromEndpoint, type ToolDefinition } from './toolUtils.js';
 import { getToolName } from './utils.js';
 
+/**
+ * Creates and configures a new `Server` instance with tool support capabilities,
+ * prepares all tools from the provided endpoints, and sets up request handlers for
+ * listing tools and calling tools.
+ */
 export function getServer(
   serverName: string,
   endpoints: EndpointsObject,

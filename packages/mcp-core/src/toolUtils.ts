@@ -15,6 +15,9 @@ export type ToolDefinition = {
   handler: (arg: unknown) => Promise<CallToolResult>;
 };
 
+/**
+ * Creates a tool definition from a given endpoint.
+ */
 export function createToolFromEndpoint(
   endpointId: string,
   endpoints: EndpointsObject,
@@ -40,6 +43,10 @@ export function createToolFromEndpoint(
   };
 }
 
+/**
+ * Handles the execution of an API endpoint by validating input arguments,
+ * invoking the endpoint, and formatting the response or error.
+ */
 async function handleEndpoint(
   endpoint: EndpointMetadataInterface<any, any>,
   args: unknown,
@@ -81,6 +88,9 @@ type ObjectJSONSchema = {
   [x: string]: unknown;
 } & any;
 
+/**
+ * Determines whether the provided JSON schema is an object schema.
+ */
 function isObjectSchema(schema: JSONSchema): schema is ObjectJSONSchema {
   return schema && schema.type === 'object';
 }

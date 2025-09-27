@@ -18,6 +18,12 @@ export interface SdkMetadata {
   clientFactory: () => CoreClient;
 }
 
+/**
+ * Executes the MCP Server CLI, initializing and starting the server based on the provided configuration and SDK metadata.
+ *
+ * This function parses command-line arguments to determine the server's transport mode (`http` or `stdio`) and port.
+ * It then starts the MCP server accordingly, handling any initialization errors and reporting them to the console.
+ */
 export async function executeMcpServerCli(
   sdkMetadata: SdkMetadata,
   mcpServerConfig: McpServerConfig
@@ -57,6 +63,9 @@ export async function executeMcpServerCli(
   }
 }
 
+/**
+ * Initializes and starts an MCP server using standard input/output (stdio) as the transport layer.
+ */
 async function stdioMcpServer(
   serverName: string,
   endpoints: EndpointsObject,
