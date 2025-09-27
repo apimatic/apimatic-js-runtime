@@ -28,8 +28,9 @@ export function createToolFromEndpoint(
     throw new Error(`Endpoint with id '${endpointId}' not found.`);
   }
   const schema: JSONSchema = endpoint.requestSchema.toJSONSchema();
+
+  // The Model Context Protocol SDK requires that all tool input schemas be of type 'object'.
   if (!isObjectSchema(schema)) {
-    // Required by Model Context Protocol SDK
     throw new Error('Request schema must be an object type!');
   }
 
