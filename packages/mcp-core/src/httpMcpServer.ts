@@ -11,6 +11,16 @@ import type {
   EndpointsObject,
 } from '@apimatic/metadata-interfaces';
 
+/**
+ * Starts an HTTP MCP server using Express.
+ *
+ * NOTE: Currently ALL CORS Requests are allowed.
+ *
+ * @param serverName MCP Server Name that MCP Clients will see on initialization.
+ * @param port Port number to listen on
+ * @param endpoints Object containing metadata for all SDK endpoints
+ * @param sdkClient SDK client instance used for API calls
+ */
 export function httpMcpServer(
   serverName: string,
   port: number,
@@ -69,10 +79,16 @@ export function httpMcpServer(
   });
 }
 
+/**
+ * Stores active transport instances by session ID for stateful flows.
+ */
 type Transports = {
   [sessionId: string]: StreamableHTTPServerTransport;
 };
 
+/**
+ * Sets up Express routes for MCP protocol endpoints, handling POST, GET, and DELETE requests for session management and streaming.
+ */
 function mapEndpoints(
   app: Express,
   serverName: string,
@@ -154,6 +170,9 @@ function mapEndpoints(
   });
 }
 
+/**
+ * Handles MCP requests for sessions with a session ID, supporting initialization, reuse, and error handling for stateful communication.
+ */
 async function handleStatefulMCPRequest(
   sessionId: string,
   transports: Transports,
@@ -233,6 +252,9 @@ async function handleStatefulMCPRequest(
   }
 }
 
+/**
+ * Processes MCP requests that do not use session IDs, enabling stateless interactions and automatic resource cleanup.
+ */
 async function handleStatelessMCPRequest(
   req: Request,
   res: Response,
