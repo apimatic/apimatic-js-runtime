@@ -6,7 +6,6 @@ import { createErrorMessage, getToolName, stringifyRawJson } from './utils.js';
 import type {
   CoreClient,
   EndpointMetadataInterface,
-  EndpointsObject,
 } from '@apimatic/metadata-interfaces';
 import type { JSONSchema } from '@apimatic/metadata-interfaces';
 
@@ -20,13 +19,9 @@ export type ToolDefinition = {
  */
 export function createToolFromEndpoint(
   endpointId: string,
-  endpoints: EndpointsObject,
+  endpoint: EndpointMetadataInterface<any, any>,
   sdkClient: CoreClient
 ): ToolDefinition {
-  const endpoint = endpoints[endpointId];
-  if (!endpoint) {
-    throw new Error(`Endpoint with id '${endpointId}' not found.`);
-  }
   const schema: JSONSchema = endpoint.requestSchema.toJSONSchema();
 
   // The Model Context Protocol SDK requires that all tool input schemas be of type 'object'.

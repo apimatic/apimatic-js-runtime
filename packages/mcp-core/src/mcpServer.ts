@@ -79,21 +79,25 @@ function getAllTools(
   toolsets: string[]
 ): Record<string, ToolDefinition> {
   const toolMap: Record<string, ToolDefinition> = {};
-  for (const key in endpoints) {
-    if (
-      !endpoints.hasOwnProperty(key) ||
-      // Toolset filtering
-      (toolsets.length > 0 &&
-        endpoints[key] &&
-        !toolsets.includes(endpoints[key].group))
-    ) {
+  for (const endpointId in endpoints) {
+    if (!endpoints.hasOwnProperty(endpointId)) {
+      // Skip inherited properties
       continue;
     }
-    const endpointId = key;
+
+    const endpoint = endpoints[endpointId];
+    if (!endpoint) {
+      throw new Error(`Endpoint with id '${endpointId}' not found.`);
+    }
+
+    if (toolsets.length > 0 && !toolsets.includes(endpoint.group)) {
+      continue;
+    }
+
     const sanitizedToolName = getToolName(endpointId);
     toolMap[sanitizedToolName] = createToolFromEndpoint(
       endpointId,
-      endpoints,
+      endpoint,
       sdkClient
     );
   }
