@@ -40,12 +40,13 @@ export async function executeMcpServerCli(
 
   const transport = options.transport;
   const port = parseInt(options.port, 10);
+  const toolsets = ['Accounts'];
   const serverName = mcpServerConfig.name;
 
   try {
     const { clientFactory, endpoints } = sdkMetadata;
     const client = clientFactory();
-    const server = getServer(serverName, endpoints, client);
+    const server = getServer(serverName, endpoints, client, toolsets);
 
     if (transport === 'stdio') {
       console.error(`Starting MCP Server in stdio mode...`);

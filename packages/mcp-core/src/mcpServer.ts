@@ -23,7 +23,8 @@ import { getToolName } from './utils.js';
 export function getServer(
   serverName: string,
   endpoints: EndpointsObject,
-  sdkClient: CoreClient
+  sdkClient: CoreClient,
+  toolsets: string[]
 ): Server {
   const server = new Server(
     { name: serverName, version: '1.0.0' },
@@ -31,7 +32,7 @@ export function getServer(
   );
 
   // Prepare all tools from endpoints at startup
-  const allTools = getAllTools(endpoints, sdkClient);
+  const allTools = getAllTools(endpoints, sdkClient, toolsets);
 
   server.setRequestHandler(ListToolsRequestSchema, async () =>
     handleListTools(allTools)
@@ -74,11 +75,18 @@ async function handleCallTool(
  */
 function getAllTools(
   endpoints: EndpointsObject,
-  sdkClient: CoreClient
+  sdkClient: CoreClient,
+  toolsets: string[]
 ): Record<string, ToolDefinition> {
   const toolMap: Record<string, ToolDefinition> = {};
   for (const key in endpoints) {
-    if (!endpoints.hasOwnProperty(key)) {
+    if (
+      !endpoints.hasOwnProperty(key) ||
+      // Toolset filtering
+      (toolsets.length > 0 &&
+        endpoints[key] &&
+        !toolsets.includes(endpoints[key].group))
+    ) {
       continue;
     }
     const endpointId = key;
