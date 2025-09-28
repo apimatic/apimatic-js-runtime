@@ -17,63 +17,37 @@ test('createToolFromEndpoint returns ToolDefinition and handler calls endpoint',
     validateAndMap: (args: any) => ({ errors: false, result: args }),
   };
 
-  const endpoints: EndpointsObject = {
-    'orders-CreateOrder': {
-      name: 'CreateOrder',
-      group: 'orders',
-      requestSchema,
-      call: async (_client: any, mappedRequest: any) => {
-        return {
-          request: {
-            method: 'POST',
-            url: 'https://api.example.com/orders',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: {
-              type: 'text',
-              content: JSON.stringify(mappedRequest),
-            },
-          },
-          statusCode: 200,
-          headers: { 'Content-Type': 'application/json' },
-          result: { id: '123' },
-          body: JSON.stringify({ id: '123' }),
-        };
-      },
-      description: 'Creates an order',
-    } satisfies EndpointMetadataInterface<any, { id: string }>,
-
-    'orders-GetOrder': {
-      name: 'GetOrder',
-      group: 'orders',
-      requestSchema,
-      call: async (_client: any, mappedRequest: any) => {
-        return {
-          request: {
-            method: 'GET',
-            url: `https://api.example.com/orders/${mappedRequest.id}`,
-            headers: {
-              Accept: 'application/json',
-            },
-          },
-          statusCode: 200,
+  const endpoint: EndpointMetadataInterface<any, { id: string }> = {
+    name: 'CreateOrder',
+    group: 'orders',
+    requestSchema,
+    call: async (_client: any, mappedRequest: any) => {
+      return {
+        request: {
+          method: 'POST',
+          url: 'https://api.example.com/orders',
           headers: {
             'Content-Type': 'application/json',
           },
-          result: { id: '456' },
-          body: JSON.stringify({ id: '456' }),
-        };
-      },
-      description: 'Gets an order',
-    } satisfies EndpointMetadataInterface<any, { id: string }>,
+          body: {
+            type: 'text',
+            content: JSON.stringify(mappedRequest),
+          },
+        },
+        statusCode: 200,
+        headers: { 'Content-Type': 'application/json' },
+        result: { id: '123' },
+        body: JSON.stringify({ id: '123' }),
+      };
+    },
+    description: 'Creates an order',
   };
 
   const sdkClient = {} as unknown as CoreClient;
 
   const toolDef = createToolFromEndpoint(
     'orders-CreateOrder',
-    endpoints,
+    endpoint,
     sdkClient
   );
 
@@ -94,27 +68,24 @@ test('createToolFromEndpoint returns ToolDefinition and handler calls endpoint',
   });
 });
 
-test('createToolFromEndpoint throws if endpoint does not exist', () => {
-  const endpoints = {};
-  assert.throws(
-    () => createToolFromEndpoint('missing', endpoints as any, {} as any),
-    /Endpoint with id 'missing' not found/
-  );
-});
-
 test('createToolFromEndpoint throws if schema is not object type', () => {
   const endpointId = 'badEndpoint';
-  const endpoints = {
-    [endpointId]: {
-      description: 'Invalid schema',
-      requestSchema: {
-        toJSONSchema: () => ({ type: 'string' }), // not an object
+  const endpoint: EndpointMetadataInterface<any, any> = {
+    name: 'BadEndpoint',
+    group: 'test',
+    requestSchema: {
+      toJSONSchema: () => ({ type: 'string' }), // not an object
+      validateAndMap: () => {
+        throw new Error('Not implemented');
       },
     },
-  } as any;
+    call: async () => {
+      throw new Error('Not implemented');
+    },
+  };
 
   assert.throws(
-    () => createToolFromEndpoint(endpointId, endpoints, {} as any),
+    () => createToolFromEndpoint(endpointId, endpoint, {} as any),
     /Request schema must be an object type/
   );
 });
