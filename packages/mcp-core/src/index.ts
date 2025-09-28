@@ -33,14 +33,20 @@ export async function executeMcpServerCli(
 
   program
     .option('-p, --port <number>', 'Port to run the server on', '3000')
-    .option('-t, --transport <string>', 'Transport (http | stdio)', 'http');
+    .option('-t, --transport <string>', 'Transport (http | stdio)', 'http')
+    .option(
+      '--toolsets <items>',
+      'Comma-separated list of toolsets. By default, all toolsets are included.',
+      (val) => val.split(','),
+      []
+    );
 
   program.parse(process.argv);
   const options = program.opts();
 
   const transport = options.transport;
   const port = parseInt(options.port, 10);
-  const toolsets = ['Accounts'];
+  const toolsets: string[] = options.toolsets;
   const serverName = mcpServerConfig.name;
 
   try {
