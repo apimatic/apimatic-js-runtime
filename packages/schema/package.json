@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/schema",
   "author": "APIMatic Ltd.",
-  "version": "0.7.21-alpha.0",
+  "version": "0.7.21-alpha.1",
   "license": "MIT",
   "sideEffects": false,
   "main": "lib/index.js",

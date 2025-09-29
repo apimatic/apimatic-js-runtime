@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.1.5-alpha.0](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/pagination@0.1.4...@apimatic/pagination@0.1.5-alpha.0) (2025-09-29)
+
+**Note:** Version bump only for package @apimatic/pagination
+
 ### [0.1.4](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/pagination@0.1.3...@apimatic/pagination@0.1.4) (2025-09-04)
 
 **Note:** Version bump only for package @apimatic/pagination
