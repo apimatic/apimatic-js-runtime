@@ -9,6 +9,11 @@
       }
     }
   },
+  "files": [
+    "lib/**/*",
+    "src",
+    "LICENSE.md"
+  ],
   "scripts": {
     "clean": "rimraf dist",
     "build": "tsc -p tsconfig.prod.json",
