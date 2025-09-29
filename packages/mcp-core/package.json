@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/mcp-core",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "exports": {
     ".": {
       "import": {
@@ -33,7 +33,7 @@
   "type": "module",
   "dependencies": {
     "@apimatic/json-bigint": "^1.2.0",
-    "@apimatic/metadata-interfaces": "^0.0.1",
+    "@apimatic/metadata-interfaces": "^0.1.0",
     "@modelcontextprotocol/sdk": "^1.18.1",
     "commander": "^14.0.0",
     "cors": "^2.8.5",
