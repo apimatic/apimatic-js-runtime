@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.1.1-alpha.2](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/mcp-core@0.1.1-alpha.1...@apimatic/mcp-core@0.1.1-alpha.2) (2025-09-29)
+
+### Bug Fixes
+
+- missing files prop in mcp-core package.json ([#299](https://github.com/apimatic/apimatic-js-runtime/issues/299)) ([fa84044](https://github.com/apimatic/apimatic-js-runtime/commit/fa8404434bd1c01b3812f8ec9c4e2758d7669790))
+
 ### 0.1.1-alpha.1 (2025-09-29)
 
 ### Features
