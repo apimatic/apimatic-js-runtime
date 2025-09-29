@@ -1,15 +1,14 @@
 name: CI
 on: [push]
+
 jobs:
   build:
     name: Build, lint, and test on Node ${{ matrix.node }} and ${{ matrix.os }}
-
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node: ["14.x", "16.x", "17.x", "18.x", "19.x"]
+        node: ["14.x", "16.x", "17.x", "18.x", "19.x", "22.x"]
         os: [ubuntu-latest]
-        # os: [ubuntu-latest, windows-latest, macOS-latest]
 
     steps:
       - name: Checkout repo
@@ -19,6 +18,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
+
+      - name: Remove mcp-core for Node < 22
+        if: ${{ !startsWith(matrix.node, '22') }}
+        run: rm -rf packages/mcp-core
 
       - name: Install deps
         run: yarn
