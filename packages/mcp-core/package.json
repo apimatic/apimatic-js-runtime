@@ -4,8 +4,8 @@
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/src/index.d.ts",
-        "default": "./dist/src/index.js"
+        "types": "./lib/src/index.d.ts",
+        "default": "./lib/src/index.js"
       }
     }
   },
@@ -15,10 +15,10 @@
     "LICENSE.md"
   ],
   "scripts": {
-    "clean": "rimraf dist",
+    "clean": "rimraf lib",
     "build": "tsc -p tsconfig.prod.json",
     "clean-build": "npm run clean && npm run build",
-    "test": "tsc && node --test ./dist/test/**/*.test.js"
+    "test": "tsc && node --test ./lib/test/**/*.test.js"
   },
   "keywords": [],
   "author": "",
