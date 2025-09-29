@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.7.21-alpha.1](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.20...@apimatic/schema@0.7.21-alpha.1) (2025-09-29)
+
+### Features
+
+- toJSONSchema ([#245](https://github.com/apimatic/apimatic-js-runtime/issues/245)) ([b173a9d](https://github.com/apimatic/apimatic-js-runtime/commit/b173a9d71ac931daaeee170867ae19a4edb16b90))
+
 ### [0.7.21-alpha.0](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/schema@0.7.20...@apimatic/schema@0.7.21-alpha.0) (2025-09-04)
 
 ### Features

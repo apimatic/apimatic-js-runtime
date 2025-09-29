@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.5.13-alpha.0](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/authentication-adapters@0.5.12...@apimatic/authentication-adapters@0.5.13-alpha.0) (2025-09-29)
+
+**Note:** Version bump only for package @apimatic/authentication-adapters
+
 ### [0.5.12](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/authentication-adapters@0.5.11...@apimatic/authentication-adapters@0.5.12) (2025-09-04)
 
 **Note:** Version bump only for package @apimatic/authentication-adapters
