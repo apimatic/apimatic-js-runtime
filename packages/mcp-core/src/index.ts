@@ -5,11 +5,7 @@ import { getServer } from './mcpServer.js';
 import { Command } from 'commander';
 import type { SdkMetadata } from '@apimatic/metadata-interfaces';
 import type { Server } from '@modelcontextprotocol/sdk/server';
-
-export interface McpServerConfig {
-  name: string;
-  description?: string;
-}
+import type { McpServerConfig } from './mcpConfig.js';
 
 /**
  * Executes the MCP Server CLI, initializing and starting the server based on the provided configuration and SDK metadata.
