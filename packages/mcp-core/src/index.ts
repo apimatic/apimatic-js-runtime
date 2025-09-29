@@ -3,20 +3,12 @@ import { McpError } from '@modelcontextprotocol/sdk/types.js';
 import { httpMcpServer } from './httpMcpServer.js';
 import { getServer } from './mcpServer.js';
 import { Command } from 'commander';
-import type {
-  CoreClient,
-  EndpointsObject,
-} from '@apimatic/metadata-interfaces';
+import type { SdkMetadata } from '@apimatic/metadata-interfaces';
 import type { Server } from '@modelcontextprotocol/sdk/server';
 
 export interface McpServerConfig {
   name: string;
   description?: string;
-}
-
-export interface SdkMetadata {
-  endpoints: EndpointsObject;
-  clientFactory: () => CoreClient;
 }
 
 /**
