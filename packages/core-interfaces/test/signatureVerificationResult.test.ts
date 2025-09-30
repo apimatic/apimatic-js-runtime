@@ -2,7 +2,7 @@ import {
   isSignatureVerificationResult,
   createSignatureVerificationSuccess,
   createSignatureVerificationFailure,
-} from '../src/signatureVerificationResult';
+} from '../src';
 
 describe('signatureVerificationResult', () => {
   describe('createSignatureVerificationSuccess', () => {
