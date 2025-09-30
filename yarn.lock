@@ -8109,10 +8109,10 @@ sourcemap-codec@^1.4.4:
   resolved "https://registry.yarnpkg.com/sourcemap-codec/-/sourcemap-codec-1.4.8.tgz#ea804bd94857402e6992d05a38ef1ae35a9ab4c4"
   integrity sha512-9NykojV5Uih4lgo5So5dtw+f0JgJX30KCNI8gwhz2J9A15wD0Ml6tjHKwf6fTSa6fAdVBdZeNOs9eJ71qCk8vA==
 
-spawn-command@0.0.2-1:
-  version "0.0.2-1"
-  resolved "https://registry.yarnpkg.com/spawn-command/-/spawn-command-0.0.2-1.tgz#62f5e9466981c1b796dc5929937e11c9c6921bd0"
-  integrity sha1-YvXpRmmBwbeW3Fkpk34RycaSG9A=
+spawn-command@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/spawn-command/-/spawn-command-1.0.0.tgz#ec71622de73aefb57ba8289add75be597d3f7a25"
+  integrity sha512-zsboEQnjeF6tSJ8SRnojMr22HyFEaRaohgTt0Kgx3BgzkXYiboh09vpmZVIq1HOLzkFZDgFJJfwGUqSbb5fQQQ==
 
 spdx-correct@^3.0.0:
   version "3.1.1"
