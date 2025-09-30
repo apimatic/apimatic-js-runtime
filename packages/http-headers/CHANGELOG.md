@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.3.8](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/http-headers@0.3.7...@apimatic/http-headers@0.3.8) (2025-09-30)
+
+**Note:** Version bump only for package @apimatic/http-headers
+
 ### [0.3.7](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/http-headers@0.3.6...@apimatic/http-headers@0.3.7) (2025-08-13)
 
 **Note:** Version bump only for package @apimatic/http-headers

@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.27](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.26...@apimatic/core@0.10.27) (2025-09-30)
+
+### Features
+
+- add webhooks and callbacks support ([#292](https://github.com/apimatic/apimatic-js-runtime/issues/292)) ([3912981](https://github.com/apimatic/apimatic-js-runtime/commit/39129812b1aaa860bedafc074a2c44759d6ca14f))
+
 ### [0.10.26](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.25...@apimatic/core@0.10.26) (2025-09-04)
 
 **Note:** Version bump only for package @apimatic/core

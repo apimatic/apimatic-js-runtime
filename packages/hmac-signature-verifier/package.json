@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/hmac-signature-verifier",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "provides utilities for handling HMAC signature verification",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -31,8 +31,8 @@
     }
   ],
   "dependencies": {
-    "@apimatic/core-interfaces": "^0.2.12",
-    "@apimatic/http-headers": "^0.3.7"
+    "@apimatic/core-interfaces": "^0.2.13",
+    "@apimatic/http-headers": "^0.3.8"
   },
   "publishConfig": {
     "access": "public"

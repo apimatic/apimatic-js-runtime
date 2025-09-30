@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.1.1](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/test-utilities@0.1.0...@apimatic/test-utilities@0.1.1) (2025-09-30)
+
+**Note:** Version bump only for package @apimatic/test-utilities
+
 ## [0.1.0](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/test-utilities@0.0.7...@apimatic/test-utilities@0.1.0) (2025-08-13)
 
 **Note:** Version bump only for package @apimatic/test-utilities

@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/proxy",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "provides utilities to route requests through a configurable proxy",
   "main": "lib/index.js",
   "module": "lib/index.js",
