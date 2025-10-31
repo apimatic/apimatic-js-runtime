@@ -1,4 +1,10 @@
-import { DEFAULT_TIMEOUT, HttpClient, isBlob } from '../src/httpClient';
+import {
+  DEFAULT_TIMEOUT,
+  HttpClient,
+  isBlob,
+  createFileFormDataHeaders,
+  createJSONFormDataHeaders,
+} from '../src/httpClient';
 import {
   AxiosHeaders,
   AxiosRequestConfig,
@@ -14,6 +20,7 @@ import {
   HttpResponse,
 } from '@apimatic/core-interfaces';
 import { FileWrapper } from '@apimatic/file-wrapper';
+import { createFormData } from '@apimatic/http-query';
 import FormData from 'form-data';
 import fs from 'fs';
 
@@ -135,6 +142,106 @@ describe('HTTP Client', () => {
       responseType: 'text',
       data: expect.any(FormData),
       auth: { username: 'test-username', password: 'test-password' },
+    });
+  });
+
+  it('converts request with http form-data containing FormDataWrapper and FileWrapper', async () => {
+    const httpClient = new HttpClient(AbortError);
+    // Need FileWrapper to trigger multipart mode
+    const fileWrapper = new FileWrapper(
+      fs.createReadStream('test/dummy_file.txt'),
+      {
+        filename: 'document.txt',
+        headers: { 'content-type': 'text/plain' },
+      }
+    );
+    const formDataWrapper = createFormData(
+      { userId: 123, name: 'Test User' },
+      { 'content-type': 'application/json' }
+    );
+    const formDataBody: HttpRequestMultipartFormBody = {
+      type: 'form-data',
+      content: [
+        { key: 'file', value: fileWrapper },
+        { key: 'metadata', value: formDataWrapper },
+        { key: 'param1', value: 'value1' },
+      ],
+    };
+
+    const request: HttpRequest = {
+      method: 'POST',
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+      headers: { 'test-header': 'test-value' },
+      body: formDataBody,
+      responseType: 'text',
+    };
+
+    const axiosRequestConfig = httpClient.convertHttpRequest(request);
+    expect(axiosRequestConfig).toMatchObject({
+      url: 'http://apimatic.hopto.org:3000/test/requestBuilder',
+      method: 'POST',
+      headers: {
+        'test-header': 'test-value',
+        'content-type': new RegExp(
+          '^multipart/form-data; boundary=--------------------------'
+        ),
+      },
+      timeout: DEFAULT_TIMEOUT,
+      responseType: 'text',
+      data: expect.any(FormData),
+    });
+  });
+
+  it('converts request with mixed form-data containing multiple FormDataWrappers', async () => {
+    const httpClient = new HttpClient(AbortError);
+    // Need FileWrapper to trigger multipart mode
+    const fileWrapper = new FileWrapper(
+      fs.createReadStream('test/dummy_file.txt'),
+      {
+        filename: 'upload.txt',
+        headers: { 'content-type': 'text/plain' },
+      }
+    );
+    const formDataWrapper1 = createFormData(
+      { type: 'document', status: 'active' },
+      { 'content-type': 'application/json' }
+    );
+    const formDataWrapper2 = createFormData({
+      version: 1,
+      lastModified: '2025-10-31',
+    });
+
+    const formDataBody: HttpRequestMultipartFormBody = {
+      type: 'form-data',
+      content: [
+        { key: 'file', value: fileWrapper },
+        { key: 'metadata', value: formDataWrapper1 },
+        { key: 'version_info', value: formDataWrapper2 },
+        { key: 'description', value: 'Test upload' },
+      ],
+    };
+
+    const request: HttpRequest = {
+      method: 'POST',
+      url: 'http://apimatic.hopto.org:3000/test/upload',
+      headers: { authorization: 'Bearer token123' },
+      body: formDataBody,
+      responseType: 'text',
+    };
+
+    const axiosRequestConfig = httpClient.convertHttpRequest(request);
+    expect(axiosRequestConfig).toMatchObject({
+      url: 'http://apimatic.hopto.org:3000/test/upload',
+      method: 'POST',
+      headers: {
+        authorization: 'Bearer token123',
+        'content-type': new RegExp(
+          '^multipart/form-data; boundary=--------------------------'
+        ),
+      },
+      timeout: DEFAULT_TIMEOUT,
+      responseType: 'text',
+      data: expect.any(FormData),
     });
   });
 
@@ -309,6 +416,117 @@ describe('HTTP Client', () => {
     const axiosRequestConfig = httpClient.convertHttpRequest(httpRequest);
     expect(axiosRequestConfig.httpsAgent).toBeUndefined();
     expect(axiosRequestConfig.httpAgent).toBeUndefined();
+  });
+});
+
+describe('createFileFormDataHeaders', () => {
+  it('should return headers with content type from fileWrapper options', () => {
+    const fileWrapper = new FileWrapper(new Blob(['test']), {
+      headers: { 'content-type': 'text/plain' },
+      filename: 'test.txt',
+    });
+
+    const result = createFileFormDataHeaders(fileWrapper);
+
+    expect(result).toEqual({
+      contentType: 'text/plain',
+      filename: 'test.txt',
+      header: { 'content-type': 'text/plain' },
+    });
+  });
+
+  it('should return undefined content type when not provided in headers', () => {
+    const fileWrapper = new FileWrapper(new Blob(['test']), {
+      filename: 'test.txt',
+      headers: {},
+    });
+
+    const result = createFileFormDataHeaders(fileWrapper);
+
+    expect(result).toEqual({
+      contentType: undefined,
+      filename: 'test.txt',
+      header: {},
+    });
+  });
+
+  it('should handle fileWrapper with no options', () => {
+    const fileWrapper = new FileWrapper(new Blob(['test']));
+
+    const result = createFileFormDataHeaders(fileWrapper);
+
+    expect(result).toEqual({
+      contentType: undefined,
+      filename: undefined,
+      header: undefined,
+    });
+  });
+
+  it('should handle case-insensitive content-type header lookup', () => {
+    const fileWrapper = new FileWrapper(new Blob(['test']), {
+      headers: { 'Content-Type': 'application/json' },
+      filename: 'data.json',
+    });
+
+    const result = createFileFormDataHeaders(fileWrapper);
+
+    expect(result).toEqual({
+      contentType: 'application/json',
+      filename: 'data.json',
+      header: { 'Content-Type': 'application/json' },
+    });
+  });
+});
+
+describe('createJSONFormDataHeaders', () => {
+  it('should return headers with content type from formDataWrapper headers', () => {
+    const formDataWrapper = createFormData(
+      { key: 'value' },
+      { 'content-type': 'application/json' }
+    );
+
+    const result = createJSONFormDataHeaders(formDataWrapper);
+
+    expect(result).toEqual({
+      contentType: 'application/json',
+      header: { 'content-type': 'application/json' },
+    });
+  });
+
+  it('should return undefined content type when not provided in headers', () => {
+    const formDataWrapper = createFormData({ key: 'value' }, {});
+
+    const result = createJSONFormDataHeaders(formDataWrapper);
+
+    expect(result).toEqual({
+      contentType: undefined,
+      header: {},
+    });
+  });
+
+  it('should handle formDataWrapper with no headers', () => {
+    const formDataWrapper = createFormData({ key: 'value' });
+
+    const result = createJSONFormDataHeaders(formDataWrapper);
+
+    expect(result).toEqual({
+      contentType: undefined,
+      header: undefined,
+    });
+  });
+
+  it('should handle case-insensitive content-type header lookup', () => {
+    const formDataWrapper = createFormData(
+      { test: 'data' },
+      { 'Content-Type': 'application/json; charset=utf-8' }
+    );
+
+    const result = createJSONFormDataHeaders(formDataWrapper);
+
+    expect(result).toEqual({
+      contentType: 'application/json; charset=utf-8',
+      header: { 'Content-Type': 'application/json; charset=utf-8' },
+    });
   });
 });
 

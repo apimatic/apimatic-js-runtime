@@ -291,7 +291,7 @@ export function isBlob(value: unknown): value is Blob {
   );
 }
 
-function createFileFormDataHeaders(fileWrapper: FileWrapper) {
+export function createFileFormDataHeaders(fileWrapper: FileWrapper) {
   return {
     contentType:
       getHeader(fileWrapper.options?.headers ?? {}, 'content-type') ??
@@ -301,7 +301,7 @@ function createFileFormDataHeaders(fileWrapper: FileWrapper) {
   };
 }
 
-function createJSONFormDataHeaders(formDataWrapper: FormDataWrapper) {
+export function createJSONFormDataHeaders(formDataWrapper: FormDataWrapper) {
   return {
     contentType:
       getHeader(formDataWrapper.headers ?? {}, 'content-type') ?? undefined,
