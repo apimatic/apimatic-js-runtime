@@ -12,14 +12,16 @@ import FormData from 'form-data';
 import {
   CONTENT_TYPE_HEADER,
   FORM_URLENCODED_CONTENT_TYPE,
+  getHeader,
 } from '@apimatic/http-headers';
 import {
   HttpRequest,
   HttpResponse,
+  isFormDataWrapper,
   RetryConfiguration,
 } from '@apimatic/core-interfaces';
 import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
-import { isFileWrapper } from '@apimatic/file-wrapper';
+import { FileWrapper, isFileWrapper } from '@apimatic/file-wrapper';
 import { createProxyAgents } from '@apimatic/proxy';
 import { ProxySettings } from '.';
 
@@ -107,7 +109,15 @@ export class HttpClient {
             });
           }
 
-          form.append(iter.key, fileData, iter.value.options);
+          form.append(
+            iter.key,
+            fileData,
+            createFileFormDataHeaders(iter.value)
+          );
+        } else if (isFormDataWrapper(iter.value)) {
+          form.append(iter.key, iter.value.data, {
+            header: iter.value.headers,
+          });
         } else {
           form.append(iter.key, iter.value);
         }
@@ -150,7 +160,6 @@ export class HttpClient {
     newRequest.headers = headers;
 
     this.setProxyAgent(newRequest);
-
     return newRequest;
   }
 
@@ -275,4 +284,14 @@ export function isBlob(value: unknown): value is Blob {
     value instanceof Blob ||
     Object.prototype.toString.call(value) === '[object Blob]'
   );
+}
+
+function createFileFormDataHeaders(fileWrapper: FileWrapper) {
+  return {
+    contentType:
+      getHeader(fileWrapper.options?.headers ?? {}, 'content-type') ??
+      undefined,
+    filename: fileWrapper.options?.filename,
+    header: fileWrapper.options?.headers,
+  };
 }
