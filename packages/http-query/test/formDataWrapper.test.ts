@@ -1,4 +1,4 @@
-import { isFormDataWrapper, createFormData } from '../src';
+import { isFormDataWrapper, createFormData } from '../src/formDataWrapper';
 
 describe('formDataWrapper', () => {
   describe('createFormData', () => {

@@ -17,10 +17,13 @@ import {
 import {
   HttpRequest,
   HttpResponse,
-  isFormDataWrapper,
   RetryConfiguration,
 } from '@apimatic/core-interfaces';
-import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
+import {
+  FormDataWrapper,
+  isFormDataWrapper,
+  urlEncodeKeyValuePairs,
+} from '@apimatic/http-query';
 import { FileWrapper, isFileWrapper } from '@apimatic/file-wrapper';
 import { createProxyAgents } from '@apimatic/proxy';
 import { ProxySettings } from '.';
@@ -115,9 +118,11 @@ export class HttpClient {
             createFileFormDataHeaders(iter.value)
           );
         } else if (isFormDataWrapper(iter.value)) {
-          form.append(iter.key, iter.value.data, {
-            header: iter.value.headers,
-          });
+          form.append(
+            iter.key,
+            iter.value.data,
+            createJSONFormDataHeaders(iter.value)
+          );
         } else {
           form.append(iter.key, iter.value);
         }
@@ -293,5 +298,13 @@ function createFileFormDataHeaders(fileWrapper: FileWrapper) {
       undefined,
     filename: fileWrapper.options?.filename,
     header: fileWrapper.options?.headers,
+  };
+}
+
+function createJSONFormDataHeaders(formDataWrapper: FormDataWrapper) {
+  return {
+    contentType:
+      getHeader(formDataWrapper.headers ?? {}, 'content-type') ?? undefined,
+    header: formDataWrapper.headers,
   };
 }

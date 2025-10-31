@@ -1,3 +1,5 @@
+import JSONBig from '@apimatic/json-bigint';
+
 /**
  * Unique symbol used to mark an object as a FormDataWrapper.
  */
@@ -30,6 +32,9 @@ export function createFormData(
   data: unknown,
   headers?: Record<string, string>
 ): FormDataWrapper {
+  if (Array.isArray(data) || typeof data === 'object') {
+    data = JSONBig.stringify(data);
+  }
   return {
     [formDataWrapperMarker]: true,
     data,

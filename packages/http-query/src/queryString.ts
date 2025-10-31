@@ -3,7 +3,7 @@ import {
   isFileWrapper,
   cloneFileWrapper,
 } from '@apimatic/file-wrapper';
-import { isFormDataWrapper, FormDataWrapper } from '@apimatic/core-interfaces';
+import { isFormDataWrapper, FormDataWrapper } from './formDataWrapper';
 
 /**
  * Type for Key-value pair for form-urlencoded serialization
