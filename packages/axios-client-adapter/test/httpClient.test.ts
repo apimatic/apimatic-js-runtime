@@ -195,11 +195,7 @@ describe('HTTP Client', () => {
     const httpClient = new HttpClient(AbortError);
     // Need FileWrapper to trigger multipart mode
     const fileWrapper = new FileWrapper(
-      fs.createReadStream('test/dummy_file.txt'),
-      {
-        filename: 'upload.txt',
-        headers: { 'content-type': 'text/plain' },
-      }
+      fs.createReadStream('test/dummy_file.txt')
     );
     const formDataWrapper1 = createFormData(
       { type: 'document', status: 'active' },
