@@ -425,7 +425,7 @@ describe('createFormDataOptions', () => {
       { 'content-type': 'application/json' }
     );
 
-    const result = createFormDataOptions(formDataWrapper!.headers);
+    const result = createFormDataOptions(formDataWrapper?.headers || {});
 
     expect(result).toEqual({
       contentType: 'application/json',
@@ -436,7 +436,7 @@ describe('createFormDataOptions', () => {
   it('should return undefined content type when not provided in headers', () => {
     const formDataWrapper = createFormData({ key: 'value' }, {});
 
-    const result = createFormDataOptions(formDataWrapper!.headers);
+    const result = createFormDataOptions(formDataWrapper?.headers || {});
 
     expect(result).toEqual({
       contentType: undefined,
@@ -447,10 +447,10 @@ describe('createFormDataOptions', () => {
   it('should handle formDataWrapper with no headers', () => {
     const formDataWrapper = createFormData({ key: 'value' });
 
-    const result = createFormDataOptions(formDataWrapper!.headers);
+    const result = createFormDataOptions(formDataWrapper?.headers || {});
 
     expect(result).toEqual({
-      header: undefined,
+      header: {},
     });
   });
 
@@ -460,7 +460,7 @@ describe('createFormDataOptions', () => {
       { 'Content-Type': 'application/json; charset=utf-8' }
     );
 
-    const result = createFormDataOptions(formDataWrapper!.headers);
+    const result = createFormDataOptions(formDataWrapper?.headers || {});
 
     expect(result).toEqual({
       contentType: 'application/json; charset=utf-8',

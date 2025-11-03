@@ -17,10 +17,10 @@ import {
 import {
   HttpRequest,
   HttpResponse,
+  isFormDataWrapper,
   RetryConfiguration,
 } from '@apimatic/core-interfaces';
 import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
-import { isFormDataWrapper } from '@apimatic/core-interfaces';
 import { isFileWrapper } from '@apimatic/file-wrapper';
 import { createProxyAgents } from '@apimatic/proxy';
 import { ProxySettings } from '.';
@@ -110,14 +110,14 @@ export class HttpClient {
           }
 
           form.append(iter.key, fileData, {
-            ...createFormDataOptions(iter.value.options?.headers),
+            ...createFormDataOptions(iter.value.options?.headers || {}),
             filename: iter.value.options?.filename,
           });
         } else if (isFormDataWrapper(iter.value)) {
           form.append(
             iter.key,
             iter.value.data,
-            createFormDataOptions(iter.value.headers)
+            createFormDataOptions(iter.value.headers || {})
           );
         } else {
           form.append(iter.key, iter.value);
@@ -288,17 +288,17 @@ export function isBlob(value: unknown): value is Blob {
 }
 
 export function createFormDataOptions(
-  headers?: Record<string, string>
+  headers: Record<string, string>
 ): FormData.AppendOptions {
-  const headerKey = lookupCaseInsensitive(headers ?? {}, 'content-type');
+  const headerKey = lookupCaseInsensitive(headers, 'content-type');
   if (!headerKey) {
     return {
       header: headers,
     };
   }
 
-  const contentType = headers?.[headerKey];
-  delete headers?.[headerKey];
+  const contentType = headers[headerKey];
+  delete headers[headerKey];
   return {
     contentType,
     header: headers,
