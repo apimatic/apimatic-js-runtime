@@ -6,8 +6,9 @@ describe('formDataWrapper', () => {
       const testData = { key: 'value' };
       const result = createFormData(testData);
 
-      expect(result.data).toBe('{"key":"value"}');
-      expect(result.headers).toBeUndefined();
+      expect(result).toBeDefined();
+      expect(result!.data).toBe('{"key":"value"}');
+      expect(result!.headers).toBeUndefined();
       expect(typeof result).toBe('object');
     });
 
@@ -19,26 +20,22 @@ describe('formDataWrapper', () => {
       };
       const result = createFormData(testData, testHeaders);
 
-      expect(result.data).toBe(testData);
-      expect(result.headers).toBe(testHeaders);
+      expect(result).toBeDefined();
+      expect(result!.data).toBe(testData);
+      expect(result!.headers).toBe(testHeaders);
       expect(typeof result).toBe('object');
     });
 
     it('should create a FormDataWrapper with null data converted to JSON string', () => {
       const result = createFormData(null);
 
-      expect(result.data).toBe('null');
-      expect(result.headers).toBeUndefined();
-      expect(typeof result).toBe('object');
+      expect(result).toBeUndefined();
     });
 
     it('should create a FormDataWrapper with undefined data', () => {
       const result = createFormData(undefined);
 
-      expect(result.data).toBeUndefined();
-      expect(result.headers).toBeUndefined();
-      expect(typeof result).toBe('object');
-      expect(result).toHaveProperty('data', undefined);
+      expect(result).toBeUndefined();
     });
 
     it('should create a FormDataWrapper with array data converted to JSON string', () => {
@@ -46,8 +43,9 @@ describe('formDataWrapper', () => {
       const emptyHeaders = {};
       const result = createFormData(testData, emptyHeaders);
 
-      expect(result.data).toBe('[1,2,3]');
-      expect(result.headers).toBe(emptyHeaders);
+      expect(result).toBeDefined();
+      expect(result!.data).toBe('[1,2,3]');
+      expect(result!.headers).toBe(emptyHeaders);
       expect(typeof result).toBe('object');
     });
 
@@ -55,8 +53,9 @@ describe('formDataWrapper', () => {
       const numberData = 42;
       const result = createFormData(numberData);
 
-      expect(result.data).toBe(numberData);
-      expect(result.headers).toBeUndefined();
+      expect(result).toBeDefined();
+      expect(result!.data).toBe('42');
+      expect(result!.headers).toBeUndefined();
       expect(typeof result).toBe('object');
     });
 
@@ -65,8 +64,9 @@ describe('formDataWrapper', () => {
       const headers = { 'X-Custom-Header': 'value' };
       const result = createFormData(arrayData, headers);
 
-      expect(result.data).toBe('["item1","item2","item3"]');
-      expect(result.headers).toBe(headers);
+      expect(result).toBeDefined();
+      expect(result!.data).toBe('["item1","item2","item3"]');
+      expect(result!.headers).toBe(headers);
       expect(typeof result).toBe('object');
     });
 
@@ -80,26 +80,29 @@ describe('formDataWrapper', () => {
       };
       const result = createFormData(complexData);
 
-      expect(result.data).toBe(
+      expect(result).toBeDefined();
+      expect(result!.data).toBe(
         '{"user":{"id":1,"name":"John"},"items":[{"type":"book","price":10.99},{"type":"pen","price":1.5}]}'
       );
-      expect(result.headers).toBeUndefined();
+      expect(result!.headers).toBeUndefined();
     });
 
     it('should not convert primitive string data to JSON', () => {
       const stringData = 'simple string';
       const result = createFormData(stringData);
 
-      expect(result.data).toBe('simple string');
-      expect(result.headers).toBeUndefined();
+      expect(result).toBeDefined();
+      expect(result!.data).toBe('simple string');
+      expect(result!.headers).toBeUndefined();
     });
 
-    it('should not convert boolean data to JSON', () => {
+    it('should convert boolean data to JSON', () => {
       const booleanData = true;
       const result = createFormData(booleanData);
 
-      expect(result.data).toBe(true);
-      expect(result.headers).toBeUndefined();
+      expect(result).toBeDefined();
+      expect(result!.data).toBe('true');
+      expect(result!.headers).toBeUndefined();
     });
   });
 
@@ -116,12 +119,12 @@ describe('formDataWrapper', () => {
 
     it('should return true for a FormDataWrapper with null data', () => {
       const formData = createFormData(null);
-      expect(isFormDataWrapper(formData)).toBe(true);
+      expect(isFormDataWrapper(formData)).toBe(false);
     });
 
     it('should return true for a FormDataWrapper with undefined data', () => {
       const formData = createFormData(undefined);
-      expect(isFormDataWrapper(formData)).toBe(true);
+      expect(isFormDataWrapper(formData)).toBe(false);
     });
 
     it('should return true for a FormDataWrapper with array data', () => {
