@@ -12,7 +12,7 @@ import FormData from 'form-data';
 import {
   CONTENT_TYPE_HEADER,
   FORM_URLENCODED_CONTENT_TYPE,
-  getHeader,
+  lookupCaseInsensitive,
 } from '@apimatic/http-headers';
 import {
   HttpRequest,
@@ -20,9 +20,8 @@ import {
   RetryConfiguration,
 } from '@apimatic/core-interfaces';
 import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
-import { FormDataWrapper, isFormDataWrapper } from '@apimatic/core-interfaces';
-import { FileWrapper, isFileWrapper } from '@apimatic/file-wrapper';
-import { lookupCaseInsensitive } from '@apimatic/http-headers';
+import { isFormDataWrapper } from '@apimatic/core-interfaces';
+import { isFileWrapper } from '@apimatic/file-wrapper';
 import { createProxyAgents } from '@apimatic/proxy';
 import { ProxySettings } from '.';
 
@@ -110,16 +109,15 @@ export class HttpClient {
             });
           }
 
-          form.append(
-            iter.key,
-            fileData,
-            createFileFormDataHeaders(iter.value)
-          );
+          form.append(iter.key, fileData, {
+            ...createFormDataOptions(iter.value.options?.headers),
+            filename: iter.value.options?.filename,
+          });
         } else if (isFormDataWrapper(iter.value)) {
           form.append(
             iter.key,
             iter.value.data,
-            createFormDataHeaders(iter.value)
+            createFormDataOptions(iter.value.headers)
           );
         } else {
           form.append(iter.key, iter.value);
@@ -289,29 +287,20 @@ export function isBlob(value: unknown): value is Blob {
   );
 }
 
-export function createFileFormDataHeaders(fileWrapper: FileWrapper) {
-  const headers = fileWrapper.options?.headers ?? {};
-  const contentType = getHeader(headers, 'content-type') ?? undefined;
-  const headerKey = lookupCaseInsensitive(headers, 'content-type');
-  if (headerKey) {
-    delete headers[headerKey];
+export function createFormDataOptions(
+  headers?: Record<string, string>
+): FormData.AppendOptions {
+  const headerKey = lookupCaseInsensitive(headers ?? {}, 'content-type');
+  if (!headerKey) {
+    return {
+      header: headers,
+    };
   }
-  return {
-    contentType,
-    filename: fileWrapper.options?.filename,
-    header: Object.keys(headers).length === 0 ? undefined : headers,
-  };
-}
 
-export function createFormDataHeaders(formDataWrapper: FormDataWrapper) {
-  const headers = formDataWrapper.headers ?? {};
-  const contentType = getHeader(headers, 'content-type') ?? undefined;
-  const headerKey = lookupCaseInsensitive(headers, 'content-type');
-  if (headerKey) {
-    delete headers[headerKey];
-  }
+  const contentType = headers?.[headerKey];
+  delete headers?.[headerKey];
   return {
     contentType,
-    header: Object.keys(headers).length === 0 ? undefined : headers,
+    header: headers,
   };
 }

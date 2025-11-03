@@ -2,8 +2,7 @@ import {
   DEFAULT_TIMEOUT,
   HttpClient,
   isBlob,
-  createFileFormDataHeaders,
-  createFormDataHeaders,
+  createFormDataOptions,
 } from '../src/httpClient';
 import {
   AxiosHeaders,
@@ -419,98 +418,38 @@ describe('HTTP Client', () => {
   });
 });
 
-describe('createFileFormDataHeaders', () => {
-  it('should return headers with content type from fileWrapper options', () => {
-    const fileWrapper = new FileWrapper(new Blob(['test']), {
-      headers: { 'content-type': 'text/plain' },
-      filename: 'test.txt',
-    });
-
-    const result = createFileFormDataHeaders(fileWrapper);
-
-    expect(result).toEqual({
-      contentType: 'text/plain',
-      filename: 'test.txt',
-      header: undefined,
-    });
-  });
-
-  it('should return undefined content type when not provided in headers', () => {
-    const fileWrapper = new FileWrapper(new Blob(['test']), {
-      filename: 'test.txt',
-      headers: {},
-    });
-
-    const result = createFileFormDataHeaders(fileWrapper);
-
-    expect(result).toEqual({
-      contentType: undefined,
-      filename: 'test.txt',
-      header: undefined,
-    });
-  });
-
-  it('should handle fileWrapper with no options', () => {
-    const fileWrapper = new FileWrapper(new Blob(['test']));
-
-    const result = createFileFormDataHeaders(fileWrapper);
-
-    expect(result).toEqual({
-      contentType: undefined,
-      filename: undefined,
-      header: undefined,
-    });
-  });
-
-  it('should handle case-insensitive content-type header lookup', () => {
-    const fileWrapper = new FileWrapper(new Blob(['test']), {
-      headers: { 'Content-Type': 'application/json' },
-      filename: 'data.json',
-    });
-
-    const result = createFileFormDataHeaders(fileWrapper);
-
-    expect(result).toEqual({
-      contentType: 'application/json',
-      filename: 'data.json',
-      header: undefined,
-    });
-  });
-});
-
-describe('createJSONFormDataHeaders', () => {
+describe('createFormDataOptions', () => {
   it('should return headers with content type from formDataWrapper headers', () => {
     const formDataWrapper = createFormData(
       { key: 'value' },
       { 'content-type': 'application/json' }
     );
 
-    const result = createFormDataHeaders(formDataWrapper!);
+    const result = createFormDataOptions(formDataWrapper!.headers);
 
     expect(result).toEqual({
       contentType: 'application/json',
-      header: undefined,
+      header: {},
     });
   });
 
   it('should return undefined content type when not provided in headers', () => {
     const formDataWrapper = createFormData({ key: 'value' }, {});
 
-    const result = createFormDataHeaders(formDataWrapper!);
+    const result = createFormDataOptions(formDataWrapper!.headers);
 
     expect(result).toEqual({
       contentType: undefined,
-      header: undefined,
+      header: {},
     });
   });
 
   it('should handle formDataWrapper with no headers', () => {
     const formDataWrapper = createFormData({ key: 'value' });
 
-    const result = createFormDataHeaders(formDataWrapper!);
+    const result = createFormDataOptions(formDataWrapper!.headers);
 
     expect(result).toEqual({
-      contentType: undefined,
       header: undefined,
     });
   });
@@ -521,11 +460,11 @@ describe('createJSONFormDataHeaders', () => {
       { 'Content-Type': 'application/json; charset=utf-8' }
     );
 
-    const result = createFormDataHeaders(formDataWrapper!);
+    const result = createFormDataOptions(formDataWrapper!.headers);
 
     expect(result).toEqual({
       contentType: 'application/json; charset=utf-8',
-      header: undefined,
+      header: {},
     });
   });
 });

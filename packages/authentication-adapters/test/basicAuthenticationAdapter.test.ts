@@ -1,6 +1,6 @@
 import { callHttpInterceptors } from '@apimatic/core';
 import { basicAuthenticationProvider } from '../src/basicAuthenticationAdapter';
-import { HttpRequest, HttpResponse } from '@apimatic/core';
+import { HttpRequest, HttpResponse } from '@apimatic/core-interfaces';
 
 describe('test basic authentication scheme', () => {
   const config = {

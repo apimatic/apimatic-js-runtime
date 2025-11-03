@@ -6,17 +6,11 @@ import JSONBig from '@apimatic/json-bigint';
 const formDataWrapperMarker = Symbol('FormDataWrapper');
 
 /**
- * Marker interface for identifying objects as FormDataWrapper instances.
- */
-export interface FormDataWrapperMarker {
-  [formDataWrapperMarker]: true;
-}
-
-/**
  * Represents a wrapped form-data object containing the raw data
  * and optional headers to be sent with the request.
  */
-export interface FormDataWrapper extends FormDataWrapperMarker {
+export interface FormDataWrapper {
+  [formDataWrapperMarker]: true;
   data: any;
   headers?: Record<string, string>;
 }
