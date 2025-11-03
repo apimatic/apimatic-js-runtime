@@ -20,7 +20,7 @@ import {
   HttpResponse,
 } from '@apimatic/core-interfaces';
 import { FileWrapper } from '@apimatic/file-wrapper';
-import { createFormData } from '@apimatic/http-query';
+import { createFormData } from '@apimatic/core-interfaces';
 import FormData from 'form-data';
 import fs from 'fs';
 
@@ -163,7 +163,7 @@ describe('HTTP Client', () => {
       type: 'form-data',
       content: [
         { key: 'file', value: fileWrapper },
-        { key: 'metadata', value: formDataWrapper },
+        { key: 'metadata', value: formDataWrapper! },
         { key: 'param1', value: 'value1' },
       ],
     };
@@ -215,8 +215,8 @@ describe('HTTP Client', () => {
       type: 'form-data',
       content: [
         { key: 'file', value: fileWrapper },
-        { key: 'metadata', value: formDataWrapper1 },
-        { key: 'version_info', value: formDataWrapper2 },
+        { key: 'metadata', value: formDataWrapper1! },
+        { key: 'version_info', value: formDataWrapper2! },
         { key: 'description', value: 'Test upload' },
       ],
     };
@@ -431,7 +431,7 @@ describe('createFileFormDataHeaders', () => {
     expect(result).toEqual({
       contentType: 'text/plain',
       filename: 'test.txt',
-      header: { 'content-type': 'text/plain' },
+      header: undefined,
     });
   });
 
@@ -446,7 +446,7 @@ describe('createFileFormDataHeaders', () => {
     expect(result).toEqual({
       contentType: undefined,
       filename: 'test.txt',
-      header: {},
+      header: undefined,
     });
   });
 
@@ -473,7 +473,7 @@ describe('createFileFormDataHeaders', () => {
     expect(result).toEqual({
       contentType: 'application/json',
       filename: 'data.json',
-      header: { 'Content-Type': 'application/json' },
+      header: undefined,
     });
   });
 });
@@ -485,29 +485,29 @@ describe('createJSONFormDataHeaders', () => {
       { 'content-type': 'application/json' }
     );
 
-    const result = createFormDataHeaders(formDataWrapper);
+    const result = createFormDataHeaders(formDataWrapper!);
 
     expect(result).toEqual({
       contentType: 'application/json',
-      header: { 'content-type': 'application/json' },
+      header: undefined,
     });
   });
 
   it('should return undefined content type when not provided in headers', () => {
     const formDataWrapper = createFormData({ key: 'value' }, {});
 
-    const result = createFormDataHeaders(formDataWrapper);
+    const result = createFormDataHeaders(formDataWrapper!);
 
     expect(result).toEqual({
       contentType: undefined,
-      header: {},
+      header: undefined,
     });
   });
 
   it('should handle formDataWrapper with no headers', () => {
     const formDataWrapper = createFormData({ key: 'value' });
 
-    const result = createFormDataHeaders(formDataWrapper);
+    const result = createFormDataHeaders(formDataWrapper!);
 
     expect(result).toEqual({
       contentType: undefined,
@@ -521,11 +521,11 @@ describe('createJSONFormDataHeaders', () => {
       { 'Content-Type': 'application/json; charset=utf-8' }
     );
 
-    const result = createFormDataHeaders(formDataWrapper);
+    const result = createFormDataHeaders(formDataWrapper!);
 
     expect(result).toEqual({
       contentType: 'application/json; charset=utf-8',
-      header: { 'Content-Type': 'application/json; charset=utf-8' },
+      header: undefined,
     });
   });
 });

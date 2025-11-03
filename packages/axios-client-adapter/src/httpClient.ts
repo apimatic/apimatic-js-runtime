@@ -299,7 +299,7 @@ export function createFileFormDataHeaders(fileWrapper: FileWrapper) {
   return {
     contentType,
     filename: fileWrapper.options?.filename,
-    header: headers,
+    header: Object.keys(headers).length === 0 ? undefined : headers,
   };
 }
 
@@ -312,6 +312,6 @@ export function createFormDataHeaders(formDataWrapper: FormDataWrapper) {
   }
   return {
     contentType,
-    header: formDataWrapper.headers,
+    header: Object.keys(headers).length === 0 ? undefined : headers,
   };
 }
