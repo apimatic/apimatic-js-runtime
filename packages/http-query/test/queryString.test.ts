@@ -1,5 +1,5 @@
 import { FileWrapper, isFileWrapper } from '@apimatic/file-wrapper';
-import { createFormData } from '../src/formDataWrapper';
+import { createFormData } from '@apimatic/core-interfaces';
 import fs from 'fs';
 import path from 'path';
 import {

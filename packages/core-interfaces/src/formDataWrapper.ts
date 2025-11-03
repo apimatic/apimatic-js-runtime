@@ -17,7 +17,7 @@ export interface FormDataWrapperMarker {
  * and optional headers to be sent with the request.
  */
 export interface FormDataWrapper extends FormDataWrapperMarker {
-  data: unknown;
+  data: any;
   headers?: Record<string, string>;
 }
 
@@ -29,15 +29,18 @@ export interface FormDataWrapper extends FormDataWrapperMarker {
  * @returns A FormDataWrapper instance.
  */
 export function createFormData(
-  data: unknown,
+  data: any,
   headers?: Record<string, string>
-): FormDataWrapper {
-  if (Array.isArray(data) || typeof data === 'object') {
-    data = JSONBig.stringify(data);
+): FormDataWrapper | undefined {
+  if (data === null || data === undefined) {
+    return undefined;
   }
   return {
     [formDataWrapperMarker]: true,
-    data,
+    data:
+      Array.isArray(data) || typeof data === 'object'
+        ? JSONBig.stringify(data)
+        : data.toString(),
     headers,
   };
 }
@@ -45,13 +48,13 @@ export function createFormData(
 /**
  * Type guard that checks if a given value is a FormDataWrapper.
  *
- * @param result The value to validate.
+ * @param value The value to validate.
  * @returns True if the value is a FormDataWrapper, false otherwise.
  */
-export function isFormDataWrapper(result: unknown): result is FormDataWrapper {
+export function isFormDataWrapper(value: unknown): value is FormDataWrapper {
   return (
-    typeof result === 'object' &&
-    result !== null &&
-    formDataWrapperMarker in result
+    typeof value === 'object' &&
+    value !== null &&
+    formDataWrapperMarker in value
   );
 }

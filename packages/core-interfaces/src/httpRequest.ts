@@ -1,5 +1,5 @@
 import { FileWrapper } from '@apimatic/file-wrapper';
-import { FormDataWrapper } from '@apimatic/http-query';
+import { FormDataWrapper } from './formDataWrapper';
 /**
  * Represents an HTTP request
  */

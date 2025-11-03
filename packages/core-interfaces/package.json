@@ -59,7 +59,6 @@
   },
   "dependencies": {
     "@apimatic/file-wrapper": "^0.3.8",
-    "@apimatic/http-query": "^0.3.8",
     "tslib": "^2.8.1"
   },
   "publishConfig": {

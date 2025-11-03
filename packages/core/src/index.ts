@@ -25,7 +25,6 @@ export {
   commaPrefix,
   tabPrefix,
   pipePrefix,
-  createFormData,
 } from './http/queryString';
 export { XmlSerializerInterface } from './xml/xmlSerializer';
 export { convertExpressRequest } from './http/requestAdapters/expressRequestAdapter';

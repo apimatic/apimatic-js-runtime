@@ -3,7 +3,7 @@ import {
   HttpClient,
   isBlob,
   createFileFormDataHeaders,
-  createJSONFormDataHeaders,
+  createFormDataHeaders,
 } from '../src/httpClient';
 import {
   AxiosHeaders,
@@ -485,7 +485,7 @@ describe('createJSONFormDataHeaders', () => {
       { 'content-type': 'application/json' }
     );
 
-    const result = createJSONFormDataHeaders(formDataWrapper);
+    const result = createFormDataHeaders(formDataWrapper);
 
     expect(result).toEqual({
       contentType: 'application/json',
@@ -496,7 +496,7 @@ describe('createJSONFormDataHeaders', () => {
   it('should return undefined content type when not provided in headers', () => {
     const formDataWrapper = createFormData({ key: 'value' }, {});
 
-    const result = createJSONFormDataHeaders(formDataWrapper);
+    const result = createFormDataHeaders(formDataWrapper);
 
     expect(result).toEqual({
       contentType: undefined,
@@ -507,7 +507,7 @@ describe('createJSONFormDataHeaders', () => {
   it('should handle formDataWrapper with no headers', () => {
     const formDataWrapper = createFormData({ key: 'value' });
 
-    const result = createJSONFormDataHeaders(formDataWrapper);
+    const result = createFormDataHeaders(formDataWrapper);
 
     expect(result).toEqual({
       contentType: undefined,
@@ -521,7 +521,7 @@ describe('createJSONFormDataHeaders', () => {
       { 'Content-Type': 'application/json; charset=utf-8' }
     );
 
-    const result = createJSONFormDataHeaders(formDataWrapper);
+    const result = createFormDataHeaders(formDataWrapper);
 
     expect(result).toEqual({
       contentType: 'application/json; charset=utf-8',

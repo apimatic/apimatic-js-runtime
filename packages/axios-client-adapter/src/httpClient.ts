@@ -19,12 +19,10 @@ import {
   HttpResponse,
   RetryConfiguration,
 } from '@apimatic/core-interfaces';
-import {
-  FormDataWrapper,
-  isFormDataWrapper,
-  urlEncodeKeyValuePairs,
-} from '@apimatic/http-query';
+import { urlEncodeKeyValuePairs } from '@apimatic/http-query';
+import { FormDataWrapper, isFormDataWrapper } from '@apimatic/core-interfaces';
 import { FileWrapper, isFileWrapper } from '@apimatic/file-wrapper';
+import { lookupCaseInsensitive } from '@apimatic/http-headers';
 import { createProxyAgents } from '@apimatic/proxy';
 import { ProxySettings } from '.';
 
@@ -121,7 +119,7 @@ export class HttpClient {
           form.append(
             iter.key,
             iter.value.data,
-            createJSONFormDataHeaders(iter.value)
+            createFormDataHeaders(iter.value)
           );
         } else {
           form.append(iter.key, iter.value);
@@ -292,19 +290,28 @@ export function isBlob(value: unknown): value is Blob {
 }
 
 export function createFileFormDataHeaders(fileWrapper: FileWrapper) {
+  const headers = fileWrapper.options?.headers ?? {};
+  const contentType = getHeader(headers, 'content-type') ?? undefined;
+  const headerKey = lookupCaseInsensitive(headers, 'content-type');
+  if (headerKey) {
+    delete headers[headerKey];
+  }
   return {
-    contentType:
-      getHeader(fileWrapper.options?.headers ?? {}, 'content-type') ??
-      undefined,
+    contentType,
     filename: fileWrapper.options?.filename,
-    header: fileWrapper.options?.headers,
+    header: headers,
   };
 }
 
-export function createJSONFormDataHeaders(formDataWrapper: FormDataWrapper) {
+export function createFormDataHeaders(formDataWrapper: FormDataWrapper) {
+  const headers = formDataWrapper.headers ?? {};
+  const contentType = getHeader(headers, 'content-type') ?? undefined;
+  const headerKey = lookupCaseInsensitive(headers, 'content-type');
+  if (headerKey) {
+    delete headers[headerKey];
+  }
   return {
-    contentType:
-      getHeader(formDataWrapper.headers ?? {}, 'content-type') ?? undefined,
+    contentType,
     header: formDataWrapper.headers,
   };
 }
