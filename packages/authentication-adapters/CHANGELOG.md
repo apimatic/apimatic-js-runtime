@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.5.14](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/authentication-adapters@0.5.13...@apimatic/authentication-adapters@0.5.14) (2025-11-04)
+
+### Bug Fixes
+
+- set headers for file and JSON data parts in multipart from request ([#304](https://github.com/apimatic/apimatic-js-runtime/issues/304)) ([10efc46](https://github.com/apimatic/apimatic-js-runtime/commit/10efc469f964a8115070ae6cf366245acb970696))
+
 ### [0.5.13](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/authentication-adapters@0.5.12...@apimatic/authentication-adapters@0.5.13) (2025-09-30)
 
 **Note:** Version bump only for package @apimatic/authentication-adapters
