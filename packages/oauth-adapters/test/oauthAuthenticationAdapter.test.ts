@@ -11,7 +11,7 @@ import {
   HttpRequest,
   HttpResponse,
   RequestOptions,
-} from '../../core-interfaces/src';
+} from '@apimatic/core-interfaces';
 
 describe('test oauth request provider', () => {
   it('should pass with disabled authentication', async () => {

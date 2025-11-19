@@ -1,7 +1,6 @@
-import { callHttpInterceptors } from '../../core/src/http/httpInterceptor';
+import { callHttpInterceptors } from '@apimatic/core';
 import { customHeaderAuthenticationProvider } from '../src/customHeaderAuthenticationAdapter';
-import { HttpRequest } from '../../core-interfaces/src/httpRequest';
-import { HttpResponse } from '../../core-interfaces/src/httpResponse';
+import { HttpRequest, HttpResponse } from '@apimatic/core-interfaces';
 
 describe('test custom header authentication scheme', () => {
   test.each([

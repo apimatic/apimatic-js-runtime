@@ -3,11 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-### [0.4.17-alpha.1](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/oauth-adapters@0.4.16...@apimatic/oauth-adapters@0.4.17-alpha.1) (2025-09-29)
+### [0.4.18](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/oauth-adapters@0.4.17...@apimatic/oauth-adapters@0.4.18) (2025-11-04)
 
-**Note:** Version bump only for package @apimatic/oauth-adapters
+### Bug Fixes
 
-### [0.4.17-alpha.0](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/oauth-adapters@0.4.16...@apimatic/oauth-adapters@0.4.17-alpha.0) (2025-09-29)
+- set headers for file and JSON data parts in multipart from request ([#304](https://github.com/apimatic/apimatic-js-runtime/issues/304)) ([10efc46](https://github.com/apimatic/apimatic-js-runtime/commit/10efc469f964a8115070ae6cf366245acb970696))
+
+### [0.4.17](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/oauth-adapters@0.4.16...@apimatic/oauth-adapters@0.4.17) (2025-09-30)
 
 **Note:** Version bump only for package @apimatic/oauth-adapters
 

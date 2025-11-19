@@ -1,7 +1,6 @@
-import { callHttpInterceptors } from '../../core/src/http/httpInterceptor';
+import { callHttpInterceptors } from '@apimatic/core';
 import { accessTokenAuthenticationProvider } from '../src/accessTokenAdapter';
-import { HttpRequest } from '../../core-interfaces/src/httpRequest';
-import { HttpResponse } from '../../core-interfaces/src/httpResponse';
+import { HttpRequest, HttpResponse } from '@apimatic/core-interfaces';
 
 describe('test access token authentication scheme', () => {
   const config = {

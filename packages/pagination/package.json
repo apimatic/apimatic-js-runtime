@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/pagination",
-  "version": "0.1.5-alpha.1",
+  "version": "0.1.6",
   "description": "provides the async utilities for handling paginated API responses.",
   "main": "lib/index.js",
   "module": "lib/index.js",
@@ -26,16 +26,12 @@
   "license": "ISC",
   "size-limit": [
     {
-      "path": "umd/schema.js",
-      "limit": "5 KB"
-    },
-    {
-      "path": "umd/schema.esm.js",
+      "path": "es/index.js",
       "limit": "5 KB"
     }
   ],
   "dependencies": {
-    "@apimatic/core-interfaces": "^0.2.13-alpha.1"
+    "@apimatic/core-interfaces": "^0.2.14"
   },
   "publishConfig": {
     "access": "public"

@@ -3,13 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-### [0.2.13-alpha.1](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.12...@apimatic/core-interfaces@0.2.13-alpha.1) (2025-09-29)
+### [0.2.14](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.13...@apimatic/core-interfaces@0.2.14) (2025-11-04)
 
-**Note:** Version bump only for package @apimatic/core-interfaces
+### Bug Fixes
 
-### [0.2.13-alpha.0](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.12...@apimatic/core-interfaces@0.2.13-alpha.0) (2025-09-29)
+- set headers for file and JSON data parts in multipart from request ([#304](https://github.com/apimatic/apimatic-js-runtime/issues/304)) ([10efc46](https://github.com/apimatic/apimatic-js-runtime/commit/10efc469f964a8115070ae6cf366245acb970696))
 
-**Note:** Version bump only for package @apimatic/core-interfaces
+### [0.2.13](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.12...@apimatic/core-interfaces@0.2.13) (2025-09-30)
+
+### Features
+
+- add webhooks and callbacks support ([#292](https://github.com/apimatic/apimatic-js-runtime/issues/292)) ([3912981](https://github.com/apimatic/apimatic-js-runtime/commit/39129812b1aaa860bedafc074a2c44759d6ca14f))
 
 ### [0.2.12](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core-interfaces@0.2.11...@apimatic/core-interfaces@0.2.12) (2025-08-13)
 
