@@ -3,25 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
-### [0.10.27-alpha.2](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.26...@apimatic/core@0.10.27-alpha.2) (2025-09-29)
-
-### Features
-
-- toJSONSchema ([#245](https://github.com/apimatic/apimatic-js-runtime/issues/245)) ([b173a9d](https://github.com/apimatic/apimatic-js-runtime/commit/b173a9d71ac931daaeee170867ae19a4edb16b90))
-
-### [0.10.27-alpha.1](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.26...@apimatic/core@0.10.27-alpha.1) (2025-09-29)
-
-### Features
-
-- toJSONSchema ([#245](https://github.com/apimatic/apimatic-js-runtime/issues/245)) ([b173a9d](https://github.com/apimatic/apimatic-js-runtime/commit/b173a9d71ac931daaeee170867ae19a4edb16b90))
-
-### [0.10.27-alpha.0](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.26...@apimatic/core@0.10.27-alpha.0) (2025-09-04)
+### [0.10.28](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.27...@apimatic/core@0.10.28) (2025-11-04)
 
 ### Bug Fixes
 
-- package import instead of local import ([038932d](https://github.com/apimatic/apimatic-js-runtime/commit/038932d6c10058ae46792e89bdaf1dedfed037bf))
-- **tests:** depend on package name not relative path ([7fe0196](https://github.com/apimatic/apimatic-js-runtime/commit/7fe019653e742b767c1236805f5d2982776ee5b3))
-- **tests:** missing import ([6574dbc](https://github.com/apimatic/apimatic-js-runtime/commit/6574dbcb5406ac1226a187946bc924507928d4c4))
+- set headers for file and JSON data parts in multipart from request ([#304](https://github.com/apimatic/apimatic-js-runtime/issues/304)) ([10efc46](https://github.com/apimatic/apimatic-js-runtime/commit/10efc469f964a8115070ae6cf366245acb970696))
+
+### [0.10.27](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.26...@apimatic/core@0.10.27) (2025-09-30)
+
+### Features
+
+- add webhooks and callbacks support ([#292](https://github.com/apimatic/apimatic-js-runtime/issues/292)) ([3912981](https://github.com/apimatic/apimatic-js-runtime/commit/39129812b1aaa860bedafc074a2c44759d6ca14f))
 
 ### [0.10.26](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.25...@apimatic/core@0.10.26) (2025-09-04)
 

@@ -3,7 +3,7 @@ import {
   HttpResponse,
   LoggingOptions,
   LogLevel,
-} from '../../src/coreInterfaces';
+} from '@apimatic/core-interfaces';
 import { ApiLogger } from '../../src/logger/apiLogger';
 import { callHttpInterceptors } from '../../src/http/httpInterceptor';
 import { NullLogger } from '../../src/logger/nullLogger';

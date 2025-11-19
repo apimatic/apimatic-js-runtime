@@ -1,4 +1,5 @@
 import { FileWrapper, isFileWrapper } from '@apimatic/file-wrapper';
+import { createFormData } from '@apimatic/core-interfaces';
 import fs from 'fs';
 import path from 'path';
 import {
@@ -737,5 +738,17 @@ describe('test file wrapper form encoding', () => {
   ])('%s', (_: string, params: Record<string, unknown>) => {
     const result = formDataEncodeObject(params);
     isFileWrapper(result);
+  });
+});
+
+describe('test form data wrapper form encoding', () => {
+  test('test form data wrapper indexed prefix format', () => {
+    const formDataWrapper = createFormData(
+      { test: 'data' },
+      { 'Content-Type': 'application/json' }
+    );
+    const params = { param: formDataWrapper };
+    const result = formDataEncodeObject(params);
+    expect(result).toEqual([{ key: 'param', value: formDataWrapper }]);
   });
 });
