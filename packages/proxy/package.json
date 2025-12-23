@@ -1,10 +1,22 @@
 {
   "name": "@apimatic/proxy",
+  "author": "APIMatic Ltd.",
   "version": "0.1.3",
+  "license": "MIT",
   "description": "provides utilities to route requests through a configurable proxy",
+  "sideEffects": false,
   "main": "lib/index.js",
   "module": "lib/index.js",
   "types": "lib/index.d.ts",
+  "files": [
+    "umd",
+    "lib/**/*.js",
+    "lib/**/*.d.ts",
+    "es/**/*.js",
+    "es/**/*.d.ts",
+    "src",
+    "LICENSE.md"
+  ],
   "engines": {
     "node": ">=14.15.0 || >=16.0.0"
   },
@@ -22,8 +34,12 @@
     "check-style": "prettier --check \"{src,test}/**/*.ts\"",
     "check-style:fix": "prettier --write \"{src,test}/**/*.ts\""
   },
-  "author": "APIMatic Ltd.",
-  "license": "ISC",
+  "size-limit": [
+    {
+      "path": "es/index.js",
+      "limit": "5 KB"
+    }
+  ],
   "browser": {
     "./lib/proxyAgent.js": "./lib/proxyAgentBrowser.js"
   },
