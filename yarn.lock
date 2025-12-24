@@ -1470,9 +1470,9 @@
     "@types/lodash" "*"
 
 "@types/lodash.flatmap@^4.5.6":
-  version "4.5.6"
-  resolved "https://registry.yarnpkg.com/@types/lodash.flatmap/-/lodash.flatmap-4.5.6.tgz#5f1ea80cebe403f0fbfcc1b5ad75cd09dd8b5785"
-  integrity sha512-ELNrUL9q+MB7AACaHivWIsKDFDgYhHE3/svXhqvDJgONtn2c467Cy87nEb7CEDvfaGCPv91lPaW596I8s5oiNQ==
+  version "4.5.9"
+  resolved "https://registry.yarnpkg.com/@types/lodash.flatmap/-/lodash.flatmap-4.5.9.tgz#85e5e9074b85fe541dd937f16dd851a80be8c1fd"
+  integrity sha512-rACVyVCkf+YRthjL7wKb2e96nnZw+bRIEo2nl2ewP0GZLOuRP9QcB7FnyOj7aXI5Vrs6qONnc1lg66FdHVqCmQ==
   dependencies:
     "@types/lodash" "*"
 
