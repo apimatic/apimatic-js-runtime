@@ -1,7 +1,7 @@
 {
   "name": "@apimatic/convert-to-stream",
   "author": "APIMatic Ltd.",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "license": "MIT",
   "description": "converts the content to stream",
   "sideEffects": false,
