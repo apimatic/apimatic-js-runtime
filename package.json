@@ -6,6 +6,9 @@
       "packages/*"
     ]
   },
+  "resolutions": {
+    "filelist": "1.0.4"
+  },
   "scripts": {
     "preinstall": "node ./scripts/ensure-yarn.js",
     "clean": "lerna run clean",
