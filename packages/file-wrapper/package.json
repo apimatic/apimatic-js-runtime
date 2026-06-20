@@ -62,7 +62,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:apimatic/apimatic-js-runtime.git",
+    "url": "https://github.com/apimatic/apimatic-js-runtime.git",
     "directory": "packages/file-wrapper"
   }
 }
