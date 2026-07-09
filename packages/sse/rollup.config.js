@@ -1,4 +1,5 @@
 import typescript from 'rollup-plugin-typescript2';
+const packageJson = require('./package.json');
 
 const getTsPlugin = ({ declaration = true, target } = {}) =>
   typescript({
@@ -28,5 +29,6 @@ export default [
         format: 'esm',
       },
     ],
+    external: Object.keys(packageJson.dependencies),
   }),
 ];

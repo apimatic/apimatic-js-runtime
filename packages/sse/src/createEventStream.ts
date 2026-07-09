@@ -42,7 +42,17 @@ export interface StreamCapableRequestBuilder {
  */
 export function schemaSseDecoder<T>(schema: Schema<T>): SseDecoder<T> {
   return (raw: RawSseEvent): SseDecodeResult<T> => {
-    const mapped = validateAndMap(parseFrameData(raw.data), schema);
+    const parsed = parseFrameData(raw.data);
+    let mapped = validateAndMap(parsed, schema);
+    if (mapped.errors && typeof parsed !== 'string') {
+      // A plain-text frame can coincidentally be valid JSON (`123`, `true`,
+      // `null`); when the schema rejects the parsed form, try the raw text
+      // before failing so string schemas keep accepting such frames.
+      const rawMapped = validateAndMap(raw.data, schema);
+      if (!rawMapped.errors) {
+        mapped = rawMapped;
+      }
+    }
     if (mapped.errors) {
       throw new Error(
         'SSE frame failed schema validation:\n' +
@@ -100,7 +110,14 @@ export async function createEventStream<T>(
   requestBuilder.intercept(bufferErrorBodies);
 
   const wrappedDecoder = wrapDecoder(decoder, terminator);
-  const response = await requestBuilder.callAsStream(streamRequestOptions);
+  const response = await requestBuilder
+    .callAsStream(streamRequestOptions)
+    .catch((error) => {
+      // Abort so the user-signal forwarding listener above is detached even
+      // when the request itself fails (e.g. a non-2xx ApiError).
+      controller.abort();
+      throw error;
+    });
   const stream = new SseStream<T>(response.result, {
     decoder: wrappedDecoder,
     controller,

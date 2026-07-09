@@ -124,6 +124,19 @@ describe('createEventStream', () => {
     ]);
   });
 
+  it('schemaSseDecoder(string()) accepts plain-text frames that happen to be valid JSON', async () => {
+    const { req } = fakeRequest(() =>
+      mockSseBody(['data: 123\n\n', 'data: true\n\n', 'data: null\n\n'])
+    );
+    const { result } = await createEventStream<string>(
+      req,
+      {},
+      undefined,
+      schemaSseDecoder(string())
+    );
+    expect(await collectStream(result)).toEqual(['123', 'true', 'null']);
+  });
+
   it('schemaSseDecoder surfaces a schema mismatch as SseDecodeError', async () => {
     const { req } = fakeRequest(() =>
       mockSseBody(['data: {"index":"not-a-number","text":"a"}\n\n'])
@@ -165,6 +178,27 @@ describe('createEventStream', () => {
     expect(result.controller.signal.aborted).toBe(false);
     userController.abort();
     expect(result.controller.signal.aborted).toBe(true);
+  });
+
+  it('detaches the user-signal listener when the request itself fails', async () => {
+    const userController = new AbortController();
+    const removeSpy = jest.spyOn(userController.signal, 'removeEventListener');
+    const req: StreamCapableRequestBuilder = {
+      accept: () => undefined,
+      intercept: () => undefined,
+      callAsStream: async () => {
+        throw new Error('connect failed');
+      },
+    };
+    await expect(
+      createEventStream(
+        req,
+        { abortSignal: userController.signal as unknown as AbortSignal },
+        undefined,
+        passthrough
+      )
+    ).rejects.toThrow('connect failed');
+    expect(removeSpy).toHaveBeenCalledWith('abort', expect.any(Function));
   });
 
   it('buffers only non-2xx error bodies via the interceptor', async () => {
