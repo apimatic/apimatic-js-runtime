@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+### [0.10.30](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.29...@apimatic/core@0.10.30) (2026-07-09)
+
+### Features
+
+- **core:** callAsEventStream hook + migrate release to OIDC/Lerna 9 ([#322](https://github.com/apimatic/apimatic-js-runtime/issues/322)) ([f9612b6](https://github.com/apimatic/apimatic-js-runtime/commit/f9612b633d050097bd22d7d74bc73d3a9ae76524))
+
 ### [0.10.29](https://github.com/apimatic/apimatic-js-runtime/compare/@apimatic/core@0.10.28...@apimatic/core@0.10.29) (2025-12-24)
 
 **Note:** Version bump only for package @apimatic/core
