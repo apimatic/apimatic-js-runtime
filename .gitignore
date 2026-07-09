@@ -47,6 +47,9 @@ build/Release
 node_modules/
 jspm_packages/
 
+# Nx cache (Lerna is powered by Nx since v7)
+.nx/
+
 # TypeScript v1 declaration files
 typings/
 
