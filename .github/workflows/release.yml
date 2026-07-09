@@ -26,6 +26,9 @@ jobs:
     if: github.ref == 'refs/heads/master' && github.event.inputs.version_type != 'prerelease (unstable or experimental changes 0.0.0-alpha.X)'
     runs-on: ubuntu-latest
     environment: Production
+    permissions:
+      id-token: write   # required for npm OIDC trusted publishing
+      contents: write   # required for lerna --create-release github (tags + GitHub release)
     steps:
       - name: Determine version type
         id: version_type
@@ -43,16 +46,20 @@ jobs:
           esac
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
           fetch-depth: 0  # Ensure the full history is fetched to push changes back
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '19'
-      
+          node-version: '22'  # Lerna 9 requires Node ^20.19 || ^22.12 || >=24
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@latest  # OIDC trusted publishing requires npm >= 11.5.1
+
       - name: Install dependencies and build
         run: |
           yarn install --frozen-lockfile
@@ -64,13 +71,6 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b ci-version-update
           git push origin ci-version-update
-      
-      - name: Configure NPM registry
-        run: npm config set registry 'https://registry.npmjs.org/'
-
-      - name: Authenticate with NPM
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
       - name: Bump versions and publish packages
         id: release
@@ -107,22 +107,29 @@ jobs:
     name: Publish the npm package as an alpha release
     runs-on: ubuntu-latest
     environment: Production
+    permissions:
+      id-token: write   # required for npm OIDC trusted publishing
+      contents: write   # required for lerna --create-release github (tags + GitHub release)
     steps:
       - name: Determine version type
         id: version_type
         run: echo "version=prerelease" >> $GITHUB_ENV
 
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: ${{ github.ref_name }}
           fetch-depth: 0  # Ensure the full history is fetched to push changes back
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '19'
-      
+          node-version: '22'  # Lerna 9 requires Node ^20.19 || ^22.12 || >=24
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Upgrade npm for OIDC trusted publishing
+        run: npm install -g npm@latest  # OIDC trusted publishing requires npm >= 11.5.1
+
       - name: Install dependencies and build
         run: |
           yarn install --frozen-lockfile
@@ -134,13 +141,6 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git checkout -b ci-version-update
           git push origin ci-version-update
-      
-      - name: Configure NPM registry
-        run: npm config set registry 'https://registry.npmjs.org/'
-
-      - name: Authenticate with NPM
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
       - name: Bump versions and publish packages
         id: release
