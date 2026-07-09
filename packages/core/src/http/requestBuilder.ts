@@ -181,6 +181,12 @@ export interface RequestBuilder<BaseUrlParamType, AuthParams> {
       ) => (pointer: string | null, setter: (value: any) => any) => this
     ) => PagedAsyncIterable<TItem, TPagedResponse>
   ): PagedAsyncIterable<TItem, TPagedResponse>;
+  callAsEventStream<T>(
+    createEventStream: (
+      req: this,
+      streamReadTimeout: number | undefined
+    ) => Promise<ApiResponse<T>>
+  ): Promise<ApiResponse<T>>;
   call(requestOptions?: RequestOptions): Promise<ApiResponse<void>>;
   callAsJson<T>(
     schema: Schema<T, any>,
@@ -240,6 +246,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
     protected _httpMethod: HttpMethod,
     protected _xmlSerializer: XmlSerializerInterface,
     protected _retryConfig: RetryConfiguration,
+    protected _streamReadTimeout: number | undefined,
     protected _path?: string,
     protected _apiLogger?: ApiLoggerInterface
   ) {
@@ -566,6 +573,14 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       req.updateByJsonPointer.bind(req)
     );
   }
+  public callAsEventStream<T>(
+    createEventStream: (
+      req: this,
+      streamReadTimeout: number | undefined
+    ) => Promise<ApiResponse<T>>
+  ): Promise<ApiResponse<T>> {
+    return createEventStream(this, this._streamReadTimeout);
+  }
   public updateByJsonPointer(
     pointer: string | null,
     updater: (value: any) => any
@@ -616,6 +631,7 @@ export class DefaultRequestBuilder<BaseUrlParamType, AuthParams>
       this._httpMethod,
       this._xmlSerializer,
       this._retryConfig,
+      this._streamReadTimeout,
       this._path,
       this._apiLogger
     );
@@ -874,8 +890,9 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
   apiErrorConstructor: ApiErrorConstructor,
   authenticationProvider: AuthenticatorInterface<AuthParams>,
   retryConfig: RetryConfiguration,
-  xmlSerializer: XmlSerializerInterface = new XmlSerialization(),
-  apiLogger?: ApiLoggerInterface
+  xmlSerializer?: XmlSerializerInterface,
+  apiLogger?: ApiLoggerInterface,
+  streamReadTimeout?: number
 ): RequestBuilderFactory<BaseUrlParamType, AuthParams> {
   return (httpMethod, path?) => {
     return new DefaultRequestBuilder(
@@ -884,8 +901,9 @@ export function createRequestBuilderFactory<BaseUrlParamType, AuthParams>(
       apiErrorConstructor,
       authenticationProvider,
       httpMethod,
-      xmlSerializer,
+      xmlSerializer ?? new XmlSerialization(),
       retryConfig,
+      streamReadTimeout,
       path,
       apiLogger
     );

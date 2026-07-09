@@ -206,6 +206,60 @@ function mockErrorResponse(
 }
 
 describe('test default request builder behavior with succesful responses', () => {
+  it('callAsEventStream hands the builder to the factory and returns its ApiResponse', async () => {
+    const reqBuilder = defaultRequestBuilder('/test/requestBuilder?text=true');
+    reqBuilder.text('testBody');
+    const response = await reqBuilder.callAsEventStream(async (req) => {
+      // the builder itself is handed in (like paginate's `req`); the
+      // factory drives it, including re-issuing for reconnection
+      expect(req).toBe(reqBuilder);
+      return req.callAsText();
+    });
+    // the hook returns the ApiResponse<T> the factory produced, as-is
+    expect(response.statusCode).toBe(200);
+    expect(response.result).toBe('testBody result');
+  });
+
+  it('forwards the constructor-supplied stream read timeout to the factory', async () => {
+    // Supplied to the factory (like retryConfig), not via a setter.
+    const reqBuilder = createRequestBuilderFactory<string, boolean>(
+      mockHttpClientAdapter(),
+      (server) => mockBaseURIProvider(server),
+      ApiError,
+      basicAuth,
+      retryConfig,
+      undefined,
+      undefined,
+      1234
+    )('GET', '/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    const response = await reqBuilder.callAsEventStream(
+      async (req, streamReadTimeout) => {
+        expect(streamReadTimeout).toBe(1234);
+        return req.callAsText();
+      }
+    );
+    expect(response.statusCode).toBe(200);
+  });
+
+  it('forwards undefined when no stream read timeout is configured', async () => {
+    const reqBuilder = createRequestBuilderFactory<string, boolean>(
+      mockHttpClientAdapter(),
+      (server) => mockBaseURIProvider(server),
+      ApiError,
+      basicAuth,
+      retryConfig
+    )('GET', '/test/requestBuilder');
+    reqBuilder.baseUrl('default');
+    const response = await reqBuilder.callAsEventStream(
+      async (req, streamReadTimeout) => {
+        expect(streamReadTimeout).toBeUndefined();
+        return req.callAsText();
+      }
+    );
+    expect(response.statusCode).toBe(200);
+  });
+
   function setupTextRequestTest() {
     const expectedRequest: HttpRequest = {
       method: 'GET',
@@ -950,9 +1004,9 @@ describe('updateRequestByJsonPointer tests', () => {
       '$request.body#/new',
       () => fail()
     );
-    expect(
-      async () => await extractRequestBody(newRequestBuilder)
-    ).rejects.toThrow('Body is undefined');
+    await expect(extractRequestBody(newRequestBuilder)).rejects.toThrow(
+      'Body is undefined'
+    );
   });
 
   it('should not add new field as request body plain', async () => {
@@ -1048,22 +1102,31 @@ describe('updateRequestByJsonPointer tests', () => {
     );
   });
 
-  it('should not update body when not set', async () => {
+  it('should not update body when not set', () => {
     const requestBuilder = defaultRequestBuilder();
+    const updater = jest.fn();
 
-    requestBuilder.updateByJsonPointer('$request.body#/user', () => fail());
+    requestBuilder.updateByJsonPointer('$request.body#/user', updater);
+
+    expect(updater).not.toHaveBeenCalled();
   });
 
-  it('should not update for null json pointer', async () => {
+  it('should not update for null json pointer', () => {
     const requestBuilder = defaultRequestBuilder();
+    const updater = jest.fn();
 
-    requestBuilder.updateByJsonPointer(null, () => fail());
+    requestBuilder.updateByJsonPointer(null, updater);
+
+    expect(updater).not.toHaveBeenCalled();
   });
 
-  it('should not update for invalid pointer prefix', async () => {
+  it('should not update for invalid pointer prefix', () => {
     const requestBuilder = defaultRequestBuilder();
+    const updater = jest.fn();
 
-    requestBuilder.updateByJsonPointer('$invalid.prefix#/key', () => fail());
+    requestBuilder.updateByJsonPointer('$invalid.prefix#/key', updater);
+
+    expect(updater).not.toHaveBeenCalled();
   });
 });
 
