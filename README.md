@@ -28,6 +28,7 @@ They provide common runtime utilities needed by SDKs to make API calls and handl
 | [@apimatic/pagination](packages/pagination)                           | [![npm shield](https://img.shields.io/npm/v/@apimatic/pagination)](https://www.npmjs.com/package/@apimatic/pagination)                           | Provides utilities to handle paginated API responses, including support for asynchronous iteration over pages or items. |
 | [@apimatic/proxy](packages/proxy)                                     | [![npm shield](https://img.shields.io/npm/v/@apimatic/proxy)](https://www.npmjs.com/package/@apimatic/proxy)                                     | Provides proxy configuration utilities for HTTP clients.                                                                |
 | [@apimatic/hmac-signature-verifier](packages/hmac-signature-verifier) | [![npm shield](https://img.shields.io/npm/v/@apimatic/hmac-signature-verifier)](https://www.npmjs.com/package/@apimatic/hmac-signature-verifier) | Provides HMAC signature verification utilities to secure HTTP requests.                                                        |
+| [@apimatic/sse](packages/sse)                                         | [![npm shield](https://img.shields.io/npm/v/@apimatic/sse)](https://www.npmjs.com/package/@apimatic/sse)                                         | Provides parsing and typed consumption for Server-Sent Events (SSE) API responses.                                      |
 
 ## Builds and Usage
 
