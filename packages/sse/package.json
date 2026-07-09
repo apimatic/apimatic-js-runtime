@@ -1,6 +1,6 @@
 {
   "name": "@apimatic/sse",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Provides parsing and typed consumption for Server-Sent Events (SSE) API responses.",
   "main": "lib/index.js",
   "module": "es/index.js",
